@@ -1,0 +1,90 @@
+# ==================================================
+# Irochi — Docker Compose
+# ==================================================
+# STATUS: CHECKPOINT 1 PLACEHOLDER
+#
+# This file is NOT expected to be runnable at
+# Checkpoint 1. It defines the intended service
+# layout for the dummy/scaffold phase.
+#
+# Prerequisites before this compose file will work:
+#
+#   1. backend/Dockerfile  — created in Checkpoint 2
+#   2. frontend/Dockerfile — created in Checkpoint 3
+#   3. A local .env file   — copy .env.example to .env
+#                             and fill in values
+#
+# Do NOT run `docker compose up` until both
+# Dockerfiles exist and .env has been created.
+# ==================================================
+
+version: "3.9"
+
+services:
+  # ------------------------------------------------
+  # Backend — FastAPI (dummy)
+  # ------------------------------------------------
+  # Requires: backend/Dockerfile (Checkpoint 2)
+  # ------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: irochi-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ------------------------------------------------
+  # Frontend — React + Vite (dummy)
+  # ------------------------------------------------
+  # Requires: frontend/Dockerfile (Checkpoint 3)
+  # ------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: irochi-frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+# ==================================================
+# FUTURE SERVICES (not yet implemented)
+# ==================================================
+# The following will be added when the real pipeline
+# is built. Do NOT uncomment until then.
+#
+#  postgres:
+#    image: postgres:16-alpine
+#    ...
+#
+#  redis:
+#    image: redis:7-alpine
+#    ...
+#
+#  redpanda:
+#    image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
+#    ...
+#
+#  prometheus:
+#    image: prom/prometheus:v2.53.0
+#    ...
+#
+#  grafana:
+#    image: grafana/grafana:11.1.0
+#    ...
+#
+#  zeek:
+#    (custom Zeek 6+ image with pinned JA3/JA4 packages)
+#    ...
+# ==================================================
