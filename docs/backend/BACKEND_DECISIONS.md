@@ -49,3 +49,24 @@ Alert Engine → PostgreSQL INSERT → AWAIT COMMIT → success? → Redis Pub/S
 **Status:** Active
 
 During the dummy/scaffold phase, no real Zeek parsing, Redpanda producers/consumers, Redis, PostgreSQL persistence, ML models, detectors, or production authentication are implemented. Clean interfaces and placeholders are created so these can be introduced later.
+
+## BD-007: Abstract Service Layer Pattern
+
+**Status:** Active
+
+Backend services use abstract base classes (`AlertService`, `DashboardService`) with mock implementations (`MockAlertService`, `MockDashboardService`). Future real implementations (e.g. PostgreSQL-backed) must implement the same interface. This allows swapping mock → real without changing routes or schemas.
+
+## BD-008: Threat Taxonomy Enum Values
+
+**Status:** Active
+
+Mock alert data uses consistent enum values for threat types and detector IDs, matching the taxonomy from the architecture checkpoint:
+
+**Detector IDs (5):** `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`
+
+**Threat Types (6):** `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`
+
+**Severities:** `critical`, `high`, `medium`, `low`, `info`
+
+These values are not yet formally locked in the final API contract but are used consistently across the dummy backend and should be carried forward unless the final contract changes them.
+

@@ -1,0 +1,1 @@
+"""Irochi schemas package."""

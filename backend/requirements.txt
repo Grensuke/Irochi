@@ -1,0 +1,23 @@
+# ==================================================
+# Irochi Backend — Python Dependencies (Dummy Phase)
+# ==================================================
+# Pinned versions for reproducibility.
+# Only dependencies needed for the dummy/scaffold
+# backend are included. Production dependencies
+# (redis, asyncpg, confluent-kafka, scikit-learn,
+# xgboost, river, etc.) will be added when the real
+# pipeline is implemented.
+# ==================================================
+
+# --- Core ---
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+pydantic==2.11.3
+
+# --- Testing ---
+pytest==8.3.5
+pytest-asyncio==0.25.3
+httpx==0.28.1
+
+# --- WebSocket ---
+websockets==15.0.1
