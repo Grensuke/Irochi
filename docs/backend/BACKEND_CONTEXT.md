@@ -7,7 +7,7 @@
 
 ## Phase
 
-Repository initialization / dummy backend
+Checkpoint 4 (Dummy End-to-End Integration Validated)
 
 ## Completed
 
@@ -20,11 +20,12 @@ Repository initialization / dummy backend
 - Dummy WebSocket endpoint with backfill + live simulation (Checkpoint 2)
 - Service layer with abstract interfaces for future replacement (Checkpoint 2)
 - Backend Dockerfile (Checkpoint 2)
-- 20 passing tests (health, alerts, dashboard, WebSocket) (Checkpoint 2)
+- 20 passing tests (health, alerts, dashboard, WebSocket) (Checkpoint 2 & 4)
+- Dummy frontend-backend integration fully verified (Checkpoint 4)
 
 ## Current Task
 
-Frontend skeleton and dashboard (Checkpoint 3, pending approval)
+Pending Checkpoint 5 (Production Architecture)
 
 ## Backend Structure
 
@@ -98,4 +99,4 @@ backend/
 
 ## Next Steps
 
-Build the frontend skeleton and dashboard (Checkpoint 3).
+Wait for project lead approval to proceed to production infrastructure (Checkpoint 5).

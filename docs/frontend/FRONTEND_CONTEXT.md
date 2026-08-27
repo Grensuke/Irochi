@@ -7,7 +7,7 @@
 
 ## Phase
 
-Complete frontend product shell + Dummy functionality (Checkpoint 3 Expanded)
+Checkpoint 4 (Dummy End-to-End Integration Validated)
 
 ## Completed
 
@@ -23,8 +23,9 @@ Complete frontend product shell + Dummy functionality (Checkpoint 3 Expanded)
 - WebSocket connection state display (connecting, backfilling, live, reconnecting, disconnected) (Checkpoint 3)
 - Visible distinction between backfilled and live alerts (phase badges) (Checkpoint 3)
 - Frontend Dockerfile (Checkpoint 3)
-- TypeScript check passes (0 errors) (Checkpoint 3)
-- Production build succeeds (Checkpoint 3)
+- TypeScript check passes (0 errors) (Checkpoint 3 & 4)
+- Production build succeeds (Checkpoint 3 & 4)
+- End-to-End dummy integration with FastAPI backend verified (Checkpoint 4)
 
 ## Frontend Structure
 
@@ -106,4 +107,4 @@ frontend/
 
 ## Next Steps
 
-Checkpoint 4 (or as directed by project lead).
+Wait for project lead approval to proceed to production infrastructure and real architecture implementation.
