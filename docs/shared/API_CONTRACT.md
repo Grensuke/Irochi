@@ -91,6 +91,7 @@ Dashboard summary metrics.
   "high_count": "integer",
   "medium_count": "integer",
   "low_count": "integer",
+  "info_count": "integer",
   "by_threat_type": {
     "threat_type_name": "integer"
   },

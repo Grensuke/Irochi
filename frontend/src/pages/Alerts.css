@@ -1,0 +1,24 @@
+.alerts-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.alerts-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.alerts-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+.alerts-table-panel {
+  overflow: hidden;
+}
+
+.alerts-table-panel .alert-table-wrap {
+  overflow-x: auto;
+}

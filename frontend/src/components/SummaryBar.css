@@ -1,0 +1,27 @@
+.summary-bar {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-6);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-5);
+  min-width: 80px;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.summary-stat:hover {
+  background: var(--bg-hover);
+}
+
+.summary-stat .stat-value {
+  font-size: 1.5rem;
+}

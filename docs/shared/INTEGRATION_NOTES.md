@@ -22,26 +22,26 @@ Notes:
 
 ## Active Items
 
+_(none currently)_
+
+---
+
+## Resolved Items
+
 ### INT-001
 
 **Title:** Dummy alert list endpoint
 **From:** Frontend
 **To:** Backend
-**Status:** Open
+**Status:** Resolved (Checkpoint 2)
 **Requirement:** Frontend needs a `GET /api/v1/alerts` endpoint returning mock alerts with the fields specified in `API_CONTRACT.md`. Each alert must include `threat_type` (one of six capabilities) and `detector_id` (one of five modules).
-**Notes:** Blocked until Checkpoint 2 (backend skeleton). Frontend will use local mock data until this endpoint exists.
+**Notes:** Implemented in Checkpoint 2. Frontend consumes this endpoint via `src/services/api.ts`.
 
 ### INT-002
 
 **Title:** Dummy WebSocket for live alerts
 **From:** Frontend
 **To:** Backend
-**Status:** Open
+**Status:** Resolved (Checkpoint 2)
 **Requirement:** Frontend needs a `WS /api/v1/ws/alerts` endpoint that simulates backfill + live alert delivery. Messages should distinguish between "backfill" and "live" phases.
-**Notes:** Blocked until Checkpoint 2 (backend skeleton). See `API_CONTRACT.md` for preliminary message structure.
-
----
-
-## Resolved Items
-
-_(none yet)_
+**Notes:** Implemented in Checkpoint 2. Frontend handles the three-phase protocol (backfill → backfill_complete → live) via `src/services/websocket.ts`. The `backfill_complete` message type was implemented by backend but not explicitly listed in the original API contract — frontend handles it correctly.
