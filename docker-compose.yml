@@ -1,21 +1,21 @@
 # ==================================================
 # Irochi — Docker Compose
 # ==================================================
-# STATUS: CHECKPOINT 1 PLACEHOLDER
+# STATUS: CHECKPOINT 4 — DUMMY END-TO-END BASELINE
 #
-# This file is NOT expected to be runnable at
-# Checkpoint 1. It defines the intended service
-# layout for the dummy/scaffold phase.
+# This docker-compose.yml is intended for the current
+# dummy phase. The backend and frontend Dockerfiles
+# now exist and are wired to these services.
 #
-# Prerequisites before this compose file will work:
+# Prerequisites:
 #
-#   1. backend/Dockerfile  — created in Checkpoint 2
-#   2. frontend/Dockerfile — created in Checkpoint 3
-#   3. A local .env file   — copy .env.example to .env
-#                             and fill in values
+#   1. A local .env file must be created locally
+#      from .env.example before running.
 #
-# Do NOT run `docker compose up` until both
-# Dockerfiles exist and .env has been created.
+# NOTE: Docker has NOT been locally validated in this
+# environment because Docker is not installed.
+# Do not claim that `docker compose up` or the Docker
+# builds have been successfully tested.
 # ==================================================
 
 version: "3.9"
