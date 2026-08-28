@@ -135,7 +135,7 @@ MOCK_ALERTS: list[AlertResponse] = [
             "ports across 10.0.5.0/24 in 90 seconds. SYN-only connections "
             "with no established sessions. scan_rate 3.5 ports/sec."
         ),
-        status=AlertStatus.RESOLVED,
+        status=AlertStatus.CLOSED,
     ),
     # 6 — Data Exfiltration (critical)
     AlertResponse(
@@ -172,7 +172,7 @@ MOCK_ALERTS: list[AlertResponse] = [
             "byte_rate elevated 2.1× above 1h baseline. Below volumetric "
             "threshold but flagged for monitoring."
         ),
-        status=AlertStatus.RESOLVED,
+        status=AlertStatus.CLOSED,
     ),
     # 8 — DNS tunneling (medium)
     AlertResponse(
@@ -209,7 +209,7 @@ MOCK_ALERTS: list[AlertResponse] = [
         ),
         status=AlertStatus.FALSE_POSITIVE,
     ),
-    # 10 — C2 beaconing (info — resolved)
+    # 10 — C2 beaconing (info — closed)
     AlertResponse(
         alert_id="ALERT-010",
         timestamp=_ts("2026-08-27T13:30:00+00:00"),
@@ -226,7 +226,7 @@ MOCK_ALERTS: list[AlertResponse] = [
             "Pattern resembles keepalive or health-check. Low confidence "
             "of malicious C2 — likely benign application polling."
         ),
-        status=AlertStatus.RESOLVED,
+        status=AlertStatus.CLOSED,
     ),
     # 11 — Exfiltration (high)
     AlertResponse(

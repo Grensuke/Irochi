@@ -111,18 +111,54 @@ WebSocket endpoint for live alert delivery.
 **Dummy behaviour:**
 
 1. Client connects
-2. Server sends a simulated backfill batch (existing mock alerts)
-3. Server enters live mode
-4. Server periodically sends new mock alerts
-5. Messages distinguish between "backfill" and "live" phases
+2. Server sends backfill alerts (existing mock alerts)
+3. Server sends a `backfill_complete` transition marker
+4. Server enters live mode
+5. Server periodically sends new mock alerts
 
-**Message structure (preliminary):**
+**Message types:**
+
+#### `backfill`
+
+Sent during the backfill phase. Contains a historical alert.
 
 ```json
 {
-  "type": "backfill | live",
+  "type": "backfill",
   "alert": { "...alert object" }
 }
+```
+
+#### `backfill_complete`
+
+Transition marker sent once after all backfill alerts. Contains `alert: null`.
+
+```json
+{
+  "type": "backfill_complete",
+  "alert": null
+}
+```
+
+#### `live`
+
+Sent during the live phase. Contains a newly generated alert.
+
+```json
+{
+  "type": "live",
+  "alert": { "...alert object" }
+}
+```
+
+**Expected sequence:**
+
+```text
+backfill × N
+    ↓
+backfill_complete
+    ↓
+live × N
 ```
 
 > **Note:** This WebSocket protocol is a dummy simulation.
@@ -157,3 +193,11 @@ WebSocket endpoint for live alert delivery.
 ```
 critical | high | medium | low | info
 ```
+
+## Alert Status Values
+
+```
+new | investigating | closed | false_positive
+```
+
+> "Closed" is an analyst workflow status. It does NOT imply that Irochi mitigated or stopped the threat.

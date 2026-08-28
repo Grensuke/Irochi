@@ -56,7 +56,7 @@ class AlertStatus(str, enum.Enum):
 
     NEW = "new"
     INVESTIGATING = "investigating"
-    RESOLVED = "resolved"
+    CLOSED = "closed"
     FALSE_POSITIVE = "false_positive"
 
 
