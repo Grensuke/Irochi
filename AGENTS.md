@@ -1,8 +1,11 @@
 # AGENTS.md — Irochi Project Root
 
 ## Project
+
 **Irochi**
+
 **Problem Statement:** SIH26145
+
 **Problem Statement Title:** AI-Based Detection of Cyber Threats in Unidirectional IP Traffic
 
 Irochi is a passive/read-only cyber-threat detection and security-intelligence system for unidirectional IP traffic.
@@ -22,36 +25,20 @@ The system does NOT:
 
 ---
 
-## Source-of-Truth Hierarchy
+## Source-of-Truth Documents
 
-1. **AGENTS.md**
-   → AI operating rules and repository workflow rules.
+| Document | Path | Purpose |
+|---|---|---|
+| Architecture Checkpoint | `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` | Project-level architectural truth — locked decisions, conditional decisions, component order, invariants |
+| Canonical Event Schema | `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md` | Data-contract truth — source-independent event structure produced by the Ingest Normalizer |
 
-2. **Architecture Checkpoint** (`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`)
-   → project-level architectural truth.
-   → locked decisions, conditional decisions, invariants, component order.
+### Document Hierarchy
 
-3. **Canonical Event Schema** (`docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`)
-   → canonical source-independent data-contract truth.
-
-4. **Shared Contracts** (`docs/shared/`)
-   → cross-team API/data/integration contracts.
-
-5. **Backend / Frontend Decision Files**
-   → stable area-specific decisions.
-
-6. **Backend / Frontend Context Files**
-   → current working state.
-
-7. **Source Code**
-   → implementation of the above.
-
-A lower-level implementation or document must NOT silently contradict a higher-level locked decision.
-
-When a contradiction is discovered:
-- do not silently choose an alternative;
-- report the conflict;
-- request project-lead approval where required.
+- **Architecture Checkpoint** → project-level truth; governs all architecture decisions.
+- **Canonical Event Schema** → data-contract truth; governs all event/schema decisions.
+- **Backend/Frontend Context files** → working memory; describe CURRENT project state for each area.
+- **Backend/Frontend Decision files** → area-specific stable decisions.
+- **Shared documents** (`docs/shared/`) → cross-team contracts and integration coordination.
 
 ---
 
@@ -59,17 +46,20 @@ When a contradiction is discovered:
 
 All future agents must:
 
-1. Read AGENTS.md first.
-2. Identify which area they are working in.
-3. Read the relevant context file before changing code.
-4. Read relevant decision files before changing established behavior.
-5. Read the Architecture Checkpoint before architecture changes.
-6. Read the Canonical Event Schema before event/schema changes.
-7. Read relevant shared contracts before frontend/backend integration work.
-8. Inspect the current repository state before making assumptions.
-9. Never silently change locked architecture or technology.
-10. Never silently finalize a conditional/open decision.
-11. Never claim a task is complete when known documentation or tests are inconsistent with the implementation.
+1. **Read `AGENTS.md` first** before doing any work.
+2. **Identify which area they are working in.**
+3. **Read the relevant context file** (`docs/backend/BACKEND_CONTEXT.md` or `docs/frontend/FRONTEND_CONTEXT.md`) before working on that area.
+4. **Read relevant decision files** before changing established behavior.
+5. **Read the Architecture Checkpoint** before proposing or making any architecture change.
+6. **Read the Canonical Event Schema** before making any event/schema change.
+7. **Do not modify the Architecture Checkpoint** without explicit project-lead approval.
+8. **Do not modify the Canonical Event Schema** without explicit project-lead approval.
+9. **Do not modify `AGENTS.md` itself** unless explicitly instructed by the project lead.
+10. **Do not turn conditional decisions into locked decisions** — conditional items remain conditional until their stated decision point is reached.
+11. **Do not use context files as chat transcripts** — they describe current project state, not conversation history.
+12. **Never silently change locked architecture or technology.**
+13. **Never claim a task is complete when known documentation or tests are inconsistent with the implementation.**
+14. **Inspect the current repository state before making assumptions.**
 
 ---
 
@@ -122,7 +112,7 @@ Preserve these technologies unless the project lead explicitly approves a change
 - Prometheus
 - Grafana
 
-*TimescaleDB remains conditional and must not be added merely because it is convenient.*
+> **TimescaleDB** remains conditional and must not be added merely because it is convenient.
 
 ---
 
@@ -131,10 +121,12 @@ Preserve these technologies unless the project lead explicitly approves a change
 Agents must preserve the approved architecture.
 
 Especially:
+
 - PostgreSQL is the durable alert source of truth.
 - Redis hot state and Redis Pub/Sub are separate roles.
 - Alert persistence ordering is:
-    ```
+
+    ```text
     Alert Engine
         ↓
     PostgreSQL INSERT
@@ -145,6 +137,7 @@ Especially:
        ├── NO  → log/retry, do not publish
        └── YES → Redis Pub/Sub
     ```
+
 - React never connects directly to PostgreSQL.
 - React never connects directly to Redis.
 - React never connects directly to Redpanda.
@@ -162,6 +155,7 @@ If implementation pressure conflicts with these rules, stop and report it instea
 ## Documentation Synchronization
 
 After meaningful work, the agent must determine whether the change affects:
+
 - architecture;
 - canonical data schema;
 - shared data contract;
@@ -173,9 +167,12 @@ After meaningful work, the agent must determine whether the change affects:
 - frontend current state;
 - cross-team integration.
 
-Update the appropriate document when genuinely affected. Documentation and implementation must remain consistent.
+Update the appropriate document when genuinely affected.
+
+Documentation and implementation must remain consistent.
 
 Before declaring a task complete:
+
 1. Check documentation impact.
 2. Update affected documentation.
 3. Check for contradictions.
@@ -191,6 +188,7 @@ Do NOT modify unrelated documentation simply to create activity.
 `*_CONTEXT.md` files describe CURRENT PROJECT STATE.
 
 They should contain information such as:
+
 - current phase;
 - completed work;
 - current task;
@@ -200,12 +198,17 @@ They should contain information such as:
 - important current constraints.
 
 They are NOT:
+
 - chat transcripts;
 - discussion logs;
 - copies of prompts;
 - historical diaries.
 
-Only record work that actually happened. Keep the context concise and useful for the next AI session.
+Only record work that actually happened.
+
+Update context files after meaningful approved work or when the current project state materially changes.
+
+Keep the context concise and useful for the next AI session.
 
 ---
 
@@ -214,11 +217,13 @@ Only record work that actually happened. Keep the context concise and useful for
 `*_DECISIONS.md` files contain stable, intentional, area-specific decisions.
 
 A decision entry should normally include:
+
 - decision;
 - reason;
 - status.
 
 Do not record:
+
 - guesses;
 - unresolved questions;
 - temporary implementation details;
@@ -227,6 +232,7 @@ Do not record:
 Do not silently delete a valid historical decision.
 
 If a new approved decision replaces an old decision:
+
 - retain the historical entry;
 - clearly mark the old decision as superseded;
 - record the new decision.
@@ -240,11 +246,13 @@ Project-level decisions belong in the Architecture Checkpoint, not only in a tea
 Shared contracts are the integration boundary between frontend and backend.
 
 Relevant files include:
+
 - `docs/shared/API_CONTRACT.md`
 - `docs/shared/DATA_CONTRACTS.md`
 - `docs/shared/INTEGRATION_NOTES.md`
 
 Do not silently invent:
+
 - new API endpoints;
 - new API fields;
 - new WebSocket message types;
@@ -252,6 +260,7 @@ Do not silently invent:
 - backend capabilities.
 
 If an interface change is required:
+
 1. Identify whether the change is already covered by the contract.
 2. Update the appropriate shared contract if it is an approved change.
 3. Record cross-team implementation requirements appropriately.
@@ -259,11 +268,17 @@ If an interface change is required:
 
 Do not use shared Markdown files as conversation transcripts.
 
+Once GitHub collaboration is established:
+
+- use GitHub Issues and Pull Requests for active task coordination and cross-team requests;
+- keep `docs/shared/INTEGRATION_NOTES.md` for durable integration notes, decisions, or references rather than live task/chat traffic.
+
 ---
 
 ## Backend Rules
 
 Backend agents must:
+
 - use Python + FastAPI;
 - preserve the approved architecture;
 - keep API/routes/services/schema responsibilities appropriately separated;
@@ -274,6 +289,7 @@ Backend agents must:
 - keep real infrastructure separate from dummy/mock implementations.
 
 When a backend change affects frontend behavior:
+
 - inspect the shared API/data contracts;
 - update the relevant contract when appropriate;
 - record integration requirements;
@@ -284,6 +300,7 @@ When a backend change affects frontend behavior:
 ## Frontend Rules
 
 Frontend agents must:
+
 - use React + Vite + TypeScript;
 - preserve the established Irochi product shell/design system;
 - use the shared API/data contracts;
@@ -293,22 +310,29 @@ Frontend agents must:
 - not directly connect to PostgreSQL, Redis, or Redpanda.
 
 When backend functionality does not yet exist:
+
 - use centralized mock data/services;
 - do not fake a production integration;
 - document genuine integration requirements.
+
+Frontend agents must not modify backend implementation simply to make frontend work easier.
 
 ---
 
 ## Parallel Team Development
 
-Frontend and backend may be developed simultaneously. Each team should primarily modify its own area.
+Frontend and backend may be developed simultaneously.
+
+Each team should primarily modify its own area.
 
 Typical ownership:
+
 - **Frontend:** `frontend/`, `docs/frontend/`
 - **Backend:** `backend/`, `docs/backend/`
 - **Shared:** `docs/shared/`, architecture/data contracts when explicitly approved
 
 Rules:
+
 - do not overwrite unrelated teammate changes;
 - do not revert another team's work without approval;
 - do not modify another team's code merely for convenience;
@@ -316,6 +340,7 @@ Rules:
 - use the agreed GitHub Issues/PR workflow for active cross-team work once GitHub collaboration is established.
 
 If a cross-team requirement is discovered:
+
 - document it;
 - do not silently implement the other team's portion.
 
@@ -326,6 +351,7 @@ If a cross-team requirement is discovered:
 Git is a shared project-history mechanism.
 
 Agents must:
+
 - never create a GitHub remote without explicit project-lead approval;
 - never push without explicit project-lead approval;
 - never rewrite shared history;
@@ -346,6 +372,7 @@ Do not use destructive Git commands against another teammate's work.
 ## Approval / Escalation Rules
 
 Agents must stop and request project-lead approval when:
+
 - a locked architecture decision must change;
 - a locked technology must change;
 - a conditional decision would need to become locked;
@@ -362,6 +389,7 @@ Never resolve an architectural conflict by silently picking a new design.
 ## Test and Completion Rules
 
 Before reporting meaningful work as complete:
+
 1. Run relevant tests/checks.
 2. Verify only intended files changed.
 3. Check source-of-truth documents.
@@ -381,6 +409,7 @@ Never report "complete" while knowingly leaving a documentation or contract mism
 Checkpoints 1–4 are complete.
 
 Current state:
+
 - repository/workflow foundation complete;
 - dummy FastAPI backend complete;
 - complete frontend product shell complete;
@@ -389,13 +418,16 @@ Current state:
 
 The next major work phase is real system design/implementation.
 
-Do not assume the real production pipeline is already implemented. The current dummy system is a development baseline only.
+Do not assume the real production pipeline is already implemented.
+
+The current dummy system is a development baseline only.
 
 ---
 
 ## Important Threat Modeling Rule
 
 The problem statement contains SIX user-facing threat capabilities:
+
 1. Volumetric / Protocol DDoS
 2. Botnet C2 Beaconing
 3. DGA / DNS Tunneling
@@ -404,13 +436,16 @@ The problem statement contains SIX user-facing threat capabilities:
 6. Data Exfiltration
 
 The architecture contains FIVE logical detector modules:
+
 1. DDoS Detector
 2. Recon Detector
 3. DNS/DGA/DNS-Tunneling Detector
 4. TLS/C2 Detector
 5. Exfiltration Detector
 
-Do not turn the six threat capabilities into six microservices. One detector may produce multiple threat classes.
+Do not turn the six threat capabilities into six microservices.
+
+One detector may produce multiple threat classes.
 
 ---
 
@@ -421,6 +456,7 @@ Irochi is an intelligence/detection system.
 "Closed" is an analyst workflow status.
 
 "Closed" must never imply:
+
 - attack mitigation;
 - traffic blocking;
 - automatic remediation.
@@ -432,6 +468,7 @@ Avoid terminology that implies Irochi can act back on the production network.
 ## Task-Specific Safety
 
 When starting a task, determine:
+
 - What part of the system am I changing?
 - Which source-of-truth files govern it?
 - Does this affect a shared contract?
@@ -440,3 +477,13 @@ When starting a task, determine:
 - Does this require project-lead approval?
 
 Do not make broad repository changes when the task is narrowly scoped.
+
+---
+
+## Final Instruction
+
+Keep `AGENTS.md` concise enough to be practical, but complete enough that a new AI agent can understand how Irochi is governed without relying on previous chat history.
+
+Do not add speculative architecture.
+
+Do not invent requirements.
