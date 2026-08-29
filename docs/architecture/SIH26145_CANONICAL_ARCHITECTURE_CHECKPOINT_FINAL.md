@@ -1533,7 +1533,15 @@ Per checkpoint §32, do not jump into Pydantic implementation before the remaini
 
 # 33a. Immediate Next Task — Redpanda Topics
 
-The next concrete task is:
+> **STATUS: IN PROGRESS — PARTITION KEY LOCKED**
+>
+> The raw canonical-event Redpanda partition key is now locked to `hash(src_ip)` for `connection`, `dns`, and `tls` topics. See `docs/architecture/REDPANDA_TOPICS_DRAFT_v4.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009.
+>
+> This is a scoped project-level decision. Partition counts and the remaining Redpanda topic/retention/error-handling decisions remain open and the Redpanda design document remains DRAFT.
+>
+> The next major design task remains Feature / Window Schema after the remaining Redpanda items are reviewed.
+
+The original task is:
 
 > **Define the Redpanda topic layout.**
 
@@ -1563,5 +1571,5 @@ If future context is lost:
 2. Treat **LOCKED** decisions as already agreed.
 3. Treat **CONDITIONAL / NOT YET FINALIZED** items as open.
 4. Read `CANONICAL_EVENT_SCHEMA.md` — the Canonical Event Schema task (§33) is complete at baseline level.
-5. Resume from **Section 33a: Immediate Next Task (Redpanda Topics)**.
+5. Read the §33a status block — the raw-topic partition key (`src_ip`) is already **LOCKED**. Do not restart that decision. Review the remaining OPEN items in `docs/architecture/REDPANDA_TOPICS_DRAFT_v4.md` before proceeding to Feature / Window Schema.
 6. Do not redesign the architecture, or the Canonical Event Schema's locked envelope/payload structure, from scratch unless a verified new requirement or benchmark requires it.

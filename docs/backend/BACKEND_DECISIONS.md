@@ -70,3 +70,17 @@ Mock alert data uses consistent enum values for threat types and detector IDs, m
 
 These values are not yet formally locked in the final API contract but are used consistently across the dummy backend and should be carried forward unless the final contract changes them.
 
+## BD-009: Raw Redpanda Topic Partition Key
+
+**Status:** Locked
+
+All raw canonical-event Redpanda topics use `src_ip` as the partition key:
+
+- `irochi.events.connection.v1` → `hash(src_ip)`
+- `irochi.events.dns.v1` → `hash(src_ip)`
+- `irochi.events.tls.v1` → `hash(src_ip)`
+
+This decision was approved after evaluating the Feature/Window aggregation requirements. Destination-centric DDoS aggregation and pair-centric C2 beaconing require downstream shared state rather than relying on raw-topic partition locality. The currently defined TLS features provide no identified benefit from TLS-topic `(src_ip, dst_ip)` locality.
+
+This locks the partition key only. It does not lock raw-topic partition counts, retention values, downstream Feature/Window topics, or other remaining Redpanda design decisions.
+
