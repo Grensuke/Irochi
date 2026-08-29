@@ -71,8 +71,13 @@ One detector module may emit multiple threat classes. These are **not** six micr
 The following data contracts are part of the design chain and will be defined in sequence:
 
 1. ~~Canonical Event Schema~~ — **complete** (baseline)
-2. Redpanda Topics — pending
-3. Feature / Window Schema — pending
+2. Redpanda Topics — **DRAFT / IN PROGRESS**
+   - raw partition key = **LOCKED**
+   - remaining transport/topic decisions = **OPEN**
+3. Feature / Window Schema — **DRAFT / IN PROGRESS**
+   - window-type taxonomy = **LOCKED**
+   - feature-level mapping = **PROPOSED**
+   - remaining state/parameter decisions = **OPEN**
 4. Detector Inputs / Outputs — pending
 5. Alert Schema — pending
 6. PostgreSQL Schema — pending

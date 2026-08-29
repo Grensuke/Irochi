@@ -1406,7 +1406,7 @@ This dual-mode design gives repeatability during development while preserving a 
 - tcpreplay primary demo
 - `zeek -r` development/debug
 - no detector-per-microservice requirement
-- Canonical Event Schema logical structure (envelope + typed `connection`/`dns`/`tls` payloads) — see `CANONICAL_EVENT_SCHEMA.md`; locked enough to implement after final source validation
+- Canonical Event Schema logical structure (envelope + typed `connection`/`dns`/`tls` payloads) — see `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`; locked enough to implement after final source validation
 
 ## CONDITIONAL / NOT YET FINALIZED
 
@@ -1476,7 +1476,7 @@ Do **not** jump into implementation before the following contracts are defined.
 
 # 33. Canonical Event Schema — STATUS: COMPLETE (baseline)
 
-> The task originally described in this section has been completed. The final logical schema (envelope + typed `connection`/`dns`/`tls` payloads) lives in `CANONICAL_EVENT_SCHEMA.md`. It is locked enough to implement after final source validation; three items remain conditional within it — NetFlow/IPFIX `connection_id` synthesis, NetFlow/IPFIX directional field mapping, and UDP amplification formulation — none of which block moving to the next design step (§33a).
+> The task originally described in this section has been completed. The final logical schema (envelope + typed `connection`/`dns`/`tls` payloads) lives in `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`. It is locked enough to implement after final source validation; three items remain conditional within it — NetFlow/IPFIX `connection_id` synthesis, NetFlow/IPFIX directional field mapping, and UDP amplification formulation — none of which block moving to the next design step (§33a).
 >
 > The original task description is kept below for historical record of the process that was followed.
 
@@ -1535,7 +1535,7 @@ Per checkpoint §32, do not jump into Pydantic implementation before the remaini
 
 > **STATUS: IN PROGRESS — PARTITION KEY LOCKED**
 >
-> The raw canonical-event Redpanda partition key is now locked to `hash(src_ip)` for `connection`, `dns`, and `tls` topics. See `docs/architecture/REDPANDA_TOPICS_DRAFT_v4.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009.
+> The raw canonical-event Redpanda partition key is now locked to `hash(src_ip)` for `connection`, `dns`, and `tls` topics. See `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009.
 >
 > This is a scoped project-level decision. Partition counts and the remaining Redpanda topic/retention/error-handling decisions remain open and the Redpanda design document remains DRAFT.
 >
@@ -1557,7 +1557,7 @@ retention policy
 error / dead-letter handling
 ```
 
-This continues directly from the Canonical Event Schema (`CANONICAL_EVENT_SCHEMA.md`): topics carry canonical events (or, later, feature/window records) between pipeline stages, so the topic design should map cleanly onto the `event_type` discriminator (`connection` / `dns` / `tls`) already defined.
+This continues directly from the Canonical Event Schema (`docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`): topics carry canonical events (or, later, feature/window records) between pipeline stages, so the topic design should map cleanly onto the `event_type` discriminator (`connection` / `dns` / `tls`) already defined.
 
 Only after Redpanda Topics are reviewed should work proceed to Feature/Window Schema per the §32 design chain.
 
@@ -1570,6 +1570,6 @@ If future context is lost:
 1. Read this file first.
 2. Treat **LOCKED** decisions as already agreed.
 3. Treat **CONDITIONAL / NOT YET FINALIZED** items as open.
-4. Read `CANONICAL_EVENT_SCHEMA.md` — the Canonical Event Schema task (§33) is complete at baseline level.
-5. Read the §33a status block — the raw-topic partition key (`src_ip`) is already **LOCKED**. Do not restart that decision. Review the remaining OPEN items in `docs/architecture/REDPANDA_TOPICS_DRAFT_v4.md` before proceeding to Feature / Window Schema.
+4. Read `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md` — the Canonical Event Schema task (§33) is complete at baseline level.
+5. Read the §33a status block — the raw-topic partition key (`src_ip`) is already **LOCKED**. Do not restart that decision. Review the remaining OPEN items in `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md` before proceeding to Feature / Window Schema.
 6. Do not redesign the architecture, or the Canonical Event Schema's locked envelope/payload structure, from scratch unless a verified new requirement or benchmark requires it.

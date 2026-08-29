@@ -2,7 +2,7 @@
 
 > **Status:** DRAFT — proposed, not yet locked. Requires project-lead / team review before promotion to `_FINAL`.
 >
-> **Continues from:** `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` (§9, §10, §12, §14, §15), and `REDPANDA_TOPICS_DRAFT.md`.
+> **Continues from:** `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` (§9, §10, §12, §14, §15), and `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md`.
 >
 > **Scope:** This document defines what a **feature/window record** is, how derived signals are computed and keyed, and how derived-state processing relates to the approved Redpanda design. It does **not** finalize Detector I/O contracts, Alert Schema, or PostgreSQL schema — those remain later steps.
 
@@ -141,6 +141,18 @@ FeatureRecord
 | `schema_version` | string | Yes | Version of the feature-record contract |
 | `provenance` | object | Optional | References/summary describing the raw events contributing to the record; exact shape remains open |
 
+### `detector_domain` ↔ `detector_id` Mapping
+
+The `detector_domain` field is the Feature/Window routing/domain identity. It explicitly bridges to the canonical `detector_id` identity used downstream in the Alert layer:
+
+- `ddos` → `ddos_detector`
+- `recon` → `recon_detector`
+- `dns` → `dns_dga_tunnel_detector`
+- `tls_c2` → `tls_c2_detector`
+- `exfil` → `exfiltration_detector`
+
+The upcoming Detector I/O design will explicitly bridge the two. This mapping is not five new detector implementations; it just clarifies how the short domain names in the feature envelope map to the canonical detector identities.
+
 ### Status
 
 **PROPOSED.**
@@ -179,7 +191,7 @@ Older revisions must never overwrite newer state.
 
 ## 7. Raw Redpanda Partition-Key Decision (Inherited)
 
-`REDPANDA_TOPICS_DRAFT_v4.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009 now record Candidate A as locked:
+`REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009 now record Candidate A as locked:
 `src_ip` for all three raw topics. The Feature/Window aggregation analysis
 below is the evidence that informed that decision; it is no longer an open
 gate.
@@ -196,7 +208,7 @@ Reasoning, using the §4 mapping:
 Net effect: correctness for destination- and pair-entity aggregation already depends on Redis under either candidate, so the only real trade-off left is "one simple, uniform key" vs. "one uniform key plus one narrow, TLS-only optimization." Candidate A is the simpler choice that gives up nothing correctness-wise.
 
 This decision is already approved and recorded as a scoped project-level lock
-in `REDPANDA_TOPICS_DRAFT_v4.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009. If a future benchmark or
+in `REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009. If a future benchmark or
 new TLS-specific feature shows a meaningful benefit from TLS-topic pair
 locality, Candidate B may be reintroduced later as a targeted, measured
 optimization. That would be a future decision, not an unresolved alternative
