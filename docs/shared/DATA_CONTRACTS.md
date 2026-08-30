@@ -110,3 +110,8 @@ The following data contracts are part of the design chain and will be defined in
    - durable alert persistence model = **PROPOSED**
    - logical relational/JSON representation = **PROPOSED**
    - indexing/retention/partitioning/implementation details = **OPEN**
+7. Final API Contract — **DRAFT / IN PROGRESS**
+   - presentation mapping = **PROPOSED**
+   - REST surface = **PROPOSED**
+   - WebSocket surface = **PROPOSED**
+   - filtering/pagination/error details = **OPEN**
