@@ -40,6 +40,15 @@ The system does NOT:
 - **Backend/Frontend Decision files** → area-specific stable decisions.
 - **Shared documents** (`docs/shared/`) → cross-team contracts and integration coordination.
 
+A lower-level implementation or document must NOT silently contradict a higher-level locked decision.
+
+When a contradiction is discovered:
+- do not silently choose an alternative;
+- report the conflict;
+- request project-lead approval where required.
+
+(See "Rules for All AI Agents" below for the fuller list of situations that require escalation rather than a silent choice.)
+
 ---
 
 ## Rules for All AI Agents

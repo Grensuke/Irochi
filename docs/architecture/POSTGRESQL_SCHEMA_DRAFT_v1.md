@@ -99,7 +99,7 @@ Every field from Alert Schema §3 is classified for PostgreSQL persistence:
 | `detector_output_id` | **REQUIRED** | Current/latest DetectorOutput reference |
 | `detector_id` | **REQUIRED** | Core classification; dedup component; index target |
 | `threat_type` | **REQUIRED** | Core classification; dedup component; index target |
-| `entity_type` | **REQUIRED** | Entity identity; dedup component; 5-value enum |
+| `entity_type` | **REQUIRED** | Entity identity; dedup component; 4-value enum |
 | `entity_key` | **REQUIRED** | Entity identity; dedup component; index target |
 | `detected_at` | **REQUIRED** | Core timestamp; index target for time-range queries |
 | `created_at` | **REQUIRED** | Record creation time |
@@ -138,9 +138,9 @@ Every field from Alert Schema §3 is classified for PostgreSQL persistence:
 
 ## 3. Entity Model Clarification
 
-### Alert-level entity types (5 values)
+### Alert-level entity types (4 values)
 
-Alert Schema §14 defines exactly 5 `entity_type` values:
+Alert Schema §14 defines exactly 4 `entity_type` values:
 
 | entity_type | entity_key format | Example |
 |---|---|---|
@@ -148,9 +148,8 @@ Alert Schema §14 defines exactly 5 `entity_type` values:
 | `destination` | IP address | `10.0.5.20` |
 | `pair` | `src_ip\|dst_ip` | `10.0.2.15\|203.0.113.47` |
 | `connection` | connection identifier | `conn_id_xyz` |
-| `event` | event identifier | `event_id_abc` |
 
-This is the **5-value** set from Alert Schema §14, not the 4-value set from Feature/Window (which does not include `event`).
+This is the **4-value** set from Alert Schema §14 (which is perfectly consistent with the 4-value set from Feature/Window).
 
 ### Alert-time identity/context durability finding
 
@@ -162,7 +161,6 @@ This is the **5-value** set from Alert Schema §14, not the 4-value set from Fea
 | `destination` | dst_ip | src_ip, ports |
 | `pair` | src_ip\|dst_ip | ports |
 | `connection` | connection_id | IPs/ports not directly in key |
-| `event` | event_id | IPs/ports not directly in key |
 
 **Concrete example:** A DDoS alert with `entity_type=destination`, `entity_key=10.0.5.20` contains no source information. The AlertResponse mock data includes `src_ip="198.51.100.0/24"` for this same alert. Once upstream Redpanda/Redis retention windows expire, the provenance chain (Alert → source_feature_references → FeatureRecord → raw event) may not be followable, making the source context unrecoverable.
 
@@ -245,7 +243,7 @@ Only the current Alert row is persisted. No separate immutable history/revision 
 | `detector_output_id` | UUID/text | NOT NULL | Mutable | Current/latest DetectorOutput |
 | `detector_id` | text (enum) | NOT NULL | Immutable | Detector classification; dedup component |
 | `threat_type` | text (enum) | NOT NULL | Immutable | Threat classification; dedup component |
-| `entity_type` | text (enum) | NOT NULL | Immutable | Entity classification; dedup component; 5-value |
+| `entity_type` | text (enum) | NOT NULL | Immutable | Entity classification; dedup component; 4-value |
 | `entity_key` | text | NOT NULL | Immutable | Entity identifier; dedup component |
 | `detected_at` | timestamptz | NOT NULL | Immutable | Detector evaluation time (= DetectorOutput.evaluated_at) |
 | `created_at` | timestamptz | NOT NULL | Immutable | Alert record construction time |
@@ -525,8 +523,8 @@ If `dedup_digest` is implemented, a single-column index on `dedup_digest` could 
 | **Unique identity** | `alert_id` | Must be unique across all alert records |
 | **Detector taxonomy** | `detector_id` | Must be one of the 5 inherited detector IDs (BD-008 Active) |
 | **Threat taxonomy** | `threat_type` | Must be one of the 6 inherited threat types (BD-008 Active) |
-| **Entity type** | `entity_type` | Must be one of the 5 values: `source`, `destination`, `pair`, `connection`, `event` (Alert Schema §14) |
-| **Entity key coherence** | `entity_type`, `entity_key` | entity_key format must be consistent with entity_type (IP for source/destination, `src_ip\|dst_ip` for pair, identifier for connection/event) |
+| **Entity type** | `entity_type` | Must be one of the 4 values: `source`, `destination`, `pair`, `connection` (Alert Schema §14) |
+| **Entity key coherence** | `entity_type`, `entity_key` | entity_key format must be consistent with entity_type (IP for source/destination, `src_ip\|dst_ip` for pair, identifier for connection) |
 | **Temporal ordering** | `first_seen_at`, `last_seen_at` | `first_seen_at ≤ last_seen_at` |
 | **Temporal ordering** | `created_at`, `detected_at` | No strict ordering required — detected_at may precede created_at (detection time vs persistence time) |
 | **Update count** | `update_count` | `≥ 0` |
@@ -765,7 +763,7 @@ This mapping is a Final API Contract concern, not a PostgreSQL schema concern.
 | `detector_output_id` | UUID/text | `detector_output_id` | NOT NULL | Mutable | Current/latest |
 | `detector_id` | text (enum) | `detector_id` | NOT NULL | Immutable | Dedup component |
 | `threat_type` | text (enum) | `threat_type` | NOT NULL | Immutable | Dedup component |
-| `entity_type` | text (enum) | `entity_type` | NOT NULL | Immutable | 5-value; dedup component |
+| `entity_type` | text (enum) | `entity_type` | NOT NULL | Immutable | 4-value; dedup component |
 | `entity_key` | text | `entity_key` | NOT NULL | Immutable | Dedup component |
 | `detected_at` | timestamptz | `detected_at` | NOT NULL | Immutable | int64 → timestamptz conversion |
 | `created_at` | timestamptz | `created_at` | NOT NULL | Immutable | int64 → timestamptz conversion |
@@ -856,7 +854,7 @@ Items marked **LOCKED** have explicit project-lead approval. **Inherited PROPOSE
 - [x] Alert Schema v1 used as primary source
 - [x] PostgreSQL durable-truth role preserved (BD-003)
 - [x] All persistent Alert fields classified (§2)
-- [x] entity_type verified as the 5-value enum from Alert Schema §14, not a 4-value assumption from Feature/Window
+- [x] entity_type verified as the 4-value enum from Alert Schema §14
 - [x] Alert-time identity/context durability question explicitly investigated and documented (§3), not silently resolved
 - [x] No PostgreSQL field named bare `revision` for an Alert-row concept (§4, §16)
 - [x] Primary Alert entity defined (§4, §5)
@@ -890,7 +888,7 @@ The unchecked items are post-execution verification — they will be confirmed b
 | **ALERT_SCHEMA_DRAFT_v1.md §3** (Alert envelope) | **Compatible.** All 25 canonical fields accounted for. Field classifications match §3's Required/Conditional/Optional. |
 | **ALERT_SCHEMA_DRAFT_v1.md §9** (Dedup identity) | **Compatible.** Structural dedup key persisted via component columns. Temporal scoping remains OPEN in both documents. |
 | **ALERT_SCHEMA_DRAFT_v1.md §11** (Update behavior) | **Compatible.** Immutable/mutable classification matches §11's update table. `detector_output_id` correctly mutable. |
-| **ALERT_SCHEMA_DRAFT_v1.md §14** (Entity types) | **Compatible.** 5-value entity_type enum used, including `event`. |
+| **ALERT_SCHEMA_DRAFT_v1.md §14** (Entity types) | **Compatible.** 4-value entity_type enum used. |
 | **ALERT_SCHEMA_DRAFT_v1.md §17** (PostgreSQL boundary) | **Compatible.** This document implements §17's structural boundary. No SQL tables yet. |
 | **ALERT_SCHEMA_DRAFT_v1.md §20** (Versioning) | **Compatible.** `update_count` as concurrency signal, exact algorithm OPEN. |
 | **DETECTOR_IO_CONTRACT_DRAFT_v1.md §13** (Revision) | **Compatible.** No `revision` naming collision. `source_feature_references` carries per-feature `{feature_id, revision}` objects in JSONB. |

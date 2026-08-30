@@ -174,7 +174,7 @@ No new endpoints are introduced in this pass.
 | `dst_port` | integer \| null | Optional | `alert_context` | Derived; see §6 | Nullable for all entity types |
 | `evidence_summary` | string | Yes | `evidence_summary` | Direct passthrough | Human-readable summary |
 | `status` | enum string | Yes | `status` | Direct passthrough | `new\|investigating\|closed\|false_positive` |
-| `entity_type` | enum string | Yes | `entity_type` | Direct passthrough | 5-value: `source\|destination\|pair\|connection\|event` |
+| `entity_type` | enum string | Yes | `entity_type` | Direct passthrough | 4-value: `source\|destination\|pair\|connection` |
 | `entity_key` | string | Yes | `entity_key` | Direct passthrough | Canonical entity identifier |
 | `first_seen_at` | string (ISO 8601) | Yes | `first_seen_at` (int64 µs) | int64 → ISO 8601 string | Earliest accepted detection in dedup scope |
 | `last_seen_at` | string (ISO 8601) | Yes | `last_seen_at` (int64 µs) | int64 → ISO 8601 string | Most recent accepted detection in dedup scope |
@@ -212,9 +212,9 @@ When the upstream `DetectorOutput` does not carry a `confidence` value (i.e., ca
 
 ## 6. Entity Presentation Model
 
-### Five entity types — mapped separately
+### Four entity types — mapped separately
 
-Alert Schema §14 defines exactly 5 `entity_type` values. The API derives IP/port presentation differently for each.
+Alert Schema §14 defines exactly 4 `entity_type` values. The API derives IP/port presentation differently for each.
 
 | entity_type | `src_ip` | `dst_ip` | `src_port` | `dst_port` |
 |---|---|---|---|---|
@@ -222,14 +222,13 @@ Alert Schema §14 defines exactly 5 `entity_type` values. The API derives IP/por
 | `destination` | From `alert_context` if captured, else **null** | = `entity_key` (destination IP) | From `alert_context`, else **null** | From `alert_context`, else **null** |
 | `pair` | Parsed from `entity_key`: left of `\|` separator | Parsed from `entity_key`: right of `\|` separator | From `alert_context`, else **null** | From `alert_context`, else **null** |
 | `connection` | **null** — connection identifier is not an IP; not derivable | **null** | **null** | **null** |
-| `event` | **null** — event identifier is not an IP; not derivable | **null** | **null** | **null** |
 
 ### Key principles
 
 - **`entity_type` and `entity_key` are always included** as canonical fields. They are never omitted from the API response.
 - **IP/port fields are always nullable.** No entity type guarantees all four are non-null.
 - **`alert_context` is internal.** The API derives presentation fields from it but does not expose `alert_context` raw.
-- **Do not generalize `source`/`destination` handling to `connection`/`event`.** Those types use opaque identifiers and cannot yield IP presentation without explicit `alert_context` capture.
+- **Do not generalize `source`/`destination` handling to `connection`.** This type uses opaque identifiers and cannot yield IP presentation without explicit `alert_context` capture.
 
 ### Source of IP/port context for `source`/`destination`/`pair`
 
@@ -817,7 +816,7 @@ Frontend `WsMessage` interface expects `{type: WsMessageType, alert: Alert | nul
 - [x] Current REST endpoints verified against routes and service implementations
 - [x] Current WebSocket verified against `websocket/alerts.py`, `alert_service.py`, and `core/config.py`
 - [x] AlertResponse mapping defined — all canonical Alert fields classified for exposure/omission
-- [x] `entity_type` 5-value model preserved; each entity type mapped separately (§6)
+- [x] `entity_type` 4-value model preserved; each entity type mapped separately (§6)
 - [x] API presentation does not redefine canonical alert identity
 - [x] `detector_id ≠ threat_type` preserved (§19)
 - [x] Lifecycle enum preserved — `new|investigating|closed|false_positive` only (§18)
@@ -847,7 +846,7 @@ Frontend `WsMessage` interface expects `{type: WsMessageType, alert: Alert | nul
 | ALERT_SCHEMA_DRAFT_v1.md §3 | **Compatible.** All 25 canonical Alert fields accounted for; presented, omitted, or derived fields documented explicitly. |
 | ALERT_SCHEMA_DRAFT_v1.md §9 (dedup) | **Compatible.** Dedup fields not exposed in API; internal only. |
 | ALERT_SCHEMA_DRAFT_v1.md §10 (lifecycle) | **Compatible.** Lifecycle enum preserved exactly. |
-| ALERT_SCHEMA_DRAFT_v1.md §14 (entity types) | **Compatible.** 5-value entity_type from §14 used throughout. |
+| ALERT_SCHEMA_DRAFT_v1.md §14 (entity types) | **Compatible.** 4-value entity_type from §14 used throughout. |
 | ALERT_SCHEMA_DRAFT_v1.md §16 (API boundary) | **Compatible.** This document implements §16's stated boundary. |
 | POSTGRESQL_SCHEMA_DRAFT_v1.md §3 (entity context) | **Compatible.** `alert_context` JSONB used to derive IP/port presentation; raw `alert_context` not exposed. |
 | POSTGRESQL_SCHEMA_DRAFT_v1.md §5 (columns) | **Compatible.** Timestamptz → ISO 8601 conversion documented. |

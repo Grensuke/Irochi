@@ -135,8 +135,8 @@ A multi-FeatureRecord detector evaluation (e.g. Recon consuming both Tumbling br
 | `feature_id` | UUID/string | Yes | From FeatureRecord | Unique identifier of the source FeatureRecord |
 | `mechanism` | enum | Yes | From FeatureRecord | `enrichment`, `windowed`, or `correlation` |
 | `detector_domain` | enum | Yes | From FeatureRecord | `ddos`, `recon`, `dns`, `tls_c2`, or `exfil` |
-| `entity_type` | enum | Conditional | From FeatureRecord | `source`, `destination`, `pair`, or `connection`; omitted for `enrichment` records |
-| `entity_key` | string | Conditional | From FeatureRecord | The actual key value; omitted for `enrichment` records |
+| `entity_type` | enum | Yes | From FeatureRecord | `source`, `destination`, `pair`, or `connection` |
+| `entity_key` | string | Yes | From FeatureRecord | The actual key value |
 | `window_type` | enum | Conditional | From FeatureRecord | `tumbling`, `sliding`, or `session`; present only for `windowed` records |
 | `window_start` | int64 | Conditional | From FeatureRecord | Epoch microseconds; present only for `windowed` records |
 | `window_end` | int64 | Conditional | From FeatureRecord | Epoch microseconds; present only for `windowed` records |
@@ -152,7 +152,7 @@ A multi-FeatureRecord detector evaluation (e.g. Recon consuming both Tumbling br
 - The DetectorInput does **not** duplicate FeatureRecord fields — it passes them through from the source FeatureRecord with the addition of `input_id` and `detector_id`.
 - The `detector_id` is derived from `detector_domain` using the mapping defined in Feature/Window v7 §5: `ddos` → `ddos_detector`, `recon` → `recon_detector`, `dns` → `dns_dga_tunnel_detector`, `tls_c2` → `tls_c2_detector`, `exfil` → `exfiltration_detector`.
 - A detector receives **self-contained** inputs — it does not need to reconstruct features from raw events.
-- `entity_type`, `entity_key`, `window_type`, `window_start`, `window_end`, and `correlation_status` are conditional because enrichment records genuinely do not carry window or entity fields (Feature/Window §2). This is not a gap — it reflects the architectural distinction between enrichment and windowed mechanisms.
+- `window_type`, `window_start`, `window_end`, and `correlation_status` are conditional because enrichment records genuinely do not carry window fields. (AR-02: `entity_type` and `entity_key` are explicitly required for all records, including enrichment, to preserve logical entity context).
 
 ### Status
 
@@ -544,7 +544,7 @@ The DetectorInput carries the `revision` field from the source FeatureRecord. Th
 | `output_id` | UUID/string | Yes | Unique identifier for this detector output |
 | `detector_id` | enum | Yes | Which detector produced this output |
 | `input_id` | UUID/string | Yes | Identifies the specific DetectorInput that **triggered** this evaluation. For multi-FeatureRecord evaluations, this is the input whose arrival caused the detector to run. `source_feature_references` (below) identifies **all** FeatureRecords used |
-| `entity_type` | enum | Yes | What was evaluated: `source`, `destination`, `pair`, `connection`, or `event` |
+| `entity_type` | enum | Yes | What was evaluated: `source`, `destination`, `pair`, or `connection` |
 | `entity_key` | string | Yes | The evaluated entity's key |
 | `evaluated_at` | int64 | Yes | Epoch microseconds when the detector completed evaluation |
 | `detector_version` | string | Yes | Version of the detector logic (exact format OPEN) |
