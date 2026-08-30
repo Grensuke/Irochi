@@ -152,7 +152,7 @@ No new endpoints are introduced in this pass.
 
 ### Status
 
-**Inherited PROPOSED** (endpoint purposes established in current API scaffold).
+**LOCKED.** (Approval provenance: AR-03. MVP REST endpoint contract surfaces.)
 
 ---
 
@@ -206,7 +206,7 @@ When the upstream `DetectorOutput` does not carry a `confidence` value (i.e., ca
 
 ### Status
 
-**PROPOSED.**
+**LOCKED.** (Approval provenance: AR-03. Structural schema, ISO 8601 presentation, confidence nullability.)
 
 ---
 
@@ -236,7 +236,7 @@ Per PostgreSQL Schema §3, the Alert Engine captures representative entity conte
 
 ### Status
 
-**PROPOSED.**
+**LOCKED.** (Approval provenance: AR-03. Entity presentation rules.)
 
 ---
 
@@ -315,7 +315,7 @@ Per PostgreSQL Schema §3, the Alert Engine captures representative entity conte
 
 ### Status
 
-**PROPOSED** (filtering/pagination parameters). Exact defaults/limits: **OPEN**.
+**LOCKED.** (Approval provenance: AR-03. Endpoint surface). **OPEN** (pagination limits, exact filters).
 
 ---
 
@@ -359,6 +359,10 @@ Additional ordering options (e.g. by severity, by `created_at`): **OPEN**.
 - `404` — alert not found: `{"detail": "Alert not found"}`
 - `400` — malformed `alert_id` format: PROPOSED `{"detail": "Invalid alert_id format"}`
 
+
+### Status
+
+**LOCKED.** (Approval provenance: AR-03)
 ---
 
 ## 12. Dashboard Contract
@@ -387,7 +391,7 @@ Additional ordering options (e.g. by severity, by `created_at`): **OPEN**.
 
 ### Status
 
-**PROPOSED.**
+**LOCKED.** (Approval provenance: AR-03)
 
 ---
 
@@ -413,7 +417,7 @@ Additional ordering options (e.g. by severity, by `created_at`): **OPEN**.
 
 ### Status
 
-**PROPOSED.**
+**LOCKED.** (Approval provenance: AR-03)
 
 ---
 
@@ -475,6 +479,10 @@ None currently defined. **OPEN.**
 
 Not defined in this pass. **OPEN.**
 
+
+### Status
+
+**LOCKED.** (Approval provenance: AR-03. WebSocket envelope/backfill semantics)
 ---
 
 ## 15. WebSocket Message Model
@@ -497,7 +505,7 @@ This is the smallest structure compatible with the existing frontend. No second 
 
 ### Status
 
-**PROPOSED.**
+**LOCKED.** (Approval provenance: AR-03)
 
 ---
 
