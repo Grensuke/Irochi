@@ -73,13 +73,16 @@ backend/
 | GET | `/api/v1/dashboard/summary` | ✅ Working |
 | WS | `/api/v1/ws/alerts` | ✅ Working (backfill + live) |
 
+## Design Contracts (current status per DATA_CONTRACTS.md)
+
+- Redpanda topic design — DRAFT / IN PROGRESS
+- Feature/Window Schema — DRAFT / IN PROGRESS
+- Detector input/output contracts — DRAFT / IN PROGRESS
+- Alert Schema — DRAFT / IN PROGRESS
+- PostgreSQL Schema — DRAFT / IN PROGRESS
+
 ## Pending
 
-- Redpanda topic design
-- Feature/Window Schema
-- Detector input/output contracts
-- Alert Schema
-- PostgreSQL schema
 - Real Zeek integration
 - Real ML models
 - Production Redis (hot state + Pub/Sub)

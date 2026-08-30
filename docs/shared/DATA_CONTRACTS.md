@@ -106,4 +106,7 @@ The following data contracts are part of the design chain and will be defined in
    - cross-detector correlation = **OPEN**
    - confidence/score semantics = **OPEN**
    - evidence field typing = **OPEN**
-6. PostgreSQL Schema — pending
+6. PostgreSQL Schema — **DRAFT / IN PROGRESS**
+   - durable alert persistence model = **PROPOSED**
+   - logical relational/JSON representation = **PROPOSED**
+   - indexing/retention/partitioning/implementation details = **OPEN**
