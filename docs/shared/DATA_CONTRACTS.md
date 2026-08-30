@@ -78,6 +78,19 @@ The following data contracts are part of the design chain and will be defined in
    - window-type taxonomy = **LOCKED**
    - feature-level mapping = **PROPOSED**
    - remaining state/parameter decisions = **OPEN**
-4. Detector Inputs / Outputs — pending
+4. Detector Inputs / Outputs — **DRAFT / IN PROGRESS**
+   - detector taxonomy (5 IDs, 6 threat types) = **inherited** (BD-008 Active)
+   - DetectorInput envelope = **PROPOSED**
+   - typed payload strategy (Option C) = **PROPOSED**
+   - evaluation context key = **PROPOSED**
+   - per-detector input contracts = **PROPOSED**
+   - partial-input policy = **PROPOSED**
+   - DetectorOutput envelope = **PROPOSED**
+   - decision enum = **PROPOSED**
+   - threat-type mapping = **PROPOSED**
+   - temporal association policy = **OPEN**
+   - confidence/score semantics = **OPEN**
+   - evidence structure details = **OPEN**
+   - evaluation trigger model = **OPEN**
 5. Alert Schema — pending
 6. PostgreSQL Schema — pending
