@@ -1,5 +1,5 @@
 import type { DashboardSummary } from '../types';
-import { severityColor } from '../utils/format';
+import { KPIMetric } from './KPIMetric';
 import './SummaryBar.css';
 
 interface SummaryBarProps {
@@ -8,38 +8,43 @@ interface SummaryBarProps {
 }
 
 export function SummaryBar({ summary, loading }: SummaryBarProps) {
-  if (loading) {
-    return (
-      <div className="summary-bar">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="summary-stat">
-            <div className="skeleton" style={{ width: 48, height: 28 }} />
-            <div className="skeleton" style={{ width: 60, height: 10, marginTop: 4 }} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (!summary) return null;
-
-  const stats = [
-    { label: 'Total Alerts', value: summary.total_alerts, color: 'var(--text-primary)' },
-    { label: 'Critical', value: summary.critical_count, color: severityColor('critical') },
-    { label: 'High', value: summary.high_count, color: severityColor('high') },
-    { label: 'Medium', value: summary.medium_count, color: severityColor('medium') },
-    { label: 'Low', value: summary.low_count, color: severityColor('low') },
-    { label: 'Info', value: summary.info_count, color: severityColor('info') },
-  ];
-
   return (
-    <div className="summary-bar">
-      {stats.map((s) => (
-        <div key={s.label} className="summary-stat">
-          <span className="stat-value" style={{ color: s.color }}>{s.value}</span>
-          <span className="stat-label">{s.label}</span>
-        </div>
-      ))}
+    <div className="dashboard-kpi">
+      <div className="kpi-grid">
+        <KPIMetric 
+          label="Active Alerts" 
+          value={summary?.total_alerts ?? 0} 
+          loading={loading}
+        />
+        <KPIMetric 
+          label="Critical" 
+          value={summary?.critical_count ?? 0} 
+          trend={summary && summary.critical_count > 0 ? 'up' : 'neutral'}
+          trendValue={summary && summary.critical_count > 0 ? '+2' : ''}
+          loading={loading}
+        />
+        <KPIMetric 
+          label="High" 
+          value={summary?.high_count ?? 0} 
+          loading={loading}
+        />
+        <KPIMetric 
+          label="Flows / Sec" 
+          value="84.2K"
+          trend="neutral"
+          loading={loading}
+        />
+        <KPIMetric 
+          label="Throughput" 
+          value="1.24 Gbps"
+          loading={loading}
+        />
+        <KPIMetric 
+          label="Detection Latency" 
+          value="82 ms"
+          loading={loading}
+        />
+      </div>
     </div>
   );
 }

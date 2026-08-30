@@ -2,19 +2,38 @@
  * Authenticated application shell — sidebar navigation + top header.
  */
 
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
 import './AppLayout.css';
 
-const NAV_ITEMS = [
-  { to: '/app', label: 'Overview', icon: 'grid', end: true },
-  { to: '/app/alerts', label: 'Alerts', icon: 'bell' },
-  { to: '/app/threats', label: 'Threats', icon: 'shield' },
-  { to: '/app/network', label: 'Network', icon: 'network' },
-  { to: '/app/analytics', label: 'Analytics', icon: 'chart' },
-  { to: '/app/settings', label: 'Settings', icon: 'gear' },
+const NAV_GROUPS = [
+  {
+    group: 'Monitor',
+    items: [
+      { to: '/app', label: 'Overview', icon: 'grid', end: true },
+      { to: '/app/alerts', label: 'Alerts', icon: 'bell' },
+      { to: '/app/traffic', label: 'Traffic Monitor', icon: 'chart' },
+    ]
+  },
+  {
+    group: 'Intelligence',
+    items: [
+      { to: '/app/threats', label: 'Threat Intelligence', icon: 'shield' },
+      { to: '/app/investigation', label: 'Investigation', icon: 'grid' },
+      { to: '/app/ai', label: 'AI Detection', icon: 'shield' },
+    ]
+  },
+  {
+    group: 'System',
+    items: [
+      { to: '/app/network', label: 'Network Telemetry', icon: 'network' },
+      { to: '/app/settings', label: 'Settings', icon: 'gear' },
+    ]
+  }
 ];
 
 const ICONS: Record<string, ReactNode> = {
@@ -40,44 +59,150 @@ const ICONS: Record<string, ReactNode> = {
 
 export function AppLayout() {
   const { user, organization, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { connectionState } = useLiveAlerts();
   const location = useLocation();
 
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('irochi-sidebar-collapsed') === 'true';
+  });
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('irochi-sidebar-collapsed', String(next));
+  };
+
+  const handleSignOut = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    logout();
+  }, [logout]);
+
+  // Close mobile drawer on escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileDrawerOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Close mobile drawer on navigation change
+  useEffect(() => {
+    setMobileDrawerOpen(false);
+  }, [location.pathname]);
+
+  const activePageLabel = (() => {
+    for (const group of NAV_GROUPS) {
+      const match = group.items.find(item => location.pathname.startsWith(item.to) && item.to !== '/app');
+      if (match) return match.label;
+    }
+    return location.pathname === '/app' ? 'Overview' : '';
+  })();
+
   return (
-    <div className="app-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
+    <div className={`app-layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* Mobile Drawer Overlay */}
+      {mobileDrawerOpen && (
+        <div 
+          className="mobile-drawer-overlay" 
+          onClick={() => setMobileDrawerOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Rail */}
+      <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileDrawerOpen ? 'mobile-open' : ''}`}>
+        {/* Signal telemetry line styling inside CSS */}
+        <div className="sidebar-signal-line" />
+
         <div className="sidebar-brand">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="8" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none" />
-            <circle cx="10" cy="10" r="3" fill="var(--accent-primary)" />
-            <line x1="10" y1="2" x2="10" y2="6" stroke="var(--accent-primary)" strokeWidth="1.5" />
-            <line x1="10" y1="14" x2="10" y2="18" stroke="var(--accent-primary)" strokeWidth="1.5" />
-            <line x1="2" y1="10" x2="6" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-            <line x1="14" y1="10" x2="18" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-          </svg>
-          <span className="sidebar-brand-text">IROCHI</span>
+          <Link to="/" className="sidebar-brand-link">
+            <svg className="sidebar-logo" width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="8" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none" />
+              <circle cx="10" cy="10" r="3" fill="var(--accent-primary)" />
+              <line x1="10" y1="2" x2="10" y2="6" stroke="var(--accent-primary)" strokeWidth="1.5" />
+              <line x1="10" y1="14" x2="10" y2="18" stroke="var(--accent-primary)" strokeWidth="1.5" />
+              <line x1="2" y1="10" x2="6" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
+              <line x1="14" y1="10" x2="18" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
+            </svg>
+            {!collapsed && (
+              <div className="sidebar-brand-meta">
+                <span className="sidebar-brand-text">IROCHI</span>
+                <span className="sidebar-brand-sub">Passive workspace</span>
+              </div>
+            )}
+          </Link>
+          <button 
+            className="sidebar-toggle" 
+            onClick={toggleSidebar} 
+            aria-label="Toggle sidebar panel"
+            aria-expanded={!collapsed}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+              {collapsed ? <path d="M6 3l5 5-5 5" /> : <path d="M10 3L5 8l5 5" />}
+            </svg>
+          </button>
         </div>
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map(({ to, label, icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            >
-              <span className="nav-icon">{ICONS[icon]}</span>
-              <span className="nav-label">{label}</span>
-            </NavLink>
+          {NAV_GROUPS.map((group) => (
+            <div key={group.group} className="nav-group">
+              {!collapsed && <span className="nav-group-label">{group.group}</span>}
+              {group.items.map(({ to, label, icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  title={collapsed ? label : undefined}
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                  <span className="nav-icon">{ICONS[icon]}</span>
+                  {!collapsed && <span className="nav-label">{label}</span>}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-org">
-            <span className="sidebar-org-name">{organization?.name}</span>
-            <span className="sidebar-org-plan">{organization?.plan}</span>
+          {/* Connection status */}
+          <div className="sidebar-footer-connection" title={`WS telemetry: ${connectionState}`}>
+            <span className={`connection-dot ${connectionState}`} />
+            {!collapsed && <span className="connection-text">{connectionState === 'live' ? 'Telemetry Live' : connectionState}</span>}
           </div>
+
+          {/* Theme switcher / details */}
+          <div className="sidebar-footer-user-row">
+            <div className="sidebar-user-avatar" title={`${user?.name} (${user?.role})`}>
+              {user?.avatar_initials}
+            </div>
+            {!collapsed && (
+              <div className="sidebar-user-meta">
+                <span className="sidebar-user-name">{user?.name}</span>
+                <span className="sidebar-user-role">{organization?.name}</span>
+              </div>
+            )}
+            
+            <button 
+              className="theme-switcher-btn"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label="Switch visual theme"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+            >
+              {theme === 'dark' ? (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5v1.5M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M12.95 3.05l-1.06 1.06M4.11 11.89l-1.06 1.06"/></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.5 10.5a5 5 0 1 0 7-7 3.5 3.5 0 0 1-7 7z"/></svg>
+              )}
+            </button>
+          </div>
+
+          {!collapsed && (
+            <button className="btn btn-ghost btn-sm btn-logout" onClick={handleSignOut}>
+              Sign out
+            </button>
+          )}
         </div>
       </aside>
 
@@ -86,17 +211,33 @@ export function AppLayout() {
         {/* Top Header */}
         <header className="top-header">
           <div className="top-header-left">
-            <span className="breadcrumb">
-              {NAV_ITEMS.find(n => location.pathname.startsWith(n.to) && n.to !== '/app')?.label
-                ?? (location.pathname === '/app' ? 'Overview' : '')}
-            </span>
+            <button 
+              className="mobile-menu-trigger" 
+              onClick={() => setMobileDrawerOpen(true)}
+              aria-label="Open mobile menu"
+            >
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M2 5h16M2 10h16M2 15h16" />
+              </svg>
+            </button>
+            <span className="breadcrumb">{activePageLabel}</span>
+            <div className="global-search">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="7" cy="7" r="5" />
+                <line x1="11" y1="11" x2="15" y2="15" />
+              </svg>
+              <input type="text" placeholder="Search alerts, IP addresses, connection IDs..." />
+            </div>
           </div>
           <div className="top-header-right">
-            <div className="connection-indicator">
-              <span className={`connection-dot ${connectionState}`} />
-              <span className="connection-label">
-                {connectionState === 'live' ? 'Live' : connectionState}
-              </span>
+            <div className="header-theme-switcher">
+              <button 
+                className="theme-switcher-btn"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </button>
             </div>
             <div className="header-divider" />
             <div className="user-menu">
@@ -106,7 +247,7 @@ export function AppLayout() {
                 <span className="user-role">{user?.role}</span>
               </div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={logout}>
+            <button className="btn btn-ghost btn-sm header-logout-btn" onClick={handleSignOut}>
               Sign out
             </button>
           </div>

@@ -52,11 +52,13 @@ export interface Alert {
   severity: Severity;
   confidence: number;
   src_ip: string | null;
-  src_port: number | null;
+  src_port?: number | null;
   dst_ip: string | null;
-  dst_port: number | null;
+  dst_port?: number | null;
   evidence_summary: string;
   status: AlertStatus;
+  proto?: string;
+  related_events?: string[];
 }
 
 // ------------------------------------------------------------------

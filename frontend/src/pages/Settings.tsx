@@ -8,20 +8,23 @@
 
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { MOCK_TEAM_MEMBERS, MOCK_ROLES } from '../services/mockData';
 import './Settings.css';
 
-type Tab = 'profile' | 'organization' | 'users' | 'roles';
+type Tab = 'profile' | 'organization' | 'users' | 'roles' | 'appearance';
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const { user, organization } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'profile', label: 'Profile' },
     { key: 'organization', label: 'Organization' },
     { key: 'users', label: 'Users' },
     { key: 'roles', label: 'Roles & Permissions' },
+    { key: 'appearance', label: 'Appearance' },
   ];
 
   return (
@@ -84,6 +87,10 @@ export function Settings() {
                 <div className="panel-header">
                   <span className="panel-title">Organization</span>
                 </div>
+                <div className="settings-planned-banner">
+                  <span className="planned-dot" />
+                  <span>Planned: Backend persistence for organization configuration is in development.</span>
+                </div>
                 <div className="panel-body settings-form">
                   <div className="form-grid">
                     <div className="input-group">
@@ -110,6 +117,10 @@ export function Settings() {
                 <div className="panel-header">
                   <span className="panel-title">Team Members</span>
                   <button className="btn btn-ghost btn-sm" disabled>Invite User</button>
+                </div>
+                <div className="settings-planned-banner">
+                  <span className="planned-dot" />
+                  <span>Planned: User invitations and status tracking require active PostgreSQL database persistence.</span>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table className="data-table">
@@ -146,6 +157,10 @@ export function Settings() {
                   <span className="panel-title">Roles &amp; Permissions</span>
                   <button className="btn btn-ghost btn-sm" disabled>Create Role</button>
                 </div>
+                <div className="settings-planned-banner">
+                  <span className="planned-dot" />
+                  <span>Planned: Role-Based Access Control (RBAC) is mock only; authorization policies are in development.</span>
+                </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table className="data-table">
                     <thead>
@@ -165,6 +180,38 @@ export function Settings() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'appearance' && (
+            <div className="settings-section animate-fade-in">
+              <div className="panel">
+                <div className="panel-header">
+                  <span className="panel-title">Appearance Settings</span>
+                </div>
+                <div className="panel-body settings-form">
+                  <div className="input-group">
+                    <label className="input-label">Theme Mode</label>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                      <button
+                        className={`btn ${theme === 'dark' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => setTheme('dark')}
+                      >
+                        Dark Theme (SOC Ops)
+                      </button>
+                      <button
+                        className={`btn ${theme === 'light' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => setTheme('light')}
+                      >
+                        Light Theme (Enterprise)
+                      </button>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: 'var(--space-2)' }}>
+                      Theme preferences are persisted to your browser storage and synchronize across the public workspace.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

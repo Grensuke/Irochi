@@ -31,13 +31,13 @@ export function Analytics() {
 
       <div className="analytics-grid">
         {/* Alert Trend */}
-        <div className="panel analytics-card">
+        <div className="panel analytics-card relative-container">
           <div className="panel-header">
             <span className="panel-title">Alert Trend (7 Day)</span>
-            <span className="demo-badge">MOCK</span>
+            <span className="demo-badge planned-tag">Planned</span>
           </div>
-          <div className="panel-body">
-            <div className="bar-chart" style={{ height: 100 }}>
+          <div className="panel-body chart-body-relative">
+            <div className="bar-chart blurred-chart" style={{ height: 100 }}>
               {MOCK_ALERT_TREND.map(d => (
                 <div
                   key={d.label}
@@ -48,17 +48,21 @@ export function Analytics() {
                 </div>
               ))}
             </div>
+            <div className="chart-planned-overlay">
+              <span className="overlay-title">Coming with analytics data</span>
+              <span className="overlay-desc">Requires timeseries aggregate endpoints</span>
+            </div>
           </div>
         </div>
 
         {/* Severity Trend */}
-        <div className="panel analytics-card">
+        <div className="panel analytics-card relative-container">
           <div className="panel-header">
             <span className="panel-title">Severity Distribution (7 Day)</span>
-            <span className="demo-badge">MOCK</span>
+            <span className="demo-badge planned-tag">Planned</span>
           </div>
-          <div className="panel-body">
-            <div className="stacked-chart" style={{ height: 100 }}>
+          <div className="panel-body chart-body-relative">
+            <div className="stacked-chart blurred-chart" style={{ height: 100 }}>
               {MOCK_SEVERITY_TREND.map(d => {
                 const total = d.critical + d.high + d.medium + d.low;
                 return (
@@ -72,23 +76,27 @@ export function Analytics() {
                 );
               })}
             </div>
-            <div className="chart-legend">
+            <div className="chart-legend blurred-chart">
               <span className="legend-item"><span className="legend-dot" style={{ background: 'var(--severity-critical)' }} />Critical</span>
               <span className="legend-item"><span className="legend-dot" style={{ background: 'var(--severity-high)' }} />High</span>
               <span className="legend-item"><span className="legend-dot" style={{ background: 'var(--severity-medium)' }} />Medium</span>
               <span className="legend-item"><span className="legend-dot" style={{ background: 'var(--severity-low)' }} />Low</span>
             </div>
+            <div className="chart-planned-overlay">
+              <span className="overlay-title">Coming with analytics data</span>
+              <span className="overlay-desc">Requires historical database retention metrics</span>
+            </div>
           </div>
         </div>
 
         {/* Confidence Distribution */}
-        <div className="panel analytics-card">
+        <div className="panel analytics-card relative-container">
           <div className="panel-header">
             <span className="panel-title">Confidence Distribution</span>
-            <span className="demo-badge">MOCK</span>
+            <span className="demo-badge planned-tag">Planned</span>
           </div>
-          <div className="panel-body">
-            <div className="h-bar-chart">
+          <div className="panel-body chart-body-relative">
+            <div className="h-bar-chart blurred-chart">
               {MOCK_CONFIDENCE_DIST.map(d => (
                 <div key={d.range} className="h-bar-row">
                   <span className="h-bar-label mono">{d.range}</span>
@@ -98,6 +106,10 @@ export function Analytics() {
                   <span className="h-bar-value mono">{d.count}</span>
                 </div>
               ))}
+            </div>
+            <div className="chart-planned-overlay">
+              <span className="overlay-title">Coming with analytics data</span>
+              <span className="overlay-desc">Requires ML confidence score histogram indexing</span>
             </div>
           </div>
         </div>

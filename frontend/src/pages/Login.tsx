@@ -35,6 +35,7 @@ export function Login() {
 
   return (
     <div className="login-page">
+      <div className="landing-spotlight-beam" />
       <div className="login-card animate-fade-in">
         <div className="login-header">
           <Link to="/" className="login-brand">

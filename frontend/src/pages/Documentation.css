@@ -1,0 +1,209 @@
+.docs-page {
+  padding: var(--space-10) 0 var(--space-16);
+}
+
+.docs-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-12);
+  align-items: flex-start;
+}
+
+/* Sidebar styling */
+.docs-sidebar {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  border-right: 1px solid var(--border-subtle);
+  padding-right: var(--space-6);
+}
+
+.docs-search-mock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px var(--space-3);
+  opacity: 0.6;
+}
+
+.docs-search-mock input {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+}
+
+.docs-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.docs-nav-item {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  padding: 6px var(--space-3);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.docs-nav-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+
+.docs-nav-item.active {
+  color: var(--accent-primary);
+  background-color: var(--bg-active);
+  font-weight: 600;
+}
+
+/* Content Area */
+.docs-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0; /* Prevents overflow */
+}
+
+.docs-content-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-4);
+}
+
+.docs-content-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.docs-content-body p {
+  margin: 0;
+}
+
+/* Doc items */
+.status-label-doc {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  width: fit-content;
+}
+
+.status-label-doc.mock {
+  background-color: rgba(242, 201, 76, 0.08);
+  border: 1px solid rgba(242, 201, 76, 0.2);
+  color: var(--severity-medium);
+}
+
+.status-label-doc.available {
+  background-color: rgba(99, 230, 164, 0.08);
+  border: 1px solid rgba(99, 230, 164, 0.2);
+  color: var(--phase-live);
+}
+
+.status-label-doc.planned {
+  background-color: rgba(179, 140, 255, 0.08);
+  border: 1px solid rgba(179, 140, 255, 0.2);
+  color: var(--phase-backfilled);
+}
+
+.code-snippet {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-technical);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.docs-api-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.docs-api-table th {
+  background-color: var(--bg-secondary);
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.docs-api-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.badge-doc {
+  display: inline-flex;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: var(--radius-sm);
+}
+
+.badge-doc.success {
+  background-color: rgba(99, 230, 164, 0.08);
+  border: 1px solid rgba(99, 230, 164, 0.15);
+  color: var(--phase-live);
+}
+
+.docs-ordered-list, .docs-list {
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.docs-ordered-list li, .docs-list li {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .docs-container {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+  .docs-sidebar {
+    position: static;
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: var(--space-4);
+  }
+}

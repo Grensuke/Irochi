@@ -22,3 +22,44 @@
 .alerts-table-panel .alert-table-wrap {
   overflow-x: auto;
 }
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  background-color: var(--bg-secondary);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.pagination-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.select-page-size {
+  padding: 2px var(--space-2);
+  font-size: 11px;
+  height: auto;
+}
+
+.page-indicator {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
