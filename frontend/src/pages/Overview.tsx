@@ -16,8 +16,8 @@ import { formatTimestamp } from '../utils/format';
 import './Overview.css';
 
 export function Overview() {
-  const { summary, loading: summaryLoading } = useDashboard();
-  const { alerts, loading: alertsLoading } = useAlerts();
+  const { summary, loading: summaryLoading, isMock: summaryMock } = useDashboard();
+  const { alerts, loading: alertsLoading, isMock: alertsMock } = useAlerts();
   const { liveAlerts, connectionState } = useLiveAlerts();
 
   return (
@@ -29,7 +29,11 @@ export function Overview() {
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>Passive network intelligence across the monitored environment.</p>
           </div>
           <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)', paddingTop: '6px' }}>
-            Last updated: {formatTimestamp(new Date().toISOString())} UTC
+            {summaryMock || alertsMock ? (
+              <span style={{ color: 'var(--severity-high)', fontWeight: 500 }}>DEMO / MOCK DATA</span>
+            ) : (
+              <>Last updated: {formatTimestamp(new Date().toISOString())} UTC</>
+            )}
           </span>
         </div>
       </div>

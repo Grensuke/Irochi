@@ -50,7 +50,12 @@ export interface Alert {
   threat_type: ThreatType;
   detector_id: DetectorId;
   severity: Severity;
-  confidence: number;
+  confidence: number | null;
+  entity_type: 'source' | 'destination' | 'pair' | 'connection';
+  entity_key: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  resolved_at?: string | null;
   src_ip: string | null;
   src_port?: number | null;
   dst_ip: string | null;
@@ -58,7 +63,6 @@ export interface Alert {
   evidence_summary: string;
   status: AlertStatus;
   proto?: string;
-  related_events?: string[];
 }
 
 // ------------------------------------------------------------------

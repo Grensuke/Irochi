@@ -116,7 +116,7 @@ export function AlertTable({ alerts, loading, error, title = 'Recent Alerts' }: 
                         <div
                           className="confidence-fill"
                           style={{
-                            width: `${alert.confidence * 100}%`,
+                            width: `${(alert.confidence ?? 0) * 100}%`,
                             background: confidenceColor(alert.confidence),
                           }}
                         />

@@ -10,6 +10,7 @@ interface UseDashboardResult {
   summary: DashboardSummary | null;
   loading: boolean;
   error: string | null;
+  isMock: boolean;
   refetch: () => void;
 }
 
@@ -17,6 +18,7 @@ export function useDashboard(): UseDashboardResult {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMock, setIsMock] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -24,6 +26,7 @@ export function useDashboard(): UseDashboardResult {
     try {
       const data = await api.getDashboardSummary();
       setSummary(data);
+      setIsMock(false);
     } catch (e) {
       console.warn('Dashboard API failed, using mock data:', e);
       // Fallback to mock data to prevent 502 rendering issues
@@ -51,6 +54,7 @@ export function useDashboard(): UseDashboardResult {
         },
         recent_alerts: [],
       });
+      setIsMock(true);
       // Don't set error — UI renders mock data cleanly
     } finally {
       setLoading(false);
@@ -61,5 +65,5 @@ export function useDashboard(): UseDashboardResult {
     fetchData();
   }, [fetchData]);
 
-  return { summary, loading, error, refetch: fetchData };
+  return { summary, loading, error, isMock, refetch: fetchData };
 }
