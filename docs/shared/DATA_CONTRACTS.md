@@ -82,7 +82,7 @@ The following data contracts are part of the design chain and will be defined in
    - detector taxonomy (5 IDs, 6 threat types) = **inherited** (BD-008 Active)
    - DetectorInput envelope = **PROPOSED**
    - typed payload strategy (Option C) = **PROPOSED**
-   - evaluation context key = **PROPOSED**
+   - base grouping identity = **PROPOSED**
    - per-detector input contracts = **PROPOSED**
    - partial-input policy = **PROPOSED**
    - DetectorOutput envelope = **PROPOSED**
@@ -92,5 +92,18 @@ The following data contracts are part of the design chain and will be defined in
    - confidence/score semantics = **OPEN**
    - evidence structure details = **OPEN**
    - evaluation trigger model = **OPEN**
-5. Alert Schema — pending
+5. Alert Schema — **DRAFT / IN PROGRESS**
+   - detector/threat taxonomy = **inherited** (BD-008 Active)
+   - alert envelope = **PROPOSED**
+   - DetectorOutput → Alert mapping = **PROPOSED**
+   - lifecycle status enum = **PROPOSED**
+   - dedup identity structure = **PROPOSED**
+   - evidence/provenance model = **PROPOSED**
+   - severity ownership = **PROPOSED**
+   - PostgreSQL/Redis boundaries = **PROPOSED**
+   - temporal dedup scoping = **OPEN**
+   - exact dedup algorithm = **OPEN**
+   - cross-detector correlation = **OPEN**
+   - confidence/score semantics = **OPEN**
+   - evidence field typing = **OPEN**
 6. PostgreSQL Schema — pending
