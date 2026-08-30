@@ -277,7 +277,7 @@ Alert Schema uses int64 epoch microseconds. PostgreSQL's `timestamptz` provides 
 
 ### Status
 
-**PROPOSED.**
+**LOCKED.** (Approval provenance: AR-03. Locks logical fields/nullability; does not lock exact SQL, indexes, or ORM details.)
 
 ---
 
@@ -308,7 +308,7 @@ No temporal column is added to the dedup identity. The policy is applied at quer
 
 ### Status
 
-**PROPOSED** (structural dedup persistence). **OPEN** (temporal scoping, exact dedup algorithm, dedup_digest algorithm).
+**LOCKED** (Approval provenance: AR-03. Core dedup component columns). **OPEN** (temporal scoping, exact dedup algorithm, dedup_digest algorithm).
 
 ---
 
@@ -433,7 +433,7 @@ Per the Entity Model Clarification (§3), representative source/destination cont
 
 ### Status
 
-**PROPOSED** (JSONB strategy). **OPEN** (exact evidence field typing, exact alert_context sub-fields).
+**LOCKED** (Approval provenance: AR-03. JSONB strategy). **OPEN** (exact evidence field typing, exact alert_context sub-fields).
 
 ---
 

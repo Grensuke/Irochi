@@ -36,3 +36,20 @@
 - **Decisions retained PROPOSED:** Remaining Detector I/O and Alert Schema structural contracts.
 - **Decisions retained OPEN:** Temporal deduplication, scores, staleness algorithm.
 - **Notes:** AR-02 decision resolves the enrichment identity contradiction upstream and drops the downstream `event` workaround.
+
+## [AR-03] Architecture Review 3
+
+- **Review ID:** AR-03
+- **Reviewer / Approver:** Project Lead
+- **Date:** 2026-08-30
+- **Status:** APPROVED
+- **Scope:**
+  - PostgreSQL Schema v1
+  - API Contract Draft v1
+- **Project-lead decision:** APPROVED
+- **Decisions promoted/confirmed as LOCKED:**
+  1. **PostgreSQL Core Persistence Model:** Canonical Alert → PostgreSQL logical field mapping, required/nullable semantics, core dedup component columns (`detector_id`, `threat_type`, `entity_type`, `entity_key`), and `evidence`/`alert_context` JSONB representation.
+  2. **API Presentation Model:** Four MVP REST endpoint contract surfaces, AlertResponse structural schema, ISO 8601 timestamp presentation, confidence nullable behavior, four-value entity presentation, entity-derived IP/port rules, WebSocket `{type, alert}` envelope, and `backfill_complete` semantics with `alert: null`.
+- **Decisions retained PROPOSED:** `update_count` baseline structural field, `dedup_digest`, UPDATE commit-before-publish extension.
+- **Decisions retained OPEN:** Exact stale-update/concurrency algorithm, temporal deduplication scope, exact physical indexes, ORM implementation details, migration implementation details, PostgreSQL partitioning, PostgreSQL retention, exact dashboard metric definitions.
+- **Notes:** AR-03 establishes the approved logical persistence target for subsequent ORM/migration implementation and locks the API presentation contract. AR-03 explicitly does NOT promote any implementation-dependent or measurement-dependent item to LOCKED.
