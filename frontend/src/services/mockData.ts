@@ -9,7 +9,84 @@
  * (docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md). No derived fields.
  */
 
-import type { NetworkEvent, MockUser, MockOrganization } from '../types';
+import type { NetworkEvent, MockUser, MockOrganization, Alert } from '../types';
+
+export const MOCK_ALERTS: Alert[] = [
+  {
+    alert_id: 'ALT-004182',
+    timestamp: new Date().toISOString(),
+    threat_type: 'volumetric_ddos',
+    severity: 'critical',
+    confidence: 0.96,
+    src_ip: '192.168.24.17',
+    dst_ip: '10.42.8.21',
+    dst_port: 443,
+    proto: 'TCP',
+    status: 'investigating',
+    evidence_summary: 'Traffic characteristics strongly match the learned SYN flood profile.',
+    detector_id: 'ddos_detector',
+    related_events: ['EVT-00001']
+  },
+  {
+    alert_id: 'ALT-004181',
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    threat_type: 'recon_portscan',
+    severity: 'high',
+    confidence: 0.88,
+    src_ip: '10.0.4.55',
+    dst_ip: '10.42.8.0',
+    proto: 'TCP',
+    status: 'new',
+    evidence_summary: 'Sequential horizontal port scan detected targeting internal subnet.',
+    detector_id: 'recon_detector',
+    related_events: []
+  },
+  {
+    alert_id: 'ALT-004180',
+    timestamp: new Date(Date.now() - 7200000).toISOString(),
+    threat_type: 'c2_beaconing',
+    severity: 'high',
+    confidence: 0.92,
+    src_ip: '10.0.5.20',
+    dst_ip: '198.51.100.42',
+    dst_port: 443,
+    proto: 'TLS',
+    status: 'closed',
+    evidence_summary: 'Periodic TLS connections with strict jitter profile and suspicious SNI.',
+    detector_id: 'tls_c2_detector',
+    related_events: []
+  },
+  {
+    alert_id: 'ALT-004179',
+    timestamp: new Date(Date.now() - 14400000).toISOString(),
+    threat_type: 'dga_dns_tunnel',
+    severity: 'medium',
+    confidence: 0.75,
+    src_ip: '10.0.3.42',
+    dst_ip: '8.8.8.8',
+    dst_port: 53,
+    proto: 'UDP',
+    status: 'new',
+    evidence_summary: 'High entropy DNS queries indicating possible DGA algorithm.',
+    detector_id: 'dns_dga_tunnel_detector',
+    related_events: []
+  },
+  {
+    alert_id: 'ALT-004178',
+    timestamp: new Date(Date.now() - 28800000).toISOString(),
+    threat_type: 'data_exfiltration',
+    severity: 'critical',
+    confidence: 0.98,
+    src_ip: '10.0.1.200',
+    dst_ip: '203.0.113.88',
+    dst_port: 443,
+    proto: 'TCP',
+    status: 'new',
+    evidence_summary: 'Sustained outbound transfer of 4.2GB exceeding historical baseline by 400%.',
+    detector_id: 'exfiltration_detector',
+    related_events: []
+  }
+];
 
 // ------------------------------------------------------------------
 // Mock User / Organization (presentation only)
@@ -223,3 +300,56 @@ export const MOCK_ROLES = [
   { name: 'Network Engineer', description: 'View network events and basic analytics', users: 1 },
   { name: 'Read Only', description: 'View-only access to dashboards', users: 0 },
 ];
+
+// ------------------------------------------------------------------
+// Mock Ingest / System Status  (DEMO/MOCK — not real infrastructure state)
+// ------------------------------------------------------------------
+
+export const MOCK_INGEST_STATUS = {
+  status: 'passive' as const,
+  message: 'Observing passive telemetry',
+  sensors: [
+    { id: 'zeek-sensor-01', label: 'Zeek Sensor 01', connected: true },
+    { id: 'zeek-sensor-02', label: 'Zeek Sensor 02', connected: true },
+    { id: 'netflow-router-01', label: 'NetFlow Router 01', connected: true },
+  ],
+};
+
+// ------------------------------------------------------------------
+// Mock Traffic Timeseries  (DEMO/MOCK — not real throughput data)
+// ------------------------------------------------------------------
+
+export const MOCK_TRAFFIC_TIMESERIES = [
+  { time: '00:00', bps: 42_000_000 },
+  { time: '02:00', bps: 28_000_000 },
+  { time: '04:00', bps: 15_000_000 },
+  { time: '06:00', bps: 31_000_000 },
+  { time: '08:00', bps: 88_000_000 },
+  { time: '10:00', bps: 120_000_000 },
+  { time: '12:00', bps: 105_000_000 },
+  { time: '14:00', bps: 134_000_000 },
+  { time: '16:00', bps: 118_000_000 },
+  { time: '18:00', bps: 92_000_000 },
+  { time: '20:00', bps: 76_000_000 },
+  { time: '22:00', bps: 55_000_000 },
+];
+
+export const MOCK_PROTOCOL_DIST = [
+  { protocol: 'TCP', pct: 61 },
+  { protocol: 'UDP', pct: 22 },
+  { protocol: 'TLS', pct: 12 },
+  { protocol: 'ICMP', pct: 3 },
+  { protocol: 'Other', pct: 2 },
+];
+
+// ------------------------------------------------------------------
+// Mock Evidence by Alert  (DEMO/MOCK — not real forensic data)
+// ------------------------------------------------------------------
+
+export const MOCK_EVIDENCE_BY_ALERT: Record<string, string[]> = {
+  'default': [
+    'Observed traffic pattern matched known signature.',
+    'Confidence threshold exceeded based on passive telemetry.',
+    'No active remediation has been applied.',
+  ],
+};

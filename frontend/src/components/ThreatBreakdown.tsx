@@ -1,5 +1,4 @@
-import type { DashboardSummary, ThreatType } from '../types';
-import { threatLabel } from '../utils/format';
+import type { DashboardSummary } from '../types';
 import { THREAT_TYPE_LABELS } from '../types';
 import './ThreatBreakdown.css';
 
@@ -8,27 +7,18 @@ interface ThreatBreakdownProps {
   loading: boolean;
 }
 
-const THREAT_COLORS: Record<ThreatType, string> = {
-  volumetric_ddos: 'var(--severity-critical)',
-  c2_beaconing: 'var(--severity-high)',
-  dga_dns_tunnel: 'var(--severity-medium)',
-  encrypted_malware: 'var(--accent-purple)',
-  recon_portscan: 'var(--accent-primary)',
-  data_exfiltration: 'var(--severity-high)',
-};
-
 export function ThreatBreakdown({ summary, loading }: ThreatBreakdownProps) {
-  if (loading) {
+  if (loading || !summary) {
     return (
-      <div className="panel">
+      <div className="panel" style={{ height: '100%' }}>
         <div className="panel-header">
-          <span className="panel-title">Threat Categories</span>
+          <span className="panel-title">Threat Distribution</span>
         </div>
         <div className="panel-body">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="threat-row">
-              <div className="skeleton" style={{ width: '40%', height: 12 }} />
-              <div className="skeleton" style={{ width: 30, height: 12 }} />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} style={{ marginBottom: 16 }}>
+              <div className="skeleton" style={{ width: '40%', height: 12, marginBottom: 8 }} />
+              <div className="skeleton" style={{ width: '100%', height: 4 }} />
             </div>
           ))}
         </div>
@@ -36,35 +26,53 @@ export function ThreatBreakdown({ summary, loading }: ThreatBreakdownProps) {
     );
   }
 
-  if (!summary) return null;
+  const { by_threat_type } = summary;
+  const entries = Object.entries(by_threat_type);
+  
+  if (entries.length === 0) {
+    return (
+      <div className="panel" style={{ height: '100%' }}>
+        <div className="panel-header">
+          <span className="panel-title">Threat Distribution</span>
+        </div>
+        <div className="state-message">
+          <span className="state-title">No Threats Detected</span>
+        </div>
+      </div>
+    );
+  }
 
-  const total = summary.total_alerts || 1;
-  const threats = Object.keys(THREAT_TYPE_LABELS) as ThreatType[];
+  // Sort by count descending
+  entries.sort((a, b) => b[1] - a[1]);
+  const maxCount = Math.max(...entries.map(e => e[1]));
+  const totalCount = entries.reduce((acc, curr) => acc + curr[1], 0);
 
   return (
-    <div className="panel">
+    <div className="panel" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="panel-header">
-        <span className="panel-title">Threat Categories</span>
+        <span className="panel-title">Threat Distribution</span>
       </div>
-      <div className="panel-body threat-list">
-        {threats.map((tt) => {
-          const count = summary.by_threat_type[tt] ?? 0;
-          const pct = (count / total) * 100;
-          return (
-            <div key={tt} className="threat-row">
-              <div className="threat-info">
-                <span className="threat-label">{threatLabel(tt)}</span>
-                <span className="threat-count mono">{count}</span>
+      <div className="panel-body" style={{ flex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {entries.map(([type, count]) => {
+            const pct = Math.round((count / totalCount) * 100);
+            const fillWidth = `${(count / maxCount) * 100}%`;
+            
+            return (
+              <div key={type} className="threat-hbar-row">
+                <span className="threat-hbar-label" title={THREAT_TYPE_LABELS[type as keyof typeof THREAT_TYPE_LABELS] || type}>
+                  {THREAT_TYPE_LABELS[type as keyof typeof THREAT_TYPE_LABELS] || type}
+                </span>
+                <div className="threat-hbar-track">
+                  <div className="threat-hbar-fill" style={{ width: fillWidth, background: 'var(--accent-primary)' }} />
+                </div>
+                <span className="threat-hbar-count">
+                  {pct}%
+                </span>
               </div>
-              <div className="threat-bar-track">
-                <div
-                  className="threat-bar-fill"
-                  style={{ width: `${pct}%`, background: THREAT_COLORS[tt] }}
-                />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

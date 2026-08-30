@@ -4,7 +4,9 @@
   justify-content: center;
   min-height: 100vh;
   padding: var(--space-6);
-  background: var(--bg-primary);
+  background: radial-gradient(circle 500px at 50% 50%, var(--accent-blue-glow), transparent), var(--bg-primary);
+  position: relative;
+  overflow: hidden;
 }
 
 .login-card {

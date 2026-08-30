@@ -1,0 +1,172 @@
+.about-page {
+  padding: var(--space-16) 0;
+}
+
+.about-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.about-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.about-title {
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.about-subtitle {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.about-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.about-card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.about-card-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Philosophy */
+.about-philosophy {
+  background-color: rgba(145, 180, 214, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-6);
+}
+
+.phi-item {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.phi-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(91, 184, 245, 0.1);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.phi-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.phi-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Boundaries */
+.about-boundaries {
+  border-top: 1px dashed var(--border-strong);
+  padding-top: var(--space-10);
+}
+
+.boundaries-box {
+  background-color: var(--bg-tertiary);
+  border: 1px solid rgba(255, 92, 108, 0.12);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+}
+
+.boundaries-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.boundaries-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-5);
+}
+
+.boundaries-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  list-style: none;
+}
+
+.boundaries-list li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.boundaries-list li::before {
+  content: '▪';
+  position: absolute;
+  left: 0;
+  color: var(--severity-critical);
+}
+
+@media (max-width: 768px) {
+  .about-title {
+    font-size: 32px;
+  }
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  .boundaries-list {
+    grid-template-columns: 1fr;
+  }
+}

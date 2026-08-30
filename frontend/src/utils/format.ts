@@ -55,3 +55,19 @@ export function timeAgo(iso: string): string {
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
 }
+
+/* ── Byte/Rate Helpers ─────────────────────────────── */
+
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1073741824) return `${(bytes / 1048576).toFixed(1)} MB`;
+  return `${(bytes / 1073741824).toFixed(2)} GB`;
+}
+
+export function formatRate(bitsPerSecond: number): string {
+  if (bitsPerSecond < 1000) return `${bitsPerSecond} bps`;
+  if (bitsPerSecond < 1_000_000) return `${(bitsPerSecond / 1000).toFixed(1)} Kbps`;
+  if (bitsPerSecond < 1_000_000_000) return `${(bitsPerSecond / 1_000_000).toFixed(1)} Mbps`;
+  return `${(bitsPerSecond / 1_000_000_000).toFixed(2)} Gbps`;
+}

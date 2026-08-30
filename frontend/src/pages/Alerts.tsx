@@ -1,25 +1,26 @@
-/**
- * Alerts page — dedicated alert management view.
- *
- * Uses existing Checkpoint 2 dummy FastAPI API where available.
- * Frontend-side mock filtering until final API/filter contracts exist.
- */
-
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAlerts } from '../hooks/useAlerts';
-import type { Alert, Severity, ThreatType, AlertStatus } from '../types';
-import { THREAT_TYPE_LABELS, SEVERITY_ORDER, STATUS_LABELS } from '../types';
-import { formatTimestamp, formatDate, threatLabel, formatConfidence, confidenceColor } from '../utils/format';
-import { AlertDetail } from '../components/AlertDetail';
+import type { Severity, ThreatType, AlertStatus } from '../types';
+import { THREAT_TYPE_LABELS, SEVERITY_ORDER, STATUS_LABELS, DETECTOR_LABELS } from '../types';
+import { formatTimestamp, threatLabel, formatConfidence, confidenceColor } from '../utils/format';
+import { PageHeader } from '../components/PageHeader';
 import './Alerts.css';
 
 export function Alerts() {
   const { alerts, loading, error } = useAlerts();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [severityFilter, setSeverityFilter] = useState<Severity | ''>('');
   const [threatFilter, setThreatFilter] = useState<ThreatType | ''>('');
   const [statusFilter, setStatusFilter] = useState<AlertStatus | ''>('');
-  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, severityFilter, threatFilter, statusFilter]);
 
   const filtered = useMemo(() => {
     let result = alerts;
@@ -38,19 +39,25 @@ export function Alerts() {
     return result;
   }, [alerts, search, severityFilter, threatFilter, statusFilter]);
 
+  const totalPages = Math.max(Math.ceil(filtered.length / pageSize), 1);
+
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return filtered.slice(start, end);
+  }, [filtered, currentPage, pageSize]);
+
   return (
     <div className="alerts-page">
-      <div className="page-header">
-        <h1>Alerts</h1>
-        <div className="page-header-actions">
-          <span className="alerts-count mono">{filtered.length} alerts</span>
-        </div>
-      </div>
+      <PageHeader 
+        title="Alerts" 
+        actions={<span className="alerts-count mono">{filtered.length} alerts</span>} 
+      />
 
       <div className="filter-bar">
         <input
           className="input search-input"
-          placeholder="Search alerts by ID, IP, or evidence…"
+          placeholder="Search alert ID, IP, flow ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -110,56 +117,102 @@ export function Alerts() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Severity</th>
                     <th>Time</th>
-                    <th>ID</th>
-                    <th>Threat Type</th>
-                    <th>Confidence</th>
+                    <th>Alert ID</th>
+                    <th>Severity</th>
+                    <th>Threat</th>
                     <th>Source</th>
                     <th>Destination</th>
+                    <th>Detector</th>
+                    <th>Confidence</th>
                     <th>Status</th>
+                    <th>Phase</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(alert => (
+                  {paginated.map(alert => (
                     <tr
                       key={alert.alert_id}
                       className="alert-row"
-                      onClick={() => setSelectedAlert(alert)}
+                      onClick={() => navigate(`/app/alerts/${alert.alert_id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && setSelectedAlert(alert)}
+                      onKeyDown={(e) => e.key === 'Enter' && navigate(`/app/alerts/${alert.alert_id}`)}
                     >
-                      <td><span className={`severity-badge ${alert.severity}`}>{alert.severity}</span></td>
-                      <td className="mono">
-                        <span className="alert-date">{formatDate(alert.timestamp)}</span>
+                      <td className="mono" style={{ whiteSpace: 'nowrap' }}>
                         <span className="alert-time">{formatTimestamp(alert.timestamp)}</span>
                       </td>
                       <td className="mono alert-id-cell">{alert.alert_id}</td>
+                      <td><span className={`severity-badge ${alert.severity}`}>{alert.severity}</span></td>
                       <td>{threatLabel(alert.threat_type)}</td>
-                      <td>
-                        <div className="confidence-cell">
-                          <span className="mono">{formatConfidence(alert.confidence)}</span>
-                          <div className="confidence-bar">
-                            <div className="confidence-fill" style={{ width: `${alert.confidence * 100}%`, background: confidenceColor(alert.confidence) }} />
-                          </div>
-                        </div>
-                      </td>
                       <td className="mono">{alert.src_ip ?? '—'}</td>
                       <td className="mono">{alert.dst_ip ?? '—'}{alert.dst_port ? `:${alert.dst_port}` : ''}</td>
+                      <td className="mono" style={{ color: 'var(--text-technical)' }}>{DETECTOR_LABELS[alert.detector_id]}</td>
+                      <td>
+                        <span className="mono" style={{ color: confidenceColor(alert.confidence) }}>
+                          {formatConfidence(alert.confidence)}
+                        </span>
+                      </td>
                       <td><span className={`status-text ${alert.status}`}>{STATUS_LABELS[alert.status]}</span></td>
+                      <td><span className="phase-badge backfill">Backfilled</span></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            <div className="pagination-bar">
+              <span className="pagination-info">
+                Browsing loaded alerts: <span className="mono">{filtered.length > 0 ? Math.min((currentPage - 1) * pageSize + 1, filtered.length) : 0}</span>–
+                <span className="mono">{Math.min(currentPage * pageSize, filtered.length)}</span> of <span className="mono">{filtered.length}</span>
+              </span>
+
+              <div className="pagination-controls">
+                <div className="page-size-selector">
+                  <label htmlFor="page-size-select">Per page:</label>
+                  <select
+                    id="page-size-select"
+                    className="select select-sm select-page-size"
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+
+                <button
+                  className="btn btn-ghost btn-sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  aria-label="Previous page"
+                >
+                  Prev
+                </button>
+                
+                <span className="page-indicator">
+                  <span className="mono">{currentPage}</span> / <span className="mono">{totalPages}</span>
+                </span>
+
+                <button
+                  className="btn btn-ghost btn-sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  aria-label="Next page"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      {selectedAlert && (
-        <AlertDetail alert={selectedAlert} onClose={() => setSelectedAlert(null)} />
-      )}
     </div>
   );
 }

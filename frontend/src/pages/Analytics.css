@@ -107,3 +107,54 @@
 @media (max-width: 1024px) {
   .analytics-grid { grid-template-columns: 1fr; }
 }
+
+.relative-container {
+  position: relative;
+}
+
+.chart-body-relative {
+  position: relative;
+  padding: var(--space-4);
+}
+
+.blurred-chart {
+  filter: blur(4px);
+  opacity: 0.25;
+  pointer-events: none;
+  user-select: none;
+}
+
+.chart-planned-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4);
+  z-index: 5;
+}
+
+.chart-planned-overlay .overlay-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-technical);
+  margin-bottom: 2px;
+}
+
+.chart-planned-overlay .overlay-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  max-width: 260px;
+  line-height: 1.4;
+}
+
+.demo-badge.planned-tag {
+  background-color: rgba(91, 184, 245, 0.08);
+  border: 1px solid rgba(91, 184, 245, 0.15);
+  color: var(--accent-primary);
+}
