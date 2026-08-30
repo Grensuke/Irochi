@@ -80,6 +80,7 @@ backend/
 - Detector input/output contracts — DRAFT / IN PROGRESS
 - Alert Schema — DRAFT / IN PROGRESS
 - PostgreSQL Schema — DRAFT / IN PROGRESS
+- Final API Contract — DRAFT / IN PROGRESS
 
 ## Pending
 
@@ -88,8 +89,8 @@ backend/
 - Production Redis (hot state + Pub/Sub)
 - Real NetFlow/IPFIX adapter
 - Production authentication (JWT + RBAC + Argon2)
-- Final API contract
-- Final WebSocket protocol
+- Final API contract implementation (contract design is DRAFT / IN PROGRESS in `docs/shared/API_CONTRACT_DRAFT_v1.md`; runtime implementation is pending)
+- Final WebSocket protocol implementation (contract design is DRAFT / IN PROGRESS; runtime implementation is pending)
 
 ## Known Constraints
 

@@ -1,12 +1,27 @@
-# API Contract — Irochi
+# API Contract — Irochi (Historical / Temporary Dummy)
 
-> **⚠️ DRAFT / TEMPORARY DUMMY CONTRACT**
+> **⚠️ HISTORICAL / TEMPORARY DUMMY CONTRACT — preserved for reference**
+>
+> This file is the original **temporary dummy** API contract created during Checkpoint 2.
+> It is preserved as a historical record of the dummy phase.
+>
+> **The current API Contract draft is:**
+> [`docs/shared/API_CONTRACT_DRAFT_v1.md`](./API_CONTRACT_DRAFT_v1.md)
+>
+> That document is still **DRAFT** and is **not yet FINAL**. It contains PROPOSED and OPEN items.
+>
+> This file is **NOT** deleted or overwritten.
+> Do not use this file as the design source of truth for implementation.
+> Use `API_CONTRACT_DRAFT_v1.md` for current design reference.
+
+---
+
+> **Original header (preserved):**
 >
 > These endpoints are temporary dummy endpoints.
 > They are **NOT** the final API contract.
-> The final API contract will be defined after the architecture design chain
-> (Redpanda Topics → Feature/Window Schema → Detector Contracts → Alert Schema → PostgreSQL Schema → API Contract)
-> is completed.
+> The design chain (Redpanda Topics → Feature/Window Schema → Detector Contracts → Alert Schema → PostgreSQL Schema → API Contract)
+> has been completed up to the Draft stage. See `API_CONTRACT_DRAFT_v1.md` for the current contract draft.
 
 ---
 
