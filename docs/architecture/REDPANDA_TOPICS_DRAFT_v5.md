@@ -191,7 +191,7 @@ Risk (accepted, not blocking):
 
 ### Why this was selected over Candidate B
 
-Resolved by the aggregation-entity analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v6.md` §7 and recorded as the stable project decision in `docs/backend/BACKEND_DECISIONS.md` BD-009:
+Resolved by the aggregation-entity analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7 and recorded as the stable project decision in `docs/backend/BACKEND_DECISIONS.md` BD-009:
 
 - **Destination-centric work (DDoS) gets no locality benefit from either candidate.** A flood is defined by many different source IPs; this aggregation depends on Redis-backed destination-keyed state regardless of which raw-topic key is chosen (§12/§13 below).
 - **Pair-centric work (C2 beaconing) gets no meaningful benefit from Candidate B either**, because its primary channel is `connection` (checkpoint §12.2: *"a general flow/timing signal, not a TLS-only signal"*), which both candidates key by plain `src_ip`. Candidate B's hybrid key would only have helped the narrower TLS-specific slice of beaconing evidence.
@@ -226,7 +226,7 @@ Also, `connection_id` does not itself correlate an arbitrary DNS query with a la
 
 ### Decision — RESOLVED
 
-The Feature/Window Schema (`FEATURE_WINDOW_SCHEMA_DRAFT_v6.md` §7) evaluated source-centric, destination-centric, pair, and connection-level correlation needs against the actual detector-to-feature mapping, and BD-009 records the resulting project-level lock. Candidate A is locked; Candidate B is preserved above as a documented, not-selected alternative.
+The Feature/Window Schema (`FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7) evaluated source-centric, destination-centric, pair, and connection-level correlation needs against the actual detector-to-feature mapping, and BD-009 records the resulting project-level lock. Candidate A is locked; Candidate B is preserved above as a documented, not-selected alternative.
 
 ---
 
@@ -748,7 +748,7 @@ is unnecessary in production.
 
 The following remain explicitly **PROPOSED / OPEN**:
 
-- [x] ~~Final partition-key strategy~~ — **LOCKED** (§4): uniform `src_ip`, recorded in `BD-009`, with supporting analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v6.md` §7
+- [x] ~~Final partition-key strategy~~ — **LOCKED** (§4): uniform `src_ip`, recorded in `BD-009`, with supporting analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7
 - [ ] Final partition counts (§5) — still OPEN, benchmark-driven
 - [ ] Final retention duration
 - [ ] `retention.bytes` size cap per topic/partition (pending event-size/throughput measurement)
@@ -829,7 +829,7 @@ Before promoting this document from DRAFT to FINAL, verify:
 |---|---|
 | 3 raw topics by canonical event type | **PROPOSED** |
 | Topic naming convention | **PROPOSED** |
-| `src_ip` partitioning (raw-topic partition KEY) | **LOCKED** — recorded in `BD-009`, with supporting analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v6.md` §7 |
+| `src_ip` partitioning (raw-topic partition KEY) | **LOCKED** — recorded in `BD-009`, with supporting analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7 |
 | Candidate B — `(src_ip, dst_ip)` for `tls` | **NOT SELECTED** — future benchmark/feature-driven optimization only |
 | 6/3/3 partitions | **PROPOSED** |
 | 24-hour retention | **PROPOSED** |
