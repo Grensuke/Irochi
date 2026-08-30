@@ -37,6 +37,8 @@ services:
       - .env
     volumes:
       - ./backend:/app
+    networks:
+      - irochi-net
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # ------------------------------------------------
@@ -56,6 +58,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    networks:
+      - irochi-net
     command: npm run dev -- --host 0.0.0.0
 
 # ==================================================
@@ -64,17 +68,69 @@ services:
 # The following will be added when the real pipeline
 # is built. Do NOT uncomment until then.
 #
-#  postgres:
-#    image: postgres:16-alpine
-#    ...
-#
-#  redis:
-#    image: redis:7-alpine
-#    ...
-#
-#  redpanda:
-#    image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
-#    ...
+  postgres:
+    image: postgres:16-alpine
+    container_name: irochi-postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - irochi-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U irochi -d irochi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: irochi-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - irochi-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
+    container_name: irochi-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --node-id 0
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+      - "9644:9644"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    networks:
+      - irochi-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9644/v1/status/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# ==================================================
+# FUTURE SERVICES (not yet implemented)
+# ==================================================
+# The following will be added when the real pipeline
+# is built. Do NOT uncomment until then.
 #
 #  prometheus:
 #    image: prom/prometheus:v2.53.0
@@ -88,3 +144,12 @@ services:
 #    (custom Zeek 6+ image with pinned JA3/JA4 packages)
 #    ...
 # ==================================================
+
+networks:
+  irochi-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  redpanda_data:
