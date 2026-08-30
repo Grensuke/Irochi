@@ -7,7 +7,8 @@ export function severityColor(severity: Severity): string {
   return `var(--severity-${severity})`;
 }
 
-export function confidenceColor(confidence: number): string {
+export function confidenceColor(confidence: number | null): string {
+  if (confidence === null) return 'var(--text-dim)';
   if (confidence >= 0.85) return 'var(--severity-critical)';
   if (confidence >= 0.70) return 'var(--severity-high)';
   if (confidence >= 0.50) return 'var(--severity-medium)';
@@ -34,7 +35,8 @@ export function formatDate(iso: string): string {
   });
 }
 
-export function formatConfidence(value: number): string {
+export function formatConfidence(value: number | null): string {
+  if (value === null) return '—';
   return `${(value * 100).toFixed(0)}%`;
 }
 

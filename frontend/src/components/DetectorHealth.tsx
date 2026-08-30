@@ -15,7 +15,7 @@ export function DetectorHealth() {
   return (
     <div className="panel">
       <div className="panel-header">
-        <span className="panel-title">Detection Engine Status</span>
+        <span className="panel-title">Detection Engine Status <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px', verticalAlign: 'middle' }}>(SIMULATED DEMO)</span></span>
       </div>
       <div className="detector-health-grid">
         {MOCK_DETECTORS.map(det => (

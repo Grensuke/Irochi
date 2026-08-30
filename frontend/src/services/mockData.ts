@@ -18,28 +18,36 @@ export const MOCK_ALERTS: Alert[] = [
     threat_type: 'volumetric_ddos',
     severity: 'critical',
     confidence: 0.96,
+    entity_type: 'pair',
+    entity_key: '192.168.24.17-10.42.8.21',
+    first_seen_at: new Date(Date.now() - 60000).toISOString(),
+    last_seen_at: new Date().toISOString(),
+    resolved_at: null,
     src_ip: '192.168.24.17',
     dst_ip: '10.42.8.21',
     dst_port: 443,
     proto: 'TCP',
     status: 'investigating',
     evidence_summary: 'Traffic characteristics strongly match the learned SYN flood profile.',
-    detector_id: 'ddos_detector',
-    related_events: ['EVT-00001']
+    detector_id: 'ddos_detector'
   },
   {
     alert_id: 'ALT-004181',
     timestamp: new Date(Date.now() - 3600000).toISOString(),
     threat_type: 'recon_portscan',
     severity: 'high',
-    confidence: 0.88,
+    confidence: null,
+    entity_type: 'source',
+    entity_key: '10.0.4.55',
+    first_seen_at: new Date(Date.now() - 3660000).toISOString(),
+    last_seen_at: new Date(Date.now() - 3600000).toISOString(),
+    resolved_at: null,
     src_ip: '10.0.4.55',
     dst_ip: '10.42.8.0',
     proto: 'TCP',
     status: 'new',
     evidence_summary: 'Sequential horizontal port scan detected targeting internal subnet.',
-    detector_id: 'recon_detector',
-    related_events: []
+    detector_id: 'recon_detector'
   },
   {
     alert_id: 'ALT-004180',
@@ -47,14 +55,18 @@ export const MOCK_ALERTS: Alert[] = [
     threat_type: 'c2_beaconing',
     severity: 'high',
     confidence: 0.92,
+    entity_type: 'connection',
+    entity_key: '10.0.5.20-198.51.100.42:443',
+    first_seen_at: new Date(Date.now() - 8200000).toISOString(),
+    last_seen_at: new Date(Date.now() - 7200000).toISOString(),
+    resolved_at: new Date(Date.now() - 7100000).toISOString(),
     src_ip: '10.0.5.20',
     dst_ip: '198.51.100.42',
     dst_port: 443,
     proto: 'TLS',
     status: 'closed',
     evidence_summary: 'Periodic TLS connections with strict jitter profile and suspicious SNI.',
-    detector_id: 'tls_c2_detector',
-    related_events: []
+    detector_id: 'tls_c2_detector'
   },
   {
     alert_id: 'ALT-004179',
@@ -62,14 +74,18 @@ export const MOCK_ALERTS: Alert[] = [
     threat_type: 'dga_dns_tunnel',
     severity: 'medium',
     confidence: 0.75,
+    entity_type: 'pair',
+    entity_key: '10.0.3.42-8.8.8.8',
+    first_seen_at: new Date(Date.now() - 14500000).toISOString(),
+    last_seen_at: new Date(Date.now() - 14400000).toISOString(),
+    resolved_at: null,
     src_ip: '10.0.3.42',
     dst_ip: '8.8.8.8',
     dst_port: 53,
     proto: 'UDP',
     status: 'new',
     evidence_summary: 'High entropy DNS queries indicating possible DGA algorithm.',
-    detector_id: 'dns_dga_tunnel_detector',
-    related_events: []
+    detector_id: 'dns_dga_tunnel_detector'
   },
   {
     alert_id: 'ALT-004178',
@@ -77,14 +93,18 @@ export const MOCK_ALERTS: Alert[] = [
     threat_type: 'data_exfiltration',
     severity: 'critical',
     confidence: 0.98,
+    entity_type: 'source',
+    entity_key: '10.0.1.200',
+    first_seen_at: new Date(Date.now() - 29000000).toISOString(),
+    last_seen_at: new Date(Date.now() - 28800000).toISOString(),
+    resolved_at: null,
     src_ip: '10.0.1.200',
     dst_ip: '203.0.113.88',
     dst_port: 443,
     proto: 'TCP',
     status: 'new',
     evidence_summary: 'Sustained outbound transfer of 4.2GB exceeding historical baseline by 400%.',
-    detector_id: 'exfiltration_detector',
-    related_events: []
+    detector_id: 'exfiltration_detector'
   }
 ];
 

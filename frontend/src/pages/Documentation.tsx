@@ -42,7 +42,7 @@ export const api = {
   getDashboardSummary: async (): Promise<DashboardSummary> => { ... }
 };`}
         </pre>
-        <div className="status-label-doc available">LOCKED IMPLEMENTATION</div>
+        <div className="status-label-doc available">DRAFT/DEMO IMPLEMENTATION</div>
       </div>
     )
   },
@@ -51,7 +51,7 @@ export const api = {
     title: 'API Integration Overview',
     content: (
       <div>
-        <p>All client communications route through the backend gateway. REST endpoints supply summaries, historical lists, and profile configs:</p>
+        <p>All client communications route through the backend gateway. REST endpoints supply summaries and historical lists:</p>
         <table className="docs-api-table">
           <thead>
             <tr>
@@ -68,6 +68,11 @@ export const api = {
             </tr>
             <tr>
               <td className="mono">/api/v1/alerts</td>
+              <td className="mono">GET</td>
+              <td><span className="badge-doc success">Mock Endpoint Active</span></td>
+            </tr>
+            <tr>
+              <td className="mono">/api/v1/alerts/&#123;alert_id&#125;</td>
               <td className="mono">GET</td>
               <td><span className="badge-doc success">Mock Endpoint Active</span></td>
             </tr>
@@ -110,14 +115,19 @@ export const api = {
   threat_type: ThreatType;
   detector_id: DetectorId;
   severity: Severity;
-  confidence: number;
+  confidence: number | null;
+  entity_type: 'source' | 'destination' | 'pair' | 'connection';
+  entity_key: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  resolved_at?: string | null;
   src_ip: string | null;
   dst_ip: string | null;
   evidence_summary: string;
   status: AlertStatus; // 'new' | 'investigating' | 'closed' | 'false_positive'
 }`}
         </pre>
-        <div className="status-label-doc available">LOCKED DATA MODEL</div>
+        <div className="status-label-doc available">DRAFT/DEMO DATA MODEL</div>
       </div>
     )
   },

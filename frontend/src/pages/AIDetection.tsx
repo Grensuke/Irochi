@@ -18,8 +18,8 @@ const DETECTOR_MODULES = [
     id: 'ddos',
     label: 'DDoS Detector',
     description:
-      'Detects volumetric and protocol-based Denial-of-Service patterns by observing passive traffic flow statistics. Classifies amplification, SYN flood, and UDP flood signatures.',
-    threats: ['Volumetric DDoS', 'Protocol DDoS'],
+      'Detects volumetric Denial-of-Service patterns by observing passive traffic flow statistics. Classifies high-volume packet anomalies and SYN flood patterns.',
+    threats: ['Volumetric DDoS'],
     method: 'Flow-feature analysis + River online learning',
   },
   {
@@ -27,7 +27,7 @@ const DETECTOR_MODULES = [
     label: 'Recon Detector',
     description:
       'Identifies reconnaissance and port-scanning behaviour from passive connection telemetry. Tracks sweep patterns across observed source/destination pairs.',
-    threats: ['Port Scanning', 'Host Discovery'],
+    threats: ['Recon / Port Scan'],
     method: 'Sliding-window sweep detection + XGBoost classifier',
   },
   {
@@ -35,7 +35,7 @@ const DETECTOR_MODULES = [
     label: 'DNS / DGA / Tunneling Detector',
     description:
       'Analyses passive DNS query patterns to detect domain generation algorithm (DGA) activity and DNS-based data tunneling. Operates solely on observed DNS telemetry.',
-    threats: ['DGA Activity', 'DNS Tunneling'],
+    threats: ['DGA / DNS Tunnel'],
     method: 'N-gram language model + entropy analysis',
   },
   {
@@ -43,7 +43,7 @@ const DETECTOR_MODULES = [
     label: 'TLS / C2 Detector',
     description:
       'Classifies encrypted session metadata to identify botnet Command-and-Control beaconing and malware communication within TLS flows without decrypting payloads.',
-    threats: ['Botnet C2 Beaconing', 'Malware in Encrypted Sessions'],
+    threats: ['C2 Beaconing', 'Encrypted Malware'],
     method: 'TLS metadata features + scikit-learn ensemble',
   },
   {
