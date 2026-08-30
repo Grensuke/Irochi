@@ -1,10 +1,22 @@
-# SIH26145 — FEATURE / WINDOW SCHEMA (DRAFT v5)
+# SIH26145 — FEATURE / WINDOW SCHEMA (DRAFT v6)
 
-> **Status:** DRAFT — proposed, not yet locked. Requires project-lead / team review before promotion to `_FINAL`.
+> **Status:** DRAFT — structural window-mechanism pass complete; individual section statuses vary (see §23). Requires project-lead / team review before promotion to `_FINAL`.
 >
 > **Continues from:** `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` (§9, §10, §12, §14, §15), and `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md`.
 >
 > **Scope:** This document defines what a **feature/window record** is, how derived signals are computed and keyed, and how derived-state processing relates to the approved Redpanda design. It does **not** finalize Detector I/O contracts, Alert Schema, or PostgreSQL schema — those remain later steps.
+
+### v5 → v6 revision summary
+
+- Locked the three supported window mechanisms (Tumbling / Sliding / Session) as the window taxonomy.
+- Resolved feature-level mechanism assignments for DDoS (Sliding), Recon breadth (Tumbling), Recon rate (Sliding), DNS/tunneling query_frequency (Sliding), DNS/tunneling record-type distribution (Tumbling), Beaconing primary (Sliding), and Exfiltration rate (Sliding).
+- Documented Recon's accepted MVP boundary-evasion risk for Tumbling breadth features.
+- Moved UDP amplification/asymmetry explicitly OUT OF SCOPE FOR MVP.
+- Retained exfiltration transfer-volume/large-transfer semantics and repeated-destination behaviour as OPEN.
+- Preserved exact durations, bucket widths, and session gaps as OPEN / benchmark-driven.
+- Added Window Type column to the §4 mapping table.
+- Updated §8, §21, §22, §23, §24, and §25 to reflect resolved and remaining-open items consistently.
+- Added design-chain discipline note: Detector I/O may begin on the approved envelope shape, but detector-specific payloads depend on feature mappings that remain PROPOSED/OPEN.
 
 ### v4 → v5 revision summary
 
@@ -87,27 +99,35 @@ This is the same typology `REDPANDA_TOPICS_DRAFT_v5.md` §4 asked this document 
 
 Grounded directly in architecture checkpoint §12, §14, §15:
 
-| Detector domain | Feature | Mechanism | Entity | Primary raw topic(s) |
-|---|---|---|---|---|
-| DDoS | `packet_rate`, `byte_rate`, `syn_ratio` | Windowed | **Destination** | `connection` |
-| DDoS | `source_ip_entropy` | Windowed | **Destination** (diversity of sources hitting this victim — a destination-keyed measurement despite the name) | `connection` |
-| DDoS | UDP amplification/asymmetry metrics | Windowed | **OPEN** — tied to the same undecided capture-point question as `amplification_ratio` (§12.1); may be destination-keyed (victim) or source-keyed (reflector) depending on where the sensor sits | `connection` |
-| Recon | `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out`, `scan_rate` | Windowed | **Source** | `connection` |
-| DNS/DGA | `domain_entropy`, `query_length`, `n_gram_score`, label-length statistics | **Enrichment** | n/a (per-event) | `dns` |
-| DNS/tunneling | `query_frequency`, record-type distribution | Windowed | **Source** | `dns` |
-| TLS/C2 | `ja3_blacklist_match` | **Enrichment** | n/a (per-event lookup) | `tls` |
-| TLS/C2 | Flow-level join (attach TLS outcome to its flow's byte/packet counts) | **Correlation** | **Connection** | `connection` + `tls` |
-| C2 beaconing (general) | `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency, repeated-destination behaviour | Windowed | **Pair** | `connection` (checkpoint §12.2: *"a general flow/timing signal, not a TLS-only signal"*) |
-| Exfiltration | `outbound_inbound_ratio`, `byte_rate`, windowed transfer volume, large-transfer indicators | Windowed | **Source** | `connection` |
+| Detector domain | Feature | Mechanism | Entity | Window Type | Primary raw topic(s) |
+|---|---|---|---|---|---|
+| DDoS | `packet_rate`, `byte_rate`, `syn_ratio` | Windowed | **Destination** | **Sliding** | `connection` |
+| DDoS | `source_ip_entropy` | Windowed | **Destination** | **Sliding** | `connection` |
+| DDoS | UDP amplification/asymmetry metrics | Windowed | — | — | `connection` |
+| Recon | `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out` | Windowed | **Source** | **Tumbling** | `connection` |
+| Recon | `scan_rate` | Windowed | **Source** | **Sliding** | `connection` |
+| DNS/DGA | `domain_entropy`, `query_length`, `n_gram_score`, label-length statistics | **Enrichment** | n/a (per-event) | n/a | `dns` |
+| DNS/tunneling | `query_frequency` | Windowed | **Source** | **Sliding** | `dns` |
+| DNS/tunneling | record-type distribution | Windowed | **Source** | **Tumbling** | `dns` |
+| TLS/C2 | `ja3_blacklist_match` | **Enrichment** | n/a (per-event lookup) | n/a | `tls` |
+| TLS/C2 | Flow-level join (attach TLS outcome to its flow's byte/packet counts) | **Correlation** | **Connection** | n/a | `connection` + `tls` |
+| C2 beaconing (general) | `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Windowed | **Pair** | **Sliding** | `connection` (checkpoint §12.2: *"a general flow/timing signal, not a TLS-only signal"*) |
+| C2 beaconing (general) | `repeated-destination behaviour` | Windowed | **Pair** | **OPEN** | `connection` |
+| Exfiltration | `outbound_inbound_ratio`, `byte_rate` | Windowed | **Source** | **Sliding** | `connection` |
+| Exfiltration | `windowed transfer volume`, `large-transfer indicators` | Windowed | **Source** | **OPEN** | `connection` |
 
-Two things worth flagging explicitly because they are easy to miss on a first read:
+**UDP amplification/asymmetry:** **OUT OF SCOPE FOR MVP.** The capture-point / sensor-placement question (architecture checkpoint §12.1 / `amplification_ratio`) is not resolved and is not required for the MVP detector set. The row is retained for architectural continuity; entity, window type, and feature formulation remain undecided until a post-MVP revisit.
+
+Four things worth flagging explicitly because they are easy to miss on a first read:
 
 1. **C2 beaconing is pair-entity, and its primary channel is `connection`, not `tls`.** This matters for §7 below — a partition-key design that only gives pair locality to the `tls` topic does not actually help the primary beaconing signal.
 2. **`source_ip_entropy` is a destination-entity feature.** It is easy to assume anything with "source" in the name is source-keyed. It isn't — it describes the diversity of sources converging on one destination, so it lives with the DDoS/destination row, not the source-entity rows.
+3. **Recon breadth features use Tumbling as an accepted MVP mechanism.** Window-boundary pacing can evade per-window breadth thresholds; this is an accepted MVP limitation. Fast vs slow scan variation is expected to be handled through window duration/threshold tuning within the chosen mechanism for MVP. A different mechanism remains a post-MVP consideration if evaluation shows significant boundary/evasion problems.
+4. **`repeated-destination behaviour` and exfiltration transfer-volume/large-transfer semantics remain OPEN** — they cannot be cleanly resolved without additional specification.
 
 ### Status
 
-**PROPOSED.** The mechanism/entity assignments follow directly from already-decided threat-to-signal reasoning; nothing here re-opens those decisions.
+**PROPOSED (with resolved rows as documented above).** The mechanism/entity/window-type assignments follow directly from already-decided threat-to-signal reasoning; nothing here re-opens those decisions. Unresolved rows are explicitly marked OPEN.
 
 ---
 
@@ -241,7 +261,7 @@ partition key only; partition counts and other Redpanda choices remain open.
 
 ### Window taxonomy
 
-The Feature/Window layer supports three window mechanisms:
+The Feature/Window layer supports exactly three window mechanisms:
 
 | Window type | Behaviour | Current use |
 |---|---|---|
@@ -249,52 +269,50 @@ The Feature/Window layer supports three window mechanisms:
 | Sliding | Continuously recomputed over a bounded rolling horizon | Time-sensitive rates, source/destination behaviour, and pair-timing features |
 | Session | Closes after a gap of inactivity | Bounded activity/transfer sessions where session closure is semantically meaningful |
 
-**Status:** **LOCKED (taxonomy only).** The three mechanism types are the
-supported taxonomy. Exact feature-to-window assignments and all duration/
-bucket/gap parameters remain PROPOSED / OPEN.
+"Incremental rolling computation" is an implementation technique inside Sliding, not a separate mechanism. Do not invent a fourth mechanism.
 
-### Feature-level window mapping
+**Status:** **LOCKED.** The three mechanism types are the supported taxonomy.
 
-Window mechanism is assigned at the **feature** level rather than forcing one
-mechanism per detector domain.
+### Feature-level mechanism assignments
 
-| Detector / feature | Entity | Mechanism | Status / rationale |
-|---|---|---|---|
-| DDoS: `packet_rate`, `byte_rate`, `syn_ratio`, `source_ip_entropy` | Destination | **Sliding** | Time-sensitive victim-side burst/diversity signal |
-| DDoS: UDP amplification/asymmetry metrics | **OPEN** | **OPEN** | Capture-point dependent; follows checkpoint §12.1 / `amplification_ratio` question |
-| Recon: `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out` | Source | **Tumbling** | Bounded breadth measurement over an observation interval |
-| Recon: `scan_rate` | Source | **Sliding** | Rate-sensitive scan behaviour |
-| DNS/tunneling: `query_frequency` | Source | **Sliding** | Recent DNS request rate |
-| DNS/tunneling: record-type distribution | Source | **Tumbling** | Distribution over a bounded observation interval |
-| Beaconing: `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Pair | **Sliding** | Bounded rolling timing signal; Tier 2 state may update incrementally |
-| Beaconing: `repeated-destination behaviour` | Pair | **OPEN** | Mechanism still needs explicit selection |
-| Exfiltration: `outbound_inbound_ratio`, `byte_rate` | Source | **Sliding** | Rolling transfer-rate/directionality signal |
-| Exfiltration: `windowed transfer volume`, `large-transfer indicators` | Source | **Windowed** | Kept aligned with checkpoint terminology; exact semantics (per-connection vs session aggregate) remain OPEN pending confirmation |
+The authoritative per-feature mechanism/entity/window-type mapping is in §4. This subsection documents the resolved assignments and remaining open items in prose form.
 
-### Pair-timing implementation note
+**Resolved assignments (v6):**
 
-For beaconing, **Sliding** is the mechanism. The implementation may maintain
-the sliding calculation incrementally as new observations arrive rather than
-recompute the entire raw-event set for every evaluation. "Incremental" or
-"rolling state" is an implementation technique, not a fourth window type.
+- **DDoS** (`packet_rate`, `byte_rate`, `syn_ratio`, `source_ip_entropy`): **Destination / Sliding.** Time-sensitive victim-side burst/diversity signal.
+- **Recon breadth** (`unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out`): **Source / Tumbling.** Bounded breadth measurement over an observation interval.
+- **Recon rate** (`scan_rate`): **Source / Sliding.** Rate-sensitive scan behaviour.
+- **DNS/tunneling** (`query_frequency`): **Source / Sliding.** Recent DNS request rate.
+- **DNS/tunneling** (record-type distribution): **Source / Tumbling.** Distribution over a bounded observation interval.
+- **C2 beaconing primary** (`inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency): **Pair / Sliding.** Bounded rolling timing signal.
+- **Exfiltration rate** (`outbound_inbound_ratio`, `byte_rate`): **Source / Sliding.** Rolling transfer-rate/directionality signal.
 
-Beaconing is **not Session-primary**. A session inactivity threshold that is
-too close to the interval being detected can fragment a regular beacon
-sequence, so Session is not used as the primary periodicity mechanism here.
+**Remaining OPEN:**
+
+- **C2 beaconing:** `repeated-destination behaviour` — mechanism still needs explicit selection.
+- **Exfiltration:** `windowed transfer volume`, `large-transfer indicators` — the architecture checkpoint lists these as derived signals but does not establish whether they represent per-connection properties or bounded/session-level aggregates. Do not guess; retain as OPEN.
+
+**OUT OF SCOPE FOR MVP:**
+
+- **DDoS:** UDP amplification/asymmetry metrics — capture-point / sensor-placement semantics (architecture checkpoint §12.1 / `amplification_ratio`) are not resolved and are not required for the MVP detector set.
+
+### Recon Tumbling: accepted MVP limitation
+
+Tumbling is accepted for MVP breadth features (unique destinations, fan-out). Window-boundary pacing can evade per-window breadth thresholds; this is a known MVP limitation. Fast vs slow scan variation is expected to be handled through window duration/threshold tuning within the chosen mechanism for MVP. A different mechanism remains a post-MVP consideration if evaluation shows significant boundary/evasion problems.
+
+### Beaconing: Sliding implementation note
+
+For beaconing, **Sliding** is the mechanism. The Sliding computation may be updated incrementally as new observations arrive; this does not introduce another window mechanism.
+
+Beaconing is **not Session-primary**. A session inactivity threshold that is too close to the interval being detected can fragment a regular beacon sequence, so Session is not used as the primary periodicity mechanism here.
 
 ### Exfiltration scope note
 
-The architecture checkpoint lists `windowed transfer volume` and
-`large-transfer indicators` as derived signals but does not specify whether
-they are properties of a single connection or aggregates across a bounded
-transfer/session. This draft therefore keeps their current **Windowed /
-Source** classification while making the semantic question explicit as OPEN.
+The architecture checkpoint lists `windowed transfer volume` and `large-transfer indicators` as derived signals but does not specify whether they are properties of a single connection or aggregates across a bounded transfer/session. This draft therefore keeps their current **Windowed / Source** classification while making the semantic question explicit as OPEN.
 
 ### Deriving window length instead of guessing it
 
-Consistent with architecture checkpoint §9 and the Redpanda design's refusal to
-invent a `retention.bytes` number before measurement, this draft does not assign
-specific durations. Each detector-domain window length should be derived from:
+Consistent with architecture checkpoint §9 and the Redpanda design's refusal to invent a `retention.bytes` number before measurement, this draft does not assign specific durations. Each detector-domain window length should be derived from:
 
 ```text
 time-to-signal budget
@@ -304,23 +322,19 @@ statistical stability
 
 evaluated against a representative dataset/PCAP once available.
 
-For example, DDoS burst windows are expected to favour low latency, while
-low-and-slow recon/beaconing behaviour may favour longer stability. These are
-directional expectations only; the actual numbers remain OPEN.
+For example, DDoS burst windows are expected to favour low latency, while low-and-slow recon/beaconing behaviour may favour longer stability. These are directional expectations only; the actual numbers remain OPEN.
 
 ### A risk worth naming now: long windows vs. the 24h raw-retention buffer
 
-If any detector's eventual window approaches the 24-hour raw-retention horizon,
-a Feature Processing worker that crashes cannot always reconstruct the full
-window purely from Redpanda replay. Such entities may therefore need periodic
-state checkpointing (for example, persisted in-progress Redis state) rather
-than relying entirely on raw-event replay. This is an OPEN risk because the
-actual window lengths are not yet finalized.
+If any detector's eventual window approaches the 24-hour raw-retention horizon, a Feature Processing worker that crashes cannot always reconstruct the full window purely from Redpanda replay. Such entities may therefore need periodic state checkpointing (for example, persisted in-progress Redis state) rather than relying entirely on raw-event replay. This is an OPEN risk because the actual window lengths are not yet finalized.
 
 ### Status
 
-**PROPOSED (feature mapping). Durations, bucket widths, and session gaps remain
-OPEN and benchmark/dataset-dependent.**
+- **Window-type taxonomy:** **LOCKED.**
+- **Feature-level mapping:** **PROPOSED** (individual rows resolved per above; a few remain explicitly OPEN).
+- **Window durations:** **OPEN** — benchmark/dataset-driven.
+- **Bucket widths:** **OPEN** — benchmark/dataset-driven.
+- **Session inactivity gaps:** **OPEN** — benchmark/dataset-driven.
 
 ---
 ## 9. State Locality & Redis Strategy
@@ -636,9 +650,11 @@ Boundaries carried forward unchanged from the Redpanda draft: React never talks 
 
 ## 21. Open Design Items
 
+- [ ] Mechanism for `repeated-destination behaviour` (§4/§8)
+- [ ] Confirm semantics of `windowed transfer volume` / `large-transfer indicators` — per-connection vs. session/bounded aggregate (§4/§8)
 - [ ] Window durations per detector domain (§8) — pending benchmark/dataset review
-- [ ] Entity-keying for UDP amplification/asymmetry metrics (§4) — tied to the existing open `amplification_ratio` capture-point question
-- [x] Redpanda raw-topic partition key — **LOCKED** as uniform `src_ip` (§7), recorded in Redpanda v4 §4 and BD-009
+- [ ] Bucket widths for Sliding windows (§8) — pending benchmark/dataset review
+- [ ] Session inactivity gaps (§8) — pending benchmark/dataset review
 - [ ] Feature-topic retention/cleanup policy: `delete` vs. `compact` (§11)
 - [ ] Long-window vs. 24h raw-retention recovery risk (§8) — whether Feature Processing needs its own state checkpointing
 - [ ] Shape of provenance for high-volume windowed records (§18)
@@ -649,8 +665,11 @@ Boundaries carried forward unchanged from the Redpanda draft: React never talks 
 - [ ] Feature Processing internal scaling model
 - [ ] Snapshot `revision` monotonicity implementation
 - [ ] Late correlation timeout/amendment policy
-- [ ] Mechanism for `repeated-destination behaviour`
-- [ ] Confirm semantics of `windowed transfer volume` / `large-transfer indicators` (per-connection vs. session/bounded aggregate)
+- [x] Redpanda raw-topic partition key — **LOCKED** as uniform `src_ip` (§7), recorded in Redpanda v5 §4 and BD-009
+
+**OUT OF SCOPE FOR MVP:**
+
+- UDP amplification/asymmetry metrics (§4) — capture-point / sensor-placement semantics not resolved; not required for MVP
 
 ### Explicitly NOT being decided here
 
@@ -671,6 +690,7 @@ Before promoting this document from DRAFT to FINAL, verify:
 - [ ] Mechanism assignment (enrichment / windowed / correlation) matches whether the feature genuinely needs a window.
 - [ ] Entity-type assignment matches which host(s) the feature actually describes (watch for source/destination naming confusion, as with `source_ip_entropy`).
 - [x] The raw-topic partition-key decision in §7 is explicitly approved and inherited as a LOCKED upstream decision; partition count remains open.
+- [x] Feature-level window-mechanism assignments resolved in v6 are reflected consistently in §4 (table) and §8 (prose).
 - [ ] No window duration, retention number, or TTL value has been hard-coded without a benchmark basis.
 - [ ] The snapshot-not-delta rule (§6) is reflected in whatever Feature Processing implementation follows.
 - [ ] Redis keyspace convention (§9) is either accepted or explicitly revised before implementation begins.
@@ -683,13 +703,18 @@ Before promoting this document from DRAFT to FINAL, verify:
 |---|---|
 | Three-mechanism typology (enrichment / windowed / correlation) | **PROPOSED** |
 | Four-entity typology (source / destination / pair / connection) | **PROPOSED** |
-| Detector-to-entity-and-mechanism mapping | **PROPOSED** |
+| Detector-to-entity-and-mechanism mapping (§4) | **PROPOSED (with resolved rows)** |
 | Feature record envelope shape | **PROPOSED** |
 | Snapshot-not-delta rule | **PROPOSED PROCESSING INVARIANT** |
-| Raw-topic partition key = uniform `src_ip` | **LOCKED — inherited from Redpanda v4 §4 / BD-009** |
+| Raw-topic partition key = uniform `src_ip` | **LOCKED — inherited from Redpanda v5 §4 / BD-009** |
 | Window-type taxonomy (Tumbling/Sliding/Session) | **LOCKED** |
-| Feature-level window mapping | **PROPOSED** |
+| Feature-level window mapping | **PROPOSED (individual rows resolved; see §4/§8)** |
+| UDP amplification/asymmetry metrics | **OUT OF SCOPE FOR MVP** |
+| `repeated-destination behaviour` mechanism | **OPEN** |
+| Exfiltration transfer-volume/large-transfer semantics | **OPEN** |
 | Window durations | **OPEN — pending benchmark** |
+| Bucket widths | **OPEN — pending benchmark** |
+| Session inactivity gaps | **OPEN — pending benchmark** |
 | Redis keyspace convention | **PROPOSED / OPEN** |
 | One feature topic per detector domain | **PROPOSED** |
 | Feature-topic partition key = entity key | **PROPOSED** |
@@ -723,12 +748,16 @@ PostgreSQL Schema
 FastAPI API Contract
 ```
 
-Detector Input/Output design should treat this document's feature-topic layout and record shape as fixed inputs, and should explicitly resolve the provenance question (§18) before Alert Schema design begins, since alert explainability depends on it.
+### Design-chain discipline
+
+Detector I/O design may begin using the approved Feature/Window envelope shape (§5) and the locked window taxonomy (§8). However, detector-specific payload details depend on feature mappings that remain PROPOSED or OPEN in §4 (particularly `repeated-destination behaviour` and exfiltration transfer-volume semantics), and the provenance question (§18) must be explicitly resolved before Alert Schema design begins to ensure alert explainability. Do not treat all downstream payloads as finalized.
 
 ---
 
 ## 25. Final Status
 
-**DRAFT v5 — awaiting project-lead/team review.**
+**DRAFT v6 — structural window-mechanism pass complete.**
+
+Window-mechanism taxonomy is **LOCKED** (Tumbling / Sliding / Session). Feature-level window-mechanism assignments are mostly resolved per §4/§8; remaining items (`repeated-destination behaviour`, exfiltration transfer-volume/large-transfer semantics, all durations/widths/gaps) are explicitly **OPEN**. UDP amplification/asymmetry metrics are **OUT OF SCOPE FOR MVP**.
 
 No Feature/Window topics or consumers should be implemented in code from this document until the proposed design is explicitly reviewed and approved.
