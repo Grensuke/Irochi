@@ -15,7 +15,10 @@ Python + FastAPI is the backend application framework. FastAPI provides REST end
 
 **Status:** Locked
 
-Redpanda is the internal event-stream transport that decouples ingestion, feature processing, detection, and other backend stages. Exact topic names/topology are not yet finalized.
+Redpanda is the internal event-stream transport that decouples ingestion, feature processing, detection, and other backend stages.
+Exact topic names/topology remain subject to the Redpanda design documents.
+The raw-topic partition key is separately tracked in BD-009; other Redpanda
+topology decisions remain open until explicitly approved.
 
 ## BD-003: PostgreSQL as Durable Alert Truth
 
@@ -73,6 +76,7 @@ These values are not yet formally locked in the final API contract but are used 
 ## BD-009: Raw Redpanda Topic Partition Key
 
 **Status:** Locked
+**Approval provenance:** AR-01
 
 All raw canonical-event Redpanda topics use `src_ip` as the partition key:
 
@@ -81,6 +85,8 @@ All raw canonical-event Redpanda topics use `src_ip` as the partition key:
 - `irochi.events.tls.v1` → `hash(src_ip)`
 
 This decision was approved after evaluating the Feature/Window aggregation requirements. Destination-centric DDoS aggregation and pair-centric C2 beaconing require downstream shared state rather than relying on raw-topic partition locality. The currently defined TLS features provide no identified benefit from TLS-topic `(src_ip, dst_ip)` locality.
+
+See `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/architecture/FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7 for the full reasoning and supporting analysis.
 
 This locks the partition key only. It does not lock raw-topic partition counts, retention values, downstream Feature/Window topics, or other remaining Redpanda design decisions.
 
