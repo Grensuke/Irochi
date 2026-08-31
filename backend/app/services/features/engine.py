@@ -72,6 +72,12 @@ class FeatureEngine:
             )
             if recon_tumble: records.append(recon_tumble)
 
+            ddos_tumble = await process_tumbling(
+                self.state_adapter, event, DetectorDomain.DDOS, EntityType.DESTINATION,
+                window_size_sec=60 # DEVELOPMENT CONFIG ONLY: Open parameter
+            )
+            if ddos_tumble: records.append(ddos_tumble)
+
             tls_corr_conn = await process_correlation(
                 self.state_adapter, event, DetectorDomain.TLS_C2, EntityType.CONNECTION,
                 correlation_ttl_sec=300 # DEVELOPMENT CONFIG ONLY: Open parameter

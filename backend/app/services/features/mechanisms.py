@@ -7,7 +7,8 @@ from app.schemas.features import (
     DetectorDomain, EntityType, WindowType, CorrelationStatus,
     DnsFeaturePayload, DnsFeatureRecord,
     TlsC2FeaturePayload, TlsC2FeatureRecord,
-    ReconFeaturePayload, ReconFeatureRecord
+    ReconFeaturePayload, ReconFeatureRecord,
+    DdosFeaturePayload, DdosFeatureRecord
 )
 from app.services.features.state import FeatureStateAdapter
 from app.services.features.keys import build_entity_key
@@ -202,6 +203,29 @@ async def process_tumbling(
         )
         payload = ReconFeaturePayload(unique_destination_ports=unique_ports)
         return ReconFeatureRecord(**envelope_args, payload=payload)
+
+    if detector_domain == DetectorDomain.DDOS and event.event_type == EventType.CONNECTION:
+        orig_pkts = event.payload.orig_pkts or 0
+        resp_pkts = event.payload.resp_pkts or 0
+        total_pkts = orig_pkts + resp_pkts
+
+        await state_adapter.increment_tumbling_metric(
+            entity_type, entity_key, window_id, {"total_pkts": total_pkts}, ttl_seconds=window_size_sec*2
+        )
+
+        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+        current_total = int(metrics.get("total_pkts", 0))
+
+        envelope_args = await build_envelope(
+            state_adapter, event, FeatureMechanism.WINDOWED,
+            detector_domain, entity_type, entity_key,
+            window_type=WindowType.TUMBLING,
+            window_start=window_id * 1000000,
+            window_end=(window_id + window_size_sec) * 1000000
+        )
+        packet_rate = current_total / window_size_sec
+        payload = DdosFeaturePayload(packet_rate=packet_rate)
+        return DdosFeatureRecord(**envelope_args, payload=payload)
 
     return None
 
