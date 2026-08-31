@@ -119,10 +119,10 @@ Grounded directly in architecture checkpoint §12, §14, §15:
 | DDoS | UDP amplification/asymmetry metrics | Windowed | — | — | `connection` |
 | Recon | `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out` | Windowed | **Source** | **Tumbling** | `connection` |
 | Recon | `scan_rate` | Windowed | **Source** | **Sliding** | `connection` |
-| DNS/DGA | `domain_entropy`, `query_length`, `n_gram_score`, label-length statistics | **Enrichment** | n/a (per-event) | n/a | `dns` |
+| DNS/DGA | `domain_entropy`, `query_length`, `n_gram_score`, label-length statistics | **Enrichment** | **Source** (per-event) | n/a | `dns` |
 | DNS/tunneling | `query_frequency` | Windowed | **Source** | **Sliding** | `dns` |
 | DNS/tunneling | record-type distribution | Windowed | **Source** | **Tumbling** | `dns` |
-| TLS/C2 | `ja3_blacklist_match` | **Enrichment** | n/a (per-event lookup) | n/a | `tls` |
+| TLS/C2 | `ja3_blacklist_match` | **Enrichment** | **Connection** (per-event) | n/a | `tls` |
 | TLS/C2 | Flow-level join (attach TLS outcome to its flow's byte/packet counts) | **Correlation** | **Connection** | n/a | `connection` + `tls` |
 | C2 beaconing (general) | `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Windowed | **Pair** | **Sliding** | `connection` (checkpoint §12.2: *"a general flow/timing signal, not a TLS-only signal"*) |
 | C2 beaconing (general) | `repeated-destination behaviour` | Windowed | **Pair** | **OPEN** | `connection` |
