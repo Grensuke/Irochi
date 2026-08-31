@@ -7,25 +7,35 @@
 
 ## Phase
 
-Checkpoint 4 (Dummy End-to-End Integration Validated)
+WP-C (Redpanda + Redis Streaming Foundation) Completed. Preparing for WP-D.
 
-## Completed
+## Implementation Status
 
-- Repository and workflow structure setup (Checkpoint 1)
-- Documentation structure created (Checkpoint 1)
-- FastAPI skeleton with dummy endpoints (Checkpoint 2)
-- Pydantic schemas for alerts, dashboard, and health (Checkpoint 2)
-- Mock alert service with 12 static alerts covering all 6 threat types and all 5 detectors (Checkpoint 2)
-- Mock dashboard summary service (Checkpoint 2)
-- Dummy WebSocket endpoint with backfill + live simulation (Checkpoint 2)
-- Service layer with abstract interfaces for future replacement (Checkpoint 2)
-- Backend Dockerfile (Checkpoint 2)
-- 20 passing tests (health, alerts, dashboard, WebSocket) (Checkpoint 2 & 4)
-- Dummy frontend-backend integration fully verified (Checkpoint 4)
+**Architecture Decisions:**
+- AR-01 ✅ APPROVED
+- AR-02 ✅ APPROVED
+- AR-03 ✅ APPROVED
 
-## Current Task
+**Work Packages:**
+- WP-A ✅ MERGED
+- WP-B ✅ MERGED
+- WP-C ✅ MERGED
+- WP-D = CURRENT / NEXT
+- WP-E = PENDING
+- WP-F = PENDING — all five logical detectors
+- WP-G = PENDING
+- WP-H = PENDING
+- WP-I = PENDING
+- M8 = PENDING — end-to-end MVP validation
 
-Pending Checkpoint 5 (Production Architecture)
+**Milestones:**
+- P0 = first complete vertical slice with one functional detector
+- P1 = full SIH MVP with all five logical detectors
+- P2 = production-oriented hardening
+
+**Important Constraints:**
+- The exact stale-update/concurrency algorithm is OPEN.
+- It must be resolved before Alert Engine persistence.
 
 ## Backend Structure
 

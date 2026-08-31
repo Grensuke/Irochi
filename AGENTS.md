@@ -332,6 +332,23 @@ Frontend agents must not modify backend implementation simply to make frontend w
 
 Frontend and backend may be developed simultaneously.
 
+"Parallelizable" means technically independent work. It does NOT mean simultaneous multi-developer assignment within the same codebase section.
+
+**Stable single-backend-developer workflow:**
+1. clean `main`
+2. → create meaningful work-package branch
+3. → inspect/plan
+4. → review LOCKED/PROPOSED/OPEN constraints
+5. → implement
+6. → real validation
+7. → diff review
+8. → commit
+9. → push
+10. → PR review
+11. → merge
+12. → return to clean `main`
+13. → delete merged branch
+
 Each team should primarily modify its own area.
 
 Typical ownership:
