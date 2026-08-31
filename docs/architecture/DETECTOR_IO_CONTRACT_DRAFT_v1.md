@@ -82,8 +82,8 @@ Final API Contract
 |---|---|---|---|
 | `ddos_detector` | DDoS Detector | Volumetric / protocol flood detection | Destination |
 | `recon_detector` | Recon Detector | Reconnaissance / port scanning detection | Source |
-| `dns_dga_tunnel_detector` | DNS/DGA/DNS-Tunneling Detector | DGA detection, DNS tunneling detection | Source (windowed), per-event (enrichment) |
-| `tls_c2_detector` | TLS/C2 Detector | Encrypted-session malware, C2 beaconing | Per-event (enrichment), Connection (correlation), Pair (beaconing) |
+| `dns_dga_tunnel_detector` | DNS/DGA/DNS-Tunneling Detector | DGA detection, DNS tunneling detection | Source (windowed and enrichment) |
+| `tls_c2_detector` | TLS/C2 Detector | Encrypted-session malware, C2 beaconing | Connection (enrichment and correlation), Pair (beaconing) |
 | `exfiltration_detector` | Exfiltration Detector | Data exfiltration detection | Source |
 
 These are logically distinct modules, **not** separate microservices (Architecture §11).
@@ -200,7 +200,7 @@ Creating new detector-specific payload types that are separate from FeatureRecor
 | **Capability** | Volumetric / protocol flood detection | Reconnaissance / port scanning | DGA detection, DNS tunneling | Encrypted-session malware, C2 beaconing | Data exfiltration |
 | **Accepted Feature Domains** | `ddos` | `recon` | `dns` | `tls_c2` | `exfil` |
 | **Accepted Mechanisms** | Windowed | Windowed | Enrichment, Windowed | Enrichment, Correlation, Windowed | Windowed |
-| **Accepted Entity Types** | Destination | Source | Source (windowed), per-event (enrichment) | Per-event (enrichment), Connection (correlation), Pair (beaconing) | Source |
+| **Accepted Entity Types** | Destination | Source | Source (windowed and enrichment) | Connection (enrichment and correlation), Pair (beaconing) | Source |
 | **Required Features** | `packet_rate`, `byte_rate`, `syn_ratio`, `source_ip_entropy` | `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out`, `scan_rate` | At least one of: enrichment features OR windowed features (see §8) | At least one of: enrichment, correlation, or beaconing features (see §9) | `outbound_inbound_ratio`, `byte_rate` |
 | **Optional Features** | — | — | Any feature from the other mechanism | Any feature from the other mechanisms | — |
 | **Partial Input Allowed?** | Yes — with reduced capability (see §12) | Yes — Tumbling and Sliding may arrive independently (see §12) | Yes — enrichment-only or windowed-only evaluation permitted (see §12) | Yes — any single mechanism may trigger evaluation (see §12) | Yes — with reduced capability (see §12) |
@@ -305,8 +305,8 @@ The detector must not substitute zero for a missing feature from a window that h
 
 ### Entity / window shape
 
-- **Entity types:** per-event (enrichment — no entity/window fields), Source (windowed)
-- **Window types:** Sliding (`query_frequency`), Tumbling (record-type distribution)
+- **Entity types:** Source (enrichment and windowed)
+- **Window types:** n/a (enrichment — no temporal window fields), Sliding (`query_frequency`), Tumbling (record-type distribution)
 - **Heterogeneous:** This detector consumes enrichment features (per DNS query, no window) and windowed features (aggregated over source). The temporal association between enrichment and windowed records is governed by §11.
 
 ### Partial input behaviour
@@ -346,8 +346,8 @@ At least one feature from either mechanism must be present. See §12.
 
 ### Entity / window shape
 
-- **Entity types:** per-event (enrichment), Connection (correlation), Pair (beaconing)
-- **Window types:** n/a (enrichment/correlation), Sliding (beaconing)
+- **Entity types:** Connection (enrichment and correlation), Pair (beaconing)
+- **Window types:** n/a (enrichment/correlation — no temporal window fields), Sliding (beaconing)
 - **Heterogeneous:** This detector consumes features from **three distinct mechanisms** with **three different entity types**. The temporal association between these inputs is governed by §11.
 
 ### Partial input behaviour
@@ -425,7 +425,7 @@ This is a **base grouping identity**, not a complete evaluation identity. It ide
 | `ddos_detector` | `dst_ip` |
 | `recon_detector` | `src_ip` |
 | `dns_dga_tunnel_detector` | `src_ip` |
-| `tls_c2_detector` | varies — `src_ip` (enrichment context), `connection_id` (correlation), `src_ip\|dst_ip` (pair/beaconing) |
+| `tls_c2_detector` | varies — `connection_id` (enrichment and correlation), `src_ip\|dst_ip` (pair/beaconing) |
 | `exfiltration_detector` | `src_ip` |
 
 ### Why `evaluation_window` is not part of the base grouping identity
@@ -461,7 +461,7 @@ The final association policy remains **OPEN** — it depends on implementation d
 
 `tls_c2_detector` is unique in that its three input mechanisms use **different entity types**:
 
-- Enrichment: per-event (no entity key)
+- Enrichment: `connection_id`
 - Correlation: `connection_id`
 - Beaconing: `src_ip|dst_ip` (pair key)
 
