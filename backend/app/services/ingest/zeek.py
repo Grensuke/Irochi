@@ -1,13 +1,10 @@
 import json
 import logging
-import os
 import subprocess
 import tempfile
-import asyncio
 from pathlib import Path
-from typing import AsyncGenerator
 
-from app.schemas.canonical import CanonicalEvent, EventType
+from app.schemas.canonical import EventType
 from app.services.ingest.normalizer import IngestNormalizer
 from app.services.streaming.producer import KafkaProducerService
 

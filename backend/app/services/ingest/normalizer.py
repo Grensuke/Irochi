@@ -1,11 +1,9 @@
-import json
 import logging
 import time
 import uuid
 from typing import Any, Optional
 
 from app.schemas.canonical import (
-    CanonicalEvent,
     ConnectionEvent,
     ConnectionPayload,
     DnsEvent,
