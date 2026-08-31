@@ -26,3 +26,7 @@ httpx==0.28.1
 
 # --- WebSocket ---
 websockets==15.0.1
+
+# --- Streaming Foundation (WP-C) ---
+aiokafka==0.12.0
+redis==5.2.1
