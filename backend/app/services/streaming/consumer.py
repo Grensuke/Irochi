@@ -1,10 +1,19 @@
 import json
 import logging
+from dataclasses import dataclass
 from typing import Any, AsyncGenerator
 
 from aiokafka import AIOKafkaConsumer
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class ConsumerMessage:
+    topic: str
+    partition: int
+    offset: int
+    key: bytes | None
+    payload: dict[str, Any]
 
 
 class KafkaConsumerService:
@@ -33,9 +42,9 @@ class KafkaConsumerService:
             self._consumer = None
             logger.info("Redpanda Consumer stopped.")
 
-    async def consume(self) -> AsyncGenerator[tuple[str, dict[str, Any]], None]:
+    async def consume(self) -> AsyncGenerator[ConsumerMessage, None]:
         """
-        Yields (topic, payload) for each valid message.
+        Yields ConsumerMessage for each valid message.
         Malformed JSON payloads are safely skipped.
         """
         if self._consumer is None:
@@ -44,7 +53,13 @@ class KafkaConsumerService:
         async for msg in self._consumer:
             try:
                 payload = json.loads(msg.value.decode("utf-8"))
-                yield msg.topic, payload
+                yield ConsumerMessage(
+                    topic=msg.topic,
+                    partition=msg.partition,
+                    offset=msg.offset,
+                    key=msg.key,
+                    payload=payload
+                )
             except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as e:
                 logger.warning(
                     f"Skipping malformed message on topic {msg.topic}: {e} (DEVELOPMENT CONFIG DLQ)"
