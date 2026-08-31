@@ -44,11 +44,17 @@ async def test_producer_and_consumer_integration(test_topic: str):
 
     # Consume the message
     consumed = False
-    async for topic, payload in consumer.consume():
-        if payload.get("src_ip") == test_src_ip:
-            assert topic == test_topic
-            assert payload["event_id"] == "123"
-            assert payload["data"] == "test_integration"
+    async for msg in consumer.consume():
+        if msg.payload.get("src_ip") == test_src_ip:
+            assert msg.topic == test_topic
+            assert msg.payload["event_id"] == "123"
+            assert msg.payload["data"] == "test_integration"
+
+            # Verify new envelope fields
+            assert msg.partition is not None
+            assert msg.offset is not None
+            assert msg.key.decode("utf-8") == test_src_ip
+
             consumed = True
             break  # We found our message
 
@@ -156,9 +162,9 @@ async def test_consumer_skips_malformed_json(test_topic: str):
     # Should only yield the two valid messages
     valid_count = 0
     try:
-        async for topic, payload in consumer.consume():
-            if payload.get("run_id") == run_id:
-                assert payload["valid"] is True
+        async for msg in consumer.consume():
+            if msg.payload.get("run_id") == run_id:
+                assert msg.payload["valid"] is True
                 valid_count += 1
                 if valid_count == 2:
                     break
