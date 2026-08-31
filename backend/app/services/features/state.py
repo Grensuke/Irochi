@@ -4,6 +4,7 @@ from app.schemas.features import EntityType
 from app.services.features.keys import (
     build_sliding_bucket_key,
     build_tumbling_distinct_key,
+    build_tumbling_metric_key,
     build_correlation_key,
     build_revision_key
 )
@@ -108,6 +109,40 @@ class FeatureStateAdapter:
         if self.redis._client is None:
             raise RuntimeError("Redis client is not started")
         return await self.redis._client.pfcount(key)
+
+    async def increment_tumbling_metric(
+        self,
+        entity_type: EntityType,
+        entity_key: str,
+        window_id: int,
+        increments: Dict[str, int],
+        ttl_seconds: int
+    ):
+        """
+        Increments numeric metrics in a tumbling window Hash and sets TTL.
+        """
+        key = build_tumbling_metric_key(entity_type, entity_key, window_id)
+        if self.redis._client is None:
+            raise RuntimeError("Redis client is not started")
+
+        async with self.redis._client.pipeline(transaction=True) as pipe:
+            for field, amount in increments.items():
+                if amount != 0:
+                    pipe.hincrby(key, field, amount)
+            pipe.expire(key, ttl_seconds)
+            await pipe.execute()
+
+    async def get_tumbling_metrics(
+        self,
+        entity_type: EntityType,
+        entity_key: str,
+        window_id: int
+    ) -> Dict[str, str]:
+        """Gets all metrics for a tumbling window."""
+        key = build_tumbling_metric_key(entity_type, entity_key, window_id)
+        if self.redis._client is None:
+            raise RuntimeError("Redis client is not started")
+        return await self.redis._client.hgetall(key)
 
     async def set_correlation_state(
         self,
