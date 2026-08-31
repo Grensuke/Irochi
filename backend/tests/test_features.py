@@ -154,6 +154,24 @@ async def test_entity_extraction():
         build_entity_key(EntityType.CONNECTION, "1.1.1.1", "2.2.2.2", "")
 
 @pytest.mark.asyncio
+async def test_key_abstraction():
+    from app.services.features.keys import (
+        build_pair_key, parse_pair_key, build_sliding_bucket_key,
+        build_tumbling_distinct_key, build_correlation_key, build_revision_key
+    )
+    # Logical pair identity independent of serialization
+    pair_key = build_pair_key("1.1.1.1", "2.2.2.2")
+    src, dst = parse_pair_key(pair_key)
+    assert src == "1.1.1.1"
+    assert dst == "2.2.2.2"
+
+    # Verify keys are correctly formed
+    assert build_sliding_bucket_key(EntityType.SOURCE, "1.1.1.1", 100) == "irochi:feature:source:1.1.1.1:bucket:100"
+    assert build_tumbling_distinct_key(EntityType.PAIR, pair_key, 200, "port") == f"irochi:feature:pair:{pair_key}:hll:200:port"
+    assert build_correlation_key("conn_1") == "irochi:feature:connection:conn_1:correlation"
+    assert build_revision_key(EntityType.SOURCE, "1.1.1.1") == "irochi:revision:source:1.1.1.1"
+
+@pytest.mark.asyncio
 async def test_enrichment_mechanism_dns(engine):
     msg = ConsumerMessage(
         topic="irochi.events.dns.v1",
@@ -406,3 +424,59 @@ async def test_revision_monotonicity(engine, redis_service):
     enrich2 = [r for r in records2 if r.mechanism == FeatureMechanism.ENRICHMENT][0]
 
     assert enrich2.revision > enrich1.revision
+
+@pytest.mark.asyncio
+async def test_independent_revision_identities(engine, redis_service):
+    await redis_service._client.flushdb()
+
+    # Process event for 10.0.0.6
+    msg1 = ConsumerMessage(
+        topic="irochi.events.dns.v1",
+        partition=0,
+        offset=1,
+        key=None,
+        payload={
+            "event_id": str(uuid.uuid4()),
+            "event_type": "dns",
+            "connection_id": "conn_rev_a",
+            "timestamp": 1000000000000000,
+            "timestamp_precision": "microsecond",
+            "ingest_timestamp": 1000000000000000,
+            "sensor_source": "zeek",
+            "src_ip": "10.0.0.6",
+            "dst_ip": "8.8.8.8",
+            "protocol": "udp",
+            "schema_version": "1.0",
+            "payload": {"query": "test1.com", "qtype_name": "A"}
+        }
+    )
+    records1 = await engine.process(msg1)
+    enrich1 = [r for r in records1 if r.mechanism == FeatureMechanism.ENRICHMENT][0]
+
+    # Process event for 10.0.0.7
+    msg2 = ConsumerMessage(
+        topic="irochi.events.dns.v1",
+        partition=0,
+        offset=2,
+        key=None,
+        payload={
+            "event_id": str(uuid.uuid4()),
+            "event_type": "dns",
+            "connection_id": "conn_rev_b",
+            "timestamp": 1000000000000000,
+            "timestamp_precision": "microsecond",
+            "ingest_timestamp": 1000000000000000,
+            "sensor_source": "zeek",
+            "src_ip": "10.0.0.7",
+            "dst_ip": "8.8.8.8",
+            "protocol": "udp",
+            "schema_version": "1.0",
+            "payload": {"query": "test2.com", "qtype_name": "A"}
+        }
+    )
+    records2 = await engine.process(msg2)
+    enrich2 = [r for r in records2 if r.mechanism == FeatureMechanism.ENRICHMENT][0]
+
+    # They should have independent revision sequences (both should be 1)
+    assert enrich1.revision == 1
+    assert enrich2.revision == 1

@@ -36,3 +36,21 @@ def parse_pair_key(pair_key: str) -> tuple[str, str]:
     if len(parts) != 2:
         raise ValueError(f"Invalid pair key: {pair_key}")
     return parts[0], parts[1]
+
+# --- Redis Key Builders ---
+
+def build_sliding_bucket_key(entity_type: EntityType, entity_key: str, time_bucket: int) -> str:
+    """Builds the Redis key for a sliding window bucket."""
+    return f"irochi:feature:{entity_type.value}:{entity_key}:bucket:{time_bucket}"
+
+def build_tumbling_distinct_key(entity_type: EntityType, entity_key: str, window_id: int, field: str) -> str:
+    """Builds the Redis key for a tumbling window distinct (HLL) state."""
+    return f"irochi:feature:{entity_type.value}:{entity_key}:hll:{window_id}:{field}"
+
+def build_correlation_key(connection_id: str) -> str:
+    """Builds the Redis key for connection correlation state."""
+    return f"irochi:feature:connection:{connection_id}:correlation"
+
+def build_revision_key(entity_type: EntityType, entity_key: str) -> str:
+    """Builds the Redis key for entity revision sequences."""
+    return f"irochi:revision:{entity_type.value}:{entity_key}"

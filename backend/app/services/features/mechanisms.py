@@ -216,7 +216,8 @@ async def process_correlation(
     """
     Processes an event into a correlation feature record.
     Note: Current partial/complete handling is the minimum WP-D baseline.
-    Final correlation timeout or late-amendment policies remain OPEN.
+    Late amendment strategy remains future work.
+    Final correlation timeout and exact policies remain OPEN.
     """
     try:
         entity_key = build_entity_key(entity_type, event.src_ip, event.dst_ip, event.connection_id)
