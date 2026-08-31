@@ -8,6 +8,7 @@ added when the real pipeline is implemented.
 
 from __future__ import annotations
 
+import os
 
 # --- Application metadata ---
 
@@ -32,3 +33,12 @@ WS_LIVE_INTERVAL_SECONDS = 4.0
 
 WS_LIVE_MAX_ALERTS = 50
 """Maximum number of live alerts to emit before stopping (prevents runaway loops)."""
+
+# --- PostgreSQL ---
+POSTGRES_USER = os.getenv("POSTGRES_USER", "irochi")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "change-me")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "irochi")
+
+POSTGRES_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
