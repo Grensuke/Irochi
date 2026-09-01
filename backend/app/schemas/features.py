@@ -63,6 +63,8 @@ class DnsFeaturePayload(BaseModel):
     n_gram_score: Optional[float] = None
     label_count: Optional[int] = None
     max_label_length: Optional[int] = None
+    vowel_consonant_ratio: Optional[float] = None
+    digit_ratio: Optional[float] = None
     # Windowed
     query_frequency: Optional[float] = None
     record_type_distribution: Optional[Dict[str, float]] = None
