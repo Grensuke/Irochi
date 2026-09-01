@@ -62,6 +62,55 @@ async def build_envelope(
     }
 
 # --- M3.5 Enrichment Mechanism ---
+import math
+from collections import Counter
+
+def extract_dns_lexical_features(domain: str) -> dict:
+    """
+    Extracts the exact 6 v1 lexical features for DGA detection.
+    Preprocesses the domain to handle surrounding whitespace, lowercasing, and trailing dots.
+    Returns None if the domain is invalid/empty after preprocessing.
+    """
+    if not domain:
+        return None
+
+    # Preprocessing
+    domain = domain.strip().lower()
+    if domain.endswith("."):
+        domain = domain[:-1]
+
+    if not domain:
+        return None
+
+    # Feature 1: query_length
+    query_length = len(domain)
+
+    # Feature 2 & 3: label_count & max_label_length
+    labels = domain.split(".")
+    label_count = len(labels)
+    max_label_length = max(len(label) for label in labels)
+
+    # Feature 4: domain_entropy
+    freq = Counter(domain)
+    domain_entropy = -sum((count / query_length) * math.log2(count / query_length) for count in freq.values())
+
+    # Feature 5 & 6: vowel_consonant_ratio & digit_ratio
+    vowels = sum(1 for c in domain if c in "aeiou")
+    digits = sum(1 for c in domain if c.isdigit())
+    consonants = sum(1 for c in domain if c.isalpha() and c not in "aeiou")
+
+    vowel_consonant_ratio = vowels / max(1, consonants)
+    digit_ratio = digits / max(1, query_length)
+
+    return {
+        "query_length": query_length,
+        "label_count": label_count,
+        "max_label_length": max_label_length,
+        "domain_entropy": domain_entropy,
+        "vowel_consonant_ratio": vowel_consonant_ratio,
+        "digit_ratio": digit_ratio
+    }
+
 async def process_enrichment(
     state_adapter: FeatureStateAdapter,
     event: CanonicalEvent,
@@ -81,13 +130,21 @@ async def process_enrichment(
 
     # Simple explicit mapping based on domain (avoiding deep detector logic)
     if detector_domain == DetectorDomain.DNS and event.event_type == EventType.DNS:
-        payload = DnsFeaturePayload(
-            domain_entropy=None, # Mock calculation
-            query_length=len(event.payload.query) if event.payload.query else 0,
-            n_gram_score=None,
-            label_count=len(event.payload.query.split(".")) if event.payload.query else 0,
-            max_label_length=max([len(l) for l in event.payload.query.split(".")]) if event.payload.query else 0
-        )
+        features = extract_dns_lexical_features(event.payload.query) if event.payload.query else None
+
+        if features:
+            payload = DnsFeaturePayload(
+                domain_entropy=features["domain_entropy"],
+                query_length=features["query_length"],
+                n_gram_score=None,
+                label_count=features["label_count"],
+                max_label_length=features["max_label_length"],
+                vowel_consonant_ratio=features["vowel_consonant_ratio"],
+                digit_ratio=features["digit_ratio"]
+            )
+        else:
+            payload = DnsFeaturePayload() # Missing query handling
+
         return DnsFeatureRecord(**envelope_args, payload=payload)
 
     if detector_domain == DetectorDomain.TLS_C2 and event.event_type == EventType.TLS:
