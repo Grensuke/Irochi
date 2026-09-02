@@ -1,0 +1,180 @@
+/* ========================================================
+ * VerticalMeniscusRail — Theme-Adaptive Floating Bubble Rail CSS
+ * Seamless Dark & Light Mode Adaptation
+ * ======================================================== */
+
+.vertical-meniscus-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64px;
+  height: 100%;
+  min-height: 360px;
+  background: var(--bg-secondary);
+  padding: 12px 0;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  transition: background-color var(--transition-normal);
+}
+
+/* Floating Active Bubble Indicator (Dark Mode Default) */
+.vertical-floating-bubble {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  background: linear-gradient(180deg, #2e3544 0%, #1e232e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  transition: 
+    transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s ease,
+    background 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform, height;
+}
+
+.vertical-bubble-shine {
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  right: 6px;
+  height: 40%;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+
+/* Tabs List */
+.vertical-meniscus-tabs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  z-index: 2;
+}
+
+.vertical-meniscus-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: color 0.25s ease;
+  outline: none;
+}
+
+.vertical-meniscus-tab:hover {
+  color: #f8fafc;
+}
+
+.vertical-meniscus-tab.is-active {
+  color: #ffffff;
+}
+
+.vertical-meniscus-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.vertical-meniscus-tab-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+/* Hover Tooltip (Dark Mode Default) */
+.vertical-meniscus-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: #1e2430;
+  border: 1px solid #334155;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  z-index: 100;
+}
+
+.vertical-meniscus-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  margin-top: -4px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: transparent #1e2430 transparent transparent;
+}
+
+.vertical-meniscus-tab:hover .vertical-meniscus-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ========================================================
+ * Light Mode Theme Overrides
+ * ======================================================== */
+[data-theme="light"] .vertical-meniscus-rail {
+  background: #ffffff;
+}
+
+[data-theme="light"] .vertical-floating-bubble {
+  background: #0f172a;
+  border: none;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+}
+
+[data-theme="light"] .vertical-bubble-shine {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+[data-theme="light"] .vertical-meniscus-tab {
+  color: #64748b;
+}
+
+[data-theme="light"] .vertical-meniscus-tab:hover {
+  color: #0f172a;
+}
+
+[data-theme="light"] .vertical-meniscus-tab.is-active {
+  color: #ffffff;
+}
+
+[data-theme="light"] .vertical-meniscus-tooltip {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+[data-theme="light"] .vertical-meniscus-tooltip::before {
+  border-color: transparent #0f172a transparent transparent;
+}
