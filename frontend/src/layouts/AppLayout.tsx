@@ -1,5 +1,10 @@
 /**
  * Authenticated application shell — sidebar navigation + top header.
+ * 
+ * Features:
+ * - Collapsed sidebar transforms into a vertical Meniscus liquid navigation rail
+ * - Monochrome black and grey palette with metallic silver highlights and illuminated active bead
+ * - Responsive desktop sidebar & mobile drawer overlay
  */
 
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
@@ -8,7 +13,31 @@ import type { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
+import { VerticalMeniscusRail } from '../components/VerticalMeniscusRail';
+import type { VerticalNavItem } from '../components/VerticalMeniscusRail';
+import { IrochiLogo } from '../components/IrochiLogo';
 import './AppLayout.css';
+
+const ICONS: Record<string, ReactNode> = {
+  grid: (
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+  ),
+  bell: (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1.5a4 4 0 0 0-4 4v3l-1.5 2h11L12 8.5v-3a4 4 0 0 0-4-4z"/><path d="M6.5 13.5a1.5 1.5 0 0 0 3 0"/></svg>
+  ),
+  shield: (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1.5L2.5 4v4c0 3.5 2.5 5.5 5.5 6.5 3-1 5.5-3 5.5-6.5V4L8 1.5z"/></svg>
+  ),
+  network: (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="3" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="13" cy="13" r="1.5"/><line x1="8" y1="4.5" x2="3" y2="11.5"/><line x1="8" y1="4.5" x2="13" y2="11.5"/></svg>
+  ),
+  chart: (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="9" width="3" height="5.5" rx="0.5"/><rect x="6.5" y="5" width="3" height="9.5" rx="0.5"/><rect x="12" y="1.5" width="3" height="13" rx="0.5"/></svg>
+  ),
+  gear: (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M13.1 2.9l-1.4 1.4M4.3 11.7l-1.4 1.4"/></svg>
+  ),
+};
 
 const NAV_GROUPS = [
   {
@@ -36,26 +65,16 @@ const NAV_GROUPS = [
   }
 ];
 
-const ICONS: Record<string, ReactNode> = {
-  grid: (
-    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-  ),
-  bell: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1.5a4 4 0 0 0-4 4v3l-1.5 2h11L12 8.5v-3a4 4 0 0 0-4-4z"/><path d="M6.5 13.5a1.5 1.5 0 0 0 3 0"/></svg>
-  ),
-  shield: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1.5L2.5 4v4c0 3.5 2.5 5.5 5.5 6.5 3-1 5.5-3 5.5-6.5V4L8 1.5z"/></svg>
-  ),
-  network: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="3" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="13" cy="13" r="1.5"/><line x1="8" y1="4.5" x2="3" y2="11.5"/><line x1="8" y1="4.5" x2="13" y2="11.5"/></svg>
-  ),
-  chart: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="9" width="3" height="5.5" rx="0.5"/><rect x="6.5" y="5" width="3" height="9.5" rx="0.5"/><rect x="12" y="1.5" width="3" height="13" rx="0.5"/></svg>
-  ),
-  gear: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M13.1 2.9l-1.4 1.4M4.3 11.7l-1.4 1.4"/></svg>
-  ),
-};
+const FLAT_NAV_ITEMS: VerticalNavItem[] = [
+  { to: '/app', label: 'Overview', icon: ICONS.grid, end: true },
+  { to: '/app/alerts', label: 'Alerts', icon: ICONS.bell },
+  { to: '/app/traffic', label: 'Traffic Monitor', icon: ICONS.chart },
+  { to: '/app/threats', label: 'Threat Intelligence', icon: ICONS.shield },
+  { to: '/app/investigation', label: 'Investigation', icon: ICONS.grid },
+  { to: '/app/ai', label: 'AI Detection', icon: ICONS.shield },
+  { to: '/app/network', label: 'Network Telemetry', icon: ICONS.network },
+  { to: '/app/settings', label: 'Settings', icon: ICONS.gear },
+];
 
 export function AppLayout() {
   const { user, organization, logout } = useAuth();
@@ -113,19 +132,11 @@ export function AppLayout() {
 
       {/* Sidebar Rail */}
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileDrawerOpen ? 'mobile-open' : ''}`}>
-        {/* Signal telemetry line styling inside CSS */}
         <div className="sidebar-signal-line" />
 
         <div className="sidebar-brand">
           <Link to="/" className="sidebar-brand-link">
-            <svg className="sidebar-logo" width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none" />
-              <circle cx="10" cy="10" r="3" fill="var(--accent-primary)" />
-              <line x1="10" y1="2" x2="10" y2="6" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="10" y1="14" x2="10" y2="18" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="2" y1="10" x2="6" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="14" y1="10" x2="18" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-            </svg>
+            <IrochiLogo size={24} />
             {!collapsed && (
               <div className="sidebar-brand-meta">
                 <span className="sidebar-brand-text">IROCHI</span>
@@ -138,6 +149,7 @@ export function AppLayout() {
             onClick={toggleSidebar} 
             aria-label="Toggle sidebar panel"
             aria-expanded={!collapsed}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
               {collapsed ? <path d="M6 3l5 5-5 5" /> : <path d="M10 3L5 8l5 5" />}
@@ -145,25 +157,32 @@ export function AppLayout() {
           </button>
         </div>
 
-        <nav className="sidebar-nav">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.group} className="nav-group">
-              {!collapsed && <span className="nav-group-label">{group.group}</span>}
-              {group.items.map(({ to, label, icon, end }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  title={collapsed ? label : undefined}
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                >
-                  <span className="nav-icon">{ICONS[icon]}</span>
-                  {!collapsed && <span className="nav-label">{label}</span>}
-                </NavLink>
-              ))}
-            </div>
-          ))}
-        </nav>
+        {/* Collapsed Mode: Vertical Meniscus Liquid Navigation Rail */}
+        {collapsed ? (
+          <div className="sidebar-collapsed-rail-container">
+            <VerticalMeniscusRail items={FLAT_NAV_ITEMS} />
+          </div>
+        ) : (
+          /* Expanded Mode: Full Grouped Nav */
+          <nav className="sidebar-nav">
+            {NAV_GROUPS.map((group) => (
+              <div key={group.group} className="nav-group">
+                <span className="nav-group-label">{group.group}</span>
+                {group.items.map(({ to, label, icon, end }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={end}
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  >
+                    <span className="nav-icon">{ICONS[icon]}</span>
+                    <span className="nav-label">{label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            ))}
+          </nav>
+        )}
 
         <div className="sidebar-footer">
           {/* Connection status */}
