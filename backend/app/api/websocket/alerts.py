@@ -41,13 +41,18 @@ async def websocket_alerts(
         # We need to reverse them so the oldest of the backfill comes first
         for a in reversed(backfill_alerts_orm):
             alert = AlertResponse(
-                alert_id=a.alert_id,
+                alert_id=str(a.alert_id),
                 timestamp=a.last_seen_at,
                 threat_type=a.threat_type,
                 detector_id=a.detector_id,
                 severity=a.severity,
-                confidence=a.confidence,
-                evidence_summary=a.evidence_summary or {},
+                confidence=a.confidence or 0.0,
+                entity_type=a.entity_type,
+                entity_key=a.entity_key,
+                first_seen_at=a.first_seen_at,
+                last_seen_at=a.last_seen_at,
+                resolved_at=a.resolved_at,
+                evidence_summary=a.evidence_summary or "",
                 status=a.status
             )
             msg = WebSocketMessage(type="backfill", alert=alert)

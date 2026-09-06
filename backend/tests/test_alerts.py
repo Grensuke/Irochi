@@ -26,6 +26,9 @@ def override_alert_service():
             self.confidence = dumped.get("confidence")
             self.entity_type = "source" if dumped.get("src_ip") else "destination"
             self.entity_key = dumped.get("src_ip") or dumped.get("dst_ip") or "unknown"
+            self.first_seen_at = dumped.get("first_seen_at") or dumped["timestamp"]
+            self.last_seen_at = dumped.get("last_seen_at") or dumped["timestamp"]
+            self.resolved_at = dumped.get("resolved_at")
             self.evidence_summary = dumped["evidence_summary"]
             self.status = dumped["status"]
 

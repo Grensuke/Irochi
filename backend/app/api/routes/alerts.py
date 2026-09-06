@@ -28,13 +28,18 @@ async def list_alerts(
     alerts = []
     for a in alerts_orm:
         alerts.append(AlertResponse(
-            alert_id=a.alert_id,
+            alert_id=str(a.alert_id),
             timestamp=a.last_seen_at,
             threat_type=a.threat_type,
             detector_id=a.detector_id,
             severity=a.severity,
-            confidence=a.confidence,
-            evidence_summary=a.evidence_summary or {},
+            confidence=a.confidence or 0.0,
+            entity_type=a.entity_type,
+            entity_key=a.entity_key,
+            first_seen_at=a.first_seen_at,
+            last_seen_at=a.last_seen_at,
+            resolved_at=a.resolved_at,
+            evidence_summary=a.evidence_summary or "",
             status=a.status
         ))
 
@@ -62,12 +67,17 @@ async def get_alert(
         raise HTTPException(status_code=404, detail="Alert not found")
 
     return AlertResponse(
-        alert_id=alert_orm.alert_id,
+        alert_id=str(alert_orm.alert_id),
         timestamp=alert_orm.last_seen_at,
         threat_type=alert_orm.threat_type,
         detector_id=alert_orm.detector_id,
         severity=alert_orm.severity,
-        confidence=alert_orm.confidence,
-        evidence_summary=alert_orm.evidence_summary or {},
+        confidence=alert_orm.confidence or 0.0,
+        entity_type=alert_orm.entity_type,
+        entity_key=alert_orm.entity_key,
+        first_seen_at=alert_orm.first_seen_at,
+        last_seen_at=alert_orm.last_seen_at,
+        resolved_at=alert_orm.resolved_at,
+        evidence_summary=alert_orm.evidence_summary or "",
         status=alert_orm.status
     )

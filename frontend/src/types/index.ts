@@ -62,7 +62,6 @@ export interface Alert {
   dst_port?: number | null;
   evidence_summary: string;
   status: AlertStatus;
-  proto?: string;
 }
 
 // ------------------------------------------------------------------

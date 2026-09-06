@@ -107,7 +107,7 @@ export function AlertDetailPage() {
               </div>
               <div className="data-field">
                 <span className="data-label">PROTOCOL</span>
-                <span className="data-value mono">{alert.proto ?? 'TCP'}</span>
+                <span className="data-value mono">N/A</span>
               </div>
               <div className="data-field">
                 <span className="data-label">DESTINATION PORT</span>

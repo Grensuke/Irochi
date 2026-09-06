@@ -28,11 +28,9 @@ export function useAlerts(): UseAlertsResult {
       setAlerts(data.alerts);
       setIsMock(false);
     } catch (e) {
-      console.warn('Alerts API failed, using mock data:', e);
-      // Fallback to mock data to prevent UI breakage
-      const { MOCK_ALERTS } = await import('../services/mockData');
-      setAlerts(MOCK_ALERTS);
-      setIsMock(true);
+      console.warn('Alerts API failed:', e);
+      setError(e instanceof Error ? e.message : 'Failed to fetch alerts');
+      setIsMock(false);
     } finally {
       setLoading(false);
     }
