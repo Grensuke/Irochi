@@ -7,23 +7,18 @@
 
 ## Phase
 
-WP-C (Redpanda + Redis Streaming Foundation) Completed. Preparing for WP-D.
+WP-G (Alert Engine) Completed.
 
 ## Implementation Status
 
-**Architecture Decisions:**
-- AR-01 ✅ APPROVED
-- AR-02 ✅ APPROVED
-- AR-03 ✅ APPROVED
-
 **Work Packages:**
-- WP-A ✅ MERGED
-- WP-B ✅ MERGED
-- WP-C ✅ MERGED
-- WP-D = CURRENT / NEXT
-- WP-E = PENDING
-- WP-F = PENDING — all five logical detectors
-- WP-G = PENDING
+- WP-A ✅ Infrastructure
+- WP-B ✅ PostgreSQL
+- WP-C ✅ Redpanda + Redis
+- WP-D ✅ Feature / Window Engine
+- WP-E ✅ Detector Framework
+- WP-F ✅ PCAP, Recon, DDoS, DNS/DGA
+- WP-G ✅ Alert Engine (CURRENT)
 - WP-H = PENDING
 - WP-I = PENDING
 - M8 = PENDING — end-to-end MVP validation

@@ -30,6 +30,24 @@ class PostgresAlertService:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_open_alert_by_identity(
+        self,
+        detector_id: str,
+        threat_type: str,
+        entity_type: str,
+        entity_key: str
+    ) -> Alert | None:
+        """Find an existing 'new' alert matching the deduplication identity."""
+        stmt = select(Alert).where(
+            Alert.detector_id == detector_id,
+            Alert.threat_type == threat_type,
+            Alert.entity_type == entity_type,
+            Alert.entity_key == entity_key,
+            Alert.status == "new"
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def list_alerts(
         self,
         offset: int | None = None,
