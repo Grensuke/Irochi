@@ -24,6 +24,8 @@ def mock_postgres():
     fake_alert.confidence = 0.9
     fake_alert.evidence_summary = {}
     fake_alert.status = "new"
+    fake_alert.first_seen_at = datetime.now(timezone.utc)
+    fake_alert.resolved_at = None
     fake_alert.entity_type = "source"
     fake_alert.entity_key = "1.2.3.4"
 

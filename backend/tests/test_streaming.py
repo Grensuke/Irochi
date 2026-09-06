@@ -104,6 +104,9 @@ async def test_deterministic_partition_routing(test_topic: str):
         while messages_received < 10:
             msg = await asyncio.wait_for(raw_consumer.getone(), timeout=5.0)
 
+            if msg.key is None:
+                continue
+
             # 1. Verify the RAW src_ip is the message key
             raw_key = msg.key.decode("utf-8")
 

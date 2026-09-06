@@ -73,7 +73,7 @@ class AlertResponse(BaseModel):
     threat_type: ThreatType
     detector_id: DetectorId
     severity: Severity
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     entity_type: str
     entity_key: str
     first_seen_at: datetime

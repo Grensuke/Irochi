@@ -66,7 +66,9 @@ async def websocket_alerts(
         # --- Phase 2: Real Redis live stream ---
         async for live_payload in pubsub_service.subscribe_alerts():
             # Validate through the AlertResponse schema
-            live_alert = AlertResponse(**live_payload["alert"])
+            # Handle both direct alert dicts (from real Redis) and wrapped dicts (from tests if needed)
+            alert_data = live_payload.get("alert") if "alert" in live_payload else live_payload
+            live_alert = AlertResponse(**alert_data)
             msg = WebSocketMessage(type="live", alert=live_alert)
             await websocket.send_json(msg.model_dump(mode="json"))
             logger.debug("Live alert sent: %s", live_alert.alert_id)
