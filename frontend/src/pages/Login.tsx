@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { IrochiLogo } from '../components/IrochiLogo';
 import './Login.css';
 
 export function Login() {
@@ -39,15 +40,7 @@ export function Login() {
       <div className="login-card animate-fade-in">
         <div className="login-header">
           <Link to="/" className="login-brand">
-            <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none" />
-              <circle cx="10" cy="10" r="3" fill="var(--accent-primary)" />
-              <line x1="10" y1="2" x2="10" y2="6" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="10" y1="14" x2="10" y2="18" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="2" y1="10" x2="6" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="14" y1="10" x2="18" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-            </svg>
-            <span>IROCHI</span>
+            <IrochiLogo size={44} showText />
           </Link>
           <h1>Sign in to your account</h1>
           <p className="login-subtitle">Threat intelligence dashboard</p>

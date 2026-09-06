@@ -1,0 +1,105 @@
+/* ========================================================
+ * IrochiLogo — Brand Logo & Emblem Styles
+ * ======================================================== */
+
+.irochi-brand-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Badge Shell */
+.irochi-logo-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0c0e14;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 
+    0 0 12px rgba(6, 182, 212, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: all var(--transition-normal);
+}
+
+.irochi-logo-badge.has-glow:hover {
+  box-shadow: 
+    0 0 18px rgba(6, 182, 212, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.6);
+  border-color: rgba(6, 182, 212, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Image */
+.irochi-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.02);
+}
+
+/* Subtle Specular Border Overlay */
+.irochi-logo-border {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, transparent 50%, rgba(6, 182, 212, 0.2) 100%);
+  mix-blend-mode: overlay;
+}
+
+/* Brand Text Title */
+.irochi-brand-title {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+/* Size Variants */
+.irochi-size-xs .irochi-logo-badge {
+  border-radius: 5px;
+}
+
+.irochi-size-sm .irochi-logo-badge {
+  border-radius: 7px;
+}
+
+.irochi-size-md .irochi-logo-badge {
+  border-radius: 9px;
+}
+
+.irochi-size-lg .irochi-logo-badge {
+  border-radius: 12px;
+}
+
+.irochi-size-xl .irochi-logo-badge {
+  border-radius: 16px;
+}
+
+/* ========================================================
+ * Light Mode Theme Overrides
+ * ======================================================== */
+[data-theme="light"] .irochi-logo-badge {
+  background-color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.25);
+  box-shadow: 
+    0 2px 8px rgba(15, 23, 42, 0.16),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .irochi-logo-badge.has-glow:hover {
+  box-shadow: 
+    0 4px 14px rgba(15, 23, 42, 0.24),
+    0 0 12px rgba(6, 182, 212, 0.3);
+  border-color: rgba(15, 23, 42, 0.4);
+}

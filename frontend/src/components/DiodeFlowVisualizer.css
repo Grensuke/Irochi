@@ -1,0 +1,450 @@
+/* ========================================================
+ * DiodeFlowVisualizer — Simplex Data-Diode Flow Dynamics
+ * Theme-Adaptive Dark SOC Console Styling
+ * ======================================================== */
+
+.diode-visualizer-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  margin-bottom: var(--space-5);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Header & Controls */
+.diode-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.diode-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.diode-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.diode-pulse-beacon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #58C7B0;
+  box-shadow: 0 0 10px #58C7B0;
+  animation: diode-pulse 2s infinite ease-in-out;
+}
+
+@keyframes diode-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.diode-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.diode-scenario-btn {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diode-scenario-btn:hover {
+  background: var(--bg-higher-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.diode-scenario-btn.active {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border-color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.diode-action-btn {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diode-action-btn:hover {
+  background: var(--bg-higher-elevated);
+  color: var(--text-primary);
+}
+
+/* Canvas & Boundaries Canvas Area */
+.diode-stage-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 290px;
+  background: radial-gradient(circle at 50% 50%, rgba(30, 30, 35, 0.6) 0%, rgba(15, 15, 18, 0.95) 100%);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+/* Ambient optical grid */
+.diode-stage-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+/* Zone Boundary Header Strip */
+.diode-zones-bar {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.5fr 2fr;
+  width: 100%;
+  padding: 8px 16px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Active Scenario Banner */
+.diode-scenario-banner {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  background: rgba(18, 20, 26, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  pointer-events: none;
+  animation: banner-pop 0.2s ease-out;
+}
+
+@keyframes banner-pop {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.diode-scenario-banner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.diode-zone-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.diode-zone-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.diode-zone-desc {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-transform: none;
+}
+
+.diode-zone-header.barrier-zone {
+  text-align: center;
+  color: #FF9357;
+}
+
+.diode-zone-header.tap-zone {
+  text-align: center;
+  color: #7EA8D8;
+}
+
+.diode-zone-header.dst-zone {
+  text-align: right;
+}
+
+/* Main Interactive Canvas */
+.diode-canvas {
+  display: block;
+  width: 100%;
+  height: 240px;
+}
+
+/* Hardware Barrier Overlay Line */
+.diode-barrier-marker {
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #FF9357 0%, rgba(255, 147, 87, 0.1) 100%);
+  box-shadow: 0 0 12px rgba(255, 147, 87, 0.5);
+  pointer-events: none;
+}
+
+.diode-barrier-badge {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 15, 10, 0.9);
+  border: 1px solid #FF9357;
+  color: #FF9357;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+/* Passive Tap Mirror Line */
+.diode-tap-marker {
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, #7EA8D8 0%, rgba(126, 168, 216, 0.1) 100%);
+  border-right: 1px dashed rgba(126, 168, 216, 0.3);
+  pointer-events: none;
+}
+
+/* Inspection Popover Modal */
+.diode-inspector-card {
+  position: absolute;
+  background: rgba(18, 20, 26, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  width: 280px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+  pointer-events: auto;
+  animation: popover-fade 0.15s ease-out;
+}
+
+@keyframes popover-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.diode-inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.diode-inspector-type {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.diode-inspector-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.diode-inspector-close:hover {
+  color: var(--text-primary);
+}
+
+.diode-inspector-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  margin-bottom: 4px;
+}
+
+.diode-inspector-key {
+  color: var(--text-muted);
+}
+
+.diode-inspector-val {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.diode-simplex-evidence {
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 2px solid #58C7B0;
+  border-radius: 2px;
+  font-size: 0.68rem;
+  color: #CCCCCC;
+}
+
+/* Telemetry Footer Strip */
+.diode-telemetry-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.diode-metric-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.diode-metric-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #58C7B0;
+}
+
+.diode-metric-dot.danger {
+  background: #FF5C6C;
+}
+
+.diode-metric-val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.diode-sim-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(88, 199, 176, 0.1);
+  border: 1px solid rgba(88, 199, 176, 0.3);
+  color: #58C7B0;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .diode-visualizer-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-default);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .diode-card-header {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .diode-scenario-btn {
+  background: #EAEAEA;
+  color: #111111;
+  border-color: #CCCCCC;
+}
+
+[data-theme="light"] .diode-scenario-btn:hover {
+  background: #DFDFDF;
+  color: #000000;
+  border-color: #999999;
+}
+
+[data-theme="light"] .diode-scenario-btn.active {
+  background: #111111;
+  color: #FFFFFF;
+  border-color: #111111;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .diode-action-btn {
+  background: #EAEAEA;
+  color: #111111;
+  border-color: #CCCCCC;
+}
+
+[data-theme="light"] .diode-action-btn:hover {
+  background: #DFDFDF;
+  color: #000000;
+}
+
+[data-theme="light"] .diode-stage-wrapper {
+  background: radial-gradient(circle at 50% 50%, #fafafa 0%, #ebebeb 100%);
+}
+
+[data-theme="light"] .diode-stage-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+[data-theme="light"] .diode-zones-bar {
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .diode-telemetry-bar {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .diode-inspector-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #d1d5db;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .diode-scenario-banner {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #CCCCCC;
+  color: #111111;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}

@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { MOCK_NETWORK_EVENTS } from '../services/mockData';
 import type { EventType } from '../types';
 import { formatTimestamp, formatDate } from '../utils/format';
+import { DiodeFlowVisualizer } from '../components/DiodeFlowVisualizer';
+import { useAlerts } from '../hooks/useAlerts';
 import './Network.css';
 
 function formatBytes(bytes: number | null): string {
@@ -129,6 +131,8 @@ function NetworkGraph({ sources, dests, connections }: NetworkGraphProps) {
 }
 
 export function Network() {
+  const { alerts } = useAlerts();
+  const [vizMode, setVizMode] = useState<'diode' | 'matrix'>('diode');
   const [typeFilter, setTypeFilter] = useState<EventType | ''>('');
   const [search, setSearch] = useState('');
 
@@ -201,12 +205,39 @@ export function Network() {
       </div>
 
       <div className="network-body">
-        {/* Topology Graph */}
-        <NetworkGraph 
-          sources={graphData.sources} 
-          dests={graphData.dests} 
-          connections={graphData.connections} 
-        />
+        {/* Visualizer Mode Header & Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div style={{ display: 'inline-flex', background: 'var(--bg-tertiary)', padding: '3px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+            <button
+              className={`btn btn-sm ${vizMode === 'diode' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ padding: '4px 12px', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
+              onClick={() => setVizMode('diode')}
+            >
+              ⚡ Diode Simplex Dynamics
+            </button>
+            <button
+              className={`btn btn-sm ${vizMode === 'matrix' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ padding: '4px 12px', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
+              onClick={() => setVizMode('matrix')}
+            >
+              ☍ Topology Matrix
+            </button>
+          </div>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            {vizMode === 'diode' ? 'Physical Simplex Optical Tap Layer (Photodiode Isolation)' : 'Source-to-Destination Flow Mapping'}
+          </span>
+        </div>
+
+        {/* Selected Visualizer */}
+        {vizMode === 'diode' ? (
+          <DiodeFlowVisualizer alerts={alerts} />
+        ) : (
+          <NetworkGraph 
+            sources={graphData.sources} 
+            dests={graphData.dests} 
+            connections={graphData.connections} 
+          />
+        )}
 
         <div className="panel">
           <div style={{ overflowX: 'auto' }}>

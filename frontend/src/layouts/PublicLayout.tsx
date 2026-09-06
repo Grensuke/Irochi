@@ -1,7 +1,99 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { MeniscusNavbar } from '../components/MeniscusNavbar';
+import type { MeniscusItem } from '../components/MeniscusNavbar';
+import { IrochiLogo } from '../components/IrochiLogo';
 import './PublicLayout.css';
+
+const PUBLIC_NAV_ITEMS: MeniscusItem[] = [
+  {
+    id: 'product',
+    to: '/',
+    label: 'Product',
+    accentColor: '#f8fafc',
+    ambientColor: 'rgba(255, 255, 255, 0.14)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    )
+  },
+  {
+    id: 'capabilities',
+    to: '/capabilities',
+    label: 'Capabilities',
+    accentColor: '#e2e8f0',
+    ambientColor: 'rgba(255, 255, 255, 0.12)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    )
+  },
+  {
+    id: 'architecture',
+    to: '/architecture',
+    label: 'Architecture',
+    accentColor: '#cbd5e1',
+    ambientColor: 'rgba(255, 255, 255, 0.12)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <rect x="9" y="9" width="6" height="6" />
+        <line x1="9" y1="1" x2="9" y2="4" />
+        <line x1="15" y1="1" x2="15" y2="4" />
+        <line x1="9" y1="20" x2="9" y2="23" />
+        <line x1="15" y1="20" x2="15" y2="23" />
+        <line x1="20" y1="9" x2="23" y2="9" />
+        <line x1="20" y1="14" x2="23" y2="14" />
+        <line x1="1" y1="9" x2="4" y2="9" />
+        <line x1="1" y1="14" x2="4" y2="14" />
+      </svg>
+    )
+  },
+  {
+    id: 'documentation',
+    to: '/documentation',
+    label: 'Docs',
+    accentColor: '#94a3b8',
+    ambientColor: 'rgba(255, 255, 255, 0.10)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+    )
+  },
+  {
+    id: 'about',
+    to: '/about',
+    label: 'About',
+    accentColor: '#cbd5e1',
+    ambientColor: 'rgba(255, 255, 255, 0.10)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+    )
+  },
+  {
+    id: 'contact',
+    to: '/contact',
+    label: 'Messages',
+    accentColor: '#f8fafc',
+    ambientColor: 'rgba(255, 255, 255, 0.15)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+  }
+];
 
 export function PublicLayout() {
   const location = useLocation();
@@ -36,15 +128,6 @@ export function PublicLayout() {
     };
   }, [location.pathname]);
 
-  const navLinks = [
-    { to: '/', label: 'Product' },
-    { to: '/capabilities', label: 'Capabilities' },
-    { to: '/architecture', label: 'Architecture' },
-    { to: '/documentation', label: 'Documentation' },
-    { to: '/about', label: 'About' },
-    { to: '/contact', label: 'Contact' },
-  ];
-
   return (
     <div className="public-layout">
       {/* Background Radial Glow */}
@@ -55,29 +138,13 @@ export function PublicLayout() {
       <header className="public-header">
         <div className="public-header-container">
           <Link to="/" className="public-brand">
-            <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none" />
-              <circle cx="10" cy="10" r="3" fill="var(--accent-primary)" />
-              <line x1="10" y1="2" x2="10" y2="6" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="10" y1="14" x2="10" y2="18" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="2" y1="10" x2="6" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-              <line x1="14" y1="10" x2="18" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
-            </svg>
-            <span className="public-brand-text">IROCHI</span>
+            <IrochiLogo size={32} showText />
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="public-nav">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`public-nav-link ${location.pathname === link.to ? 'active' : ''}`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Meniscus Nav */}
+          <div className="public-meniscus-nav-container">
+            <MeniscusNavbar items={PUBLIC_NAV_ITEMS} variant="header" />
+          </div>
 
           <div className="public-header-actions">
             <button 
@@ -110,7 +177,7 @@ export function PublicLayout() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="public-mobile-menu">
-            {navLinks.map((link) => (
+            {PUBLIC_NAV_ITEMS.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}

@@ -26,15 +26,22 @@ Checkpoint 4 (Dummy End-to-End Integration Validated)
 - TypeScript check passes (0 errors) (Checkpoint 3 & 4)
 - Production build succeeds (Checkpoint 3 & 4)
 - End-to-End dummy integration with FastAPI backend verified (Checkpoint 4)
+- Meniscus liquid-socket navigation dock component (`MeniscusNavbar`) implemented for public and app navigation
+- Simplex Data-Diode Flow Dynamics visualizer (`DiodeFlowVisualizer`) implemented and integrated into Network page
 
 ## Frontend Structure
 
 ```text
 frontend/
 ├── public/
+│   ├── irochi-logo.jpg # Official Brand Logo Emblem
 │   └── vite.svg
 ├── src/
 │   ├── components/
+│   │   ├── DiodeFlowVisualizer.tsx / DiodeFlowVisualizer.css   # Simplex Data-Diode flow dynamics visualizer
+│   │   ├── IrochiLogo.tsx / IrochiLogo.css                     # Brand logo & cyber shield emblem
+│   │   ├── VerticalMeniscusRail.tsx / VerticalMeniscusRail.css # Collapsed sidebar liquid rail
+│   │   ├── MeniscusNavbar.tsx / MeniscusNavbar.css             # Fluid liquid dock navigation
 │   │   ├── Header.tsx / Header.css
 │   │   ├── SummaryBar.tsx / SummaryBar.css
 │   │   ├── ThreatBreakdown.tsx / ThreatBreakdown.css

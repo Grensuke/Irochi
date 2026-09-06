@@ -1,0 +1,227 @@
+/* ========================================================
+ * MeniscusNavbar — Theme-Adaptive Floating Pill Navbar CSS
+ * Seamless Dark & Light Mode Adaptation
+ * ======================================================== */
+
+.meniscus-dock-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 100;
+}
+
+/* Variant Layouts */
+.meniscus-floating {
+  margin: 0 auto;
+}
+
+.meniscus-header {
+  width: auto;
+}
+
+/* Base Pill Dock (Dark Mode Default) */
+.meniscus-dock {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 4px;
+  background: rgba(22, 25, 34, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+  outline: none;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+/* Floating Active Pill Indicator (Dark Mode) */
+.meniscus-floating-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  background: linear-gradient(180deg, #2e3544 0%, #1e232e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  transition: 
+    transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s ease,
+    background 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform, width;
+}
+
+.meniscus-pill-shine {
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  right: 8px;
+  height: 45%;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+
+/* Tabs Row */
+.meniscus-tabs-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+  z-index: 2;
+}
+
+/* Tab Button */
+.meniscus-tab-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 100%;
+  padding: 0 16px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 9999px;
+  transition: color 0.25s ease;
+  white-space: nowrap;
+  outline: none;
+}
+
+.meniscus-tab-btn:hover {
+  color: #f8fafc;
+}
+
+.meniscus-tab-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.meniscus-tab-btn.is-active {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.meniscus-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.meniscus-tab-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.meniscus-tab-label {
+  letter-spacing: 0.01em;
+}
+
+/* Tab Badge */
+.meniscus-tab-badge {
+  padding: 1px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  background: #334155;
+  color: #ffffff;
+  margin-left: 2px;
+}
+
+.meniscus-tab-btn.is-active .meniscus-tab-badge {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* ========================================================
+ * Light Mode Theme Overrides
+ * ======================================================== */
+[data-theme="light"] .meniscus-dock {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  box-shadow: 
+    0 4px 20px rgba(15, 23, 42, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .meniscus-floating-pill {
+  background: #0f172a;
+  border: none;
+  box-shadow: 
+    0 4px 14px rgba(15, 23, 42, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="light"] .meniscus-pill-shine {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+[data-theme="light"] .meniscus-tab-btn {
+  color: #64748b;
+}
+
+[data-theme="light"] .meniscus-tab-btn:hover {
+  color: #0f172a;
+}
+
+[data-theme="light"] .meniscus-tab-btn:focus-visible {
+  outline: 2px solid #94a3b8;
+}
+
+[data-theme="light"] .meniscus-tab-btn.is-active {
+  color: #ffffff;
+}
+
+[data-theme="light"] .meniscus-tab-badge {
+  background: #334155;
+  color: #ffffff;
+}
+
+[data-theme="light"] .meniscus-tab-btn.is-active .meniscus-tab-badge {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .meniscus-dock {
+    height: 42px;
+    padding: 3px;
+  }
+
+  .meniscus-floating-pill {
+    top: 3px;
+    bottom: 3px;
+  }
+
+  .meniscus-tab-btn {
+    padding: 0 12px;
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .meniscus-tab-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+}
