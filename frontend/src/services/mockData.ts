@@ -26,7 +26,6 @@ export const MOCK_ALERTS: Alert[] = [
     src_ip: '192.168.24.17',
     dst_ip: '10.42.8.21',
     dst_port: 443,
-    proto: 'TCP',
     status: 'investigating',
     evidence_summary: 'Traffic characteristics strongly match the learned SYN flood profile.',
     detector_id: 'ddos_detector'
@@ -44,7 +43,6 @@ export const MOCK_ALERTS: Alert[] = [
     resolved_at: null,
     src_ip: '10.0.4.55',
     dst_ip: '10.42.8.0',
-    proto: 'TCP',
     status: 'new',
     evidence_summary: 'Sequential horizontal port scan detected targeting internal subnet.',
     detector_id: 'recon_detector'
@@ -63,7 +61,6 @@ export const MOCK_ALERTS: Alert[] = [
     src_ip: '10.0.5.20',
     dst_ip: '198.51.100.42',
     dst_port: 443,
-    proto: 'TLS',
     status: 'closed',
     evidence_summary: 'Periodic TLS connections with strict jitter profile and suspicious SNI.',
     detector_id: 'tls_c2_detector'
@@ -82,7 +79,6 @@ export const MOCK_ALERTS: Alert[] = [
     src_ip: '10.0.3.42',
     dst_ip: '8.8.8.8',
     dst_port: 53,
-    proto: 'UDP',
     status: 'new',
     evidence_summary: 'High entropy DNS queries indicating possible DGA algorithm.',
     detector_id: 'dns_dga_tunnel_detector'
@@ -101,7 +97,6 @@ export const MOCK_ALERTS: Alert[] = [
     src_ip: '10.0.1.200',
     dst_ip: '203.0.113.88',
     dst_port: 443,
-    proto: 'TCP',
     status: 'new',
     evidence_summary: 'Sustained outbound transfer of 4.2GB exceeding historical baseline by 400%.',
     detector_id: 'exfiltration_detector'

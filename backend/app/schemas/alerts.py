@@ -74,6 +74,11 @@ class AlertResponse(BaseModel):
     detector_id: DetectorId
     severity: Severity
     confidence: float = Field(ge=0.0, le=1.0)
+    entity_type: str
+    entity_key: str
+    first_seen_at: datetime
+    last_seen_at: datetime
+    resolved_at: datetime | None = None
     src_ip: str | None = None
     src_port: int | None = None
     dst_ip: str | None = None

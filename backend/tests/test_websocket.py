@@ -29,6 +29,9 @@ def override_ws_dependencies():
             self.confidence = data.get("confidence")
             self.entity_type = "source" if data.get("src_ip") else "destination"
             self.entity_key = data.get("src_ip") or data.get("dst_ip") or "unknown"
+            self.first_seen_at = data.get("first_seen_at") or data["timestamp"]
+            self.last_seen_at = data.get("last_seen_at") or data["timestamp"]
+            self.resolved_at = data.get("resolved_at")
             self.evidence_summary = data["evidence_summary"]
             self.status = data["status"]
 
@@ -48,6 +51,10 @@ def override_ws_dependencies():
                 "detector_id": "ddos_detector",
                 "severity": "high",
                 "confidence": 0.9,
+                "entity_type": "source",
+                "entity_key": "mock",
+                "first_seen_at": datetime.now(timezone.utc).isoformat(),
+                "last_seen_at": datetime.now(timezone.utc).isoformat(),
                 "evidence_summary": "Test live alert",
                 "status": "new"
             }
@@ -62,6 +69,10 @@ def override_ws_dependencies():
                 "detector_id": "recon_detector",
                 "severity": "high",
                 "confidence": 0.9,
+                "entity_type": "source",
+                "entity_key": "mock",
+                "first_seen_at": datetime.now(timezone.utc).isoformat(),
+                "last_seen_at": datetime.now(timezone.utc).isoformat(),
                 "evidence_summary": "Test live alert 2",
                 "status": "new"
             }
