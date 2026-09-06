@@ -27,3 +27,12 @@ class GroupingInterface(ABC):
             detector_input.feature_record.entity_type,
             detector_input.feature_record.entity_key
         )
+
+
+class PassThroughGrouping(GroupingInterface):
+    """
+    A simple MVP grouping implementation that acts as a pass-through.
+    Each incoming FeatureRecord (wrapped in DetectorInput) is evaluated immediately.
+    """
+    async def add_and_evaluate(self, detector_input: DetectorInput) -> List[DetectorInput]:
+        return [detector_input]

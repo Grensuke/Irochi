@@ -30,6 +30,7 @@ class AlertEngine:
         - Publishes to Redis after commit.
         """
         # 1. Decision Filtering
+        logger.info(f"AlertEngine received output from {output.detector_id} with decision {output.decision}")
         if output.decision in (Decision.NO_THREAT, Decision.INSUFFICIENT_DATA):
             return None
 
@@ -166,6 +167,8 @@ class AlertEngine:
         alert_payload = {
             "alert_id": str(alert_to_publish.alert_id),
             "timestamp": alert_to_publish.last_seen_at.isoformat(),
+            "first_seen_at": alert_to_publish.first_seen_at.isoformat() if alert_to_publish.first_seen_at else alert_to_publish.last_seen_at.isoformat(),
+            "last_seen_at": alert_to_publish.last_seen_at.isoformat(),
             "threat_type": alert_to_publish.threat_type,
             "detector_id": alert_to_publish.detector_id,
             "severity": alert_to_publish.severity,

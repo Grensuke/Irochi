@@ -50,3 +50,7 @@ REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
 # --- Redpanda ---
 REDPANDA_BROKER = os.getenv("REDPANDA_BROKER", "localhost:19092")
+REDPANDA_CONSUMER_GROUP = os.getenv("REDPANDA_CONSUMER_GROUP", "irochi-pipeline-group")
+# Note: In a real environment, this might come from a robust config. For MVP we use comma-separated env var.
+_default_topics = "irochi.events.connection.v1,irochi.events.dns.v1,irochi.events.tls.v1"
+REDPANDA_TOPICS = [t.strip() for t in os.getenv("REDPANDA_TOPICS", _default_topics).split(",") if t.strip()]
