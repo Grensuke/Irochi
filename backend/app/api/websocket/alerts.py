@@ -46,7 +46,7 @@ async def websocket_alerts(
                 threat_type=a.threat_type,
                 detector_id=a.detector_id,
                 severity=a.severity,
-                confidence=a.confidence or 0.0,
+                confidence=a.confidence,
                 entity_type=a.entity_type,
                 entity_key=a.entity_key,
                 first_seen_at=a.first_seen_at,
