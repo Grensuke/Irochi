@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 @pytest_asyncio.fixture
 async def test_topic():
-    """Returns the already-created connection topic for testing."""
-    topic_name = "irochi.events.connection.v1"
+    """Returns a dedicated connection topic for testing."""
+    topic_name = "test.irochi.events.connection.v1"
     yield topic_name
 
 
