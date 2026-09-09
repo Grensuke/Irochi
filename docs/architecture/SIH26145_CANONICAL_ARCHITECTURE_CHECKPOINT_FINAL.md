@@ -1450,9 +1450,9 @@ This dual-mode design gives repeatability during development while preserving a 
 
 ---
 
-# 32. Design Chain From Here
+# 32. Design Chain (Implemented)
 
-Do **not** jump into implementation before the following contracts are defined.
+The following components were part of the initial design chain and have now been drafted and integrated into the active infrastructure:
 
 ```text
 1. Canonical Event Schema
@@ -1472,7 +1472,7 @@ Do **not** jump into implementation before the following contracts are defined.
 8. Alert publication + WebSocket reconnect/backfill implementation details
 ```
 
-> **Historical vs. current note:** This section records the *original* design dependency order, written before any of the downstream contracts existed. Items 1–7 (Canonical Event Schema through FastAPI API Contract) are now all drafted — see `§33a` for the full inventory and current status. Implementation is not blocked by these seven contracts being undefined anymore; it is blocked by the formal project-lead approval pass described in `§33a`, which has not yet occurred. Item 8 is deliberately excluded from that "seven" count — it is a further implementation-level concern, not one of the seven drafted design/contract documents, and stays open regardless of how the approval pass resolves.
+> **Historical vs. current note:** This section originally blocked implementation until all contracts were defined. Items 1–8 are now actively implemented in the current runtime pipeline (WP-A through WP-G). The original design intent remains valid, but the system is no longer in a blocked design phase.
 
 ---
 
@@ -1533,23 +1533,15 @@ Per checkpoint §32, do not jump into Pydantic implementation before the remaini
 
 ---
 
-# 33a. Immediate Next Task — Redpanda Topics
+# 33a. Implementation Status — Base Infrastructure
 
-> **STATUS: DESIGN CHAIN FULLY DRAFTED — AWAITING FORMAL PROJECT-LEAD APPROVAL PASS**
+> **STATUS: PIPELINE IMPLEMENTED (WP-G COMPLETED)**
 >
-> The raw canonical-event Redpanda partition key is locked to `hash(src_ip)` for `connection`, `dns`, and `tls` topics. See `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009. (BD-009's own approval provenance is itself one of the items pending confirmation in the review below — see Review 1.)
+> The raw canonical-event Redpanda partition key is locked to `hash(src_ip)` for `connection`, `dns`, and `tls` topics. See `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/backend/BACKEND_DECISIONS.md` BD-009.
 >
-> The full downstream design chain has since been drafted: `FEATURE_WINDOW_SCHEMA_DRAFT_v7.md`, `DETECTOR_IO_CONTRACT_DRAFT_v1.md`, `ALERT_SCHEMA_DRAFT_v1.md`, `POSTGRESQL_SCHEMA_DRAFT_v1.md`, and `docs/shared/API_CONTRACT_DRAFT_v1.md` all exist and are internally consistent with each other and with this checkpoint. None of them are promoted to `_FINAL` — each document's own header still requires project-lead/team review before that promotion, and each document's own decision-status table shows the specific items still PROPOSED/OPEN within it.
+> The full downstream design chain has since been implemented in the active backend infrastructure (`DetectionPipeline`, `PostgresAlertService`, `RedisPubSubService`). The dummy endpoints have been replaced with real database and pub-sub integration.
 >
-> Do not resume architecture drafting from here. The next step is a formal three-part approval pass, not further design work:
->
-> ```text
-> Review 1 — REDPANDA_TOPICS_DRAFT_v5.md, FEATURE_WINDOW_SCHEMA_DRAFT_v7.md, BD-009
-> Review 2 — DETECTOR_IO_CONTRACT_DRAFT_v1.md, ALERT_SCHEMA_DRAFT_v1.md
-> Review 3 — POSTGRESQL_SCHEMA_DRAFT_v1.md, API_CONTRACT_DRAFT_v1.md
-> ```
->
-> Each promoted decision should record explicit approval provenance (e.g. an `AR-0N` review identifier) rather than an unattributed "approved" statement — see BD-009 for the gap this is fixing. Implementation should not begin ahead of this review per BD-006 and the Final Status section of each draft document above.
+> Implementation is no longer blocked. The active phase is **Detector Evaluation** (M8 End-to-End Validation), focusing on evaluating thresholds and generalization.
 
 The original task is:
 
@@ -1581,5 +1573,5 @@ If future context is lost:
 2. Treat **LOCKED** decisions as already agreed.
 3. Treat **CONDITIONAL / NOT YET FINALIZED** items as open.
 4. Read `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md` — the Canonical Event Schema task (§33) is complete at baseline level.
-5. Read the §33a status block — the raw-topic partition key (`src_ip`) is LOCKED, and the full design chain (Redpanda → Feature/Window → Detector I/O → Alert Schema → PostgreSQL Schema → API Contract) is already drafted. Do not restart any of that design work. Resume from the three-part formal approval pass described in §33a.
+5. Read the §33a status block — the design chain is implemented and the system is actively running in the M8 Evaluation phase.
 6. Do not redesign the architecture, or the Canonical Event Schema's locked envelope/payload structure, from scratch unless a verified new requirement or benchmark requires it.

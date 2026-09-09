@@ -7,7 +7,7 @@
 
 ## Phase
 
-WP-G (Alert Engine) Completed.
+Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infrastructure integration are completed.
 
 ## Implementation Status
 
@@ -18,94 +18,51 @@ WP-G (Alert Engine) Completed.
 - WP-D ✅ Feature / Window Engine
 - WP-E ✅ Detector Framework
 - WP-F ✅ PCAP, Recon, DDoS, DNS/DGA
-- WP-G ✅ Alert Engine (CURRENT)
+- WP-G ✅ Alert Engine
 - WP-H = PENDING
 - WP-I = PENDING
-- M8 = PENDING — end-to-end MVP validation
-
-**Milestones:**
-- P0 = first complete vertical slice with one functional detector
-- P1 = full SIH MVP with all five logical detectors
-- P2 = production-oriented hardening
-
-**Important Constraints:**
-- The exact stale-update/concurrency algorithm is OPEN.
-- It must be resolved before Alert Engine persistence.
+- EVALUATION ✅ Baseline Evaluation & Threshold Sensitivity completed
+- M8 = IN PROGRESS — end-to-end MVP validation
 
 ## Backend Structure
 
-```
-backend/
-├── app/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI entry point, CORS, route mounting
-│   ├── api/
-│   │   ├── routes/
-│   │   │   ├── health.py     # GET /api/v1/health
-│   │   │   ├── alerts.py     # GET /api/v1/alerts, /alerts/{id}
-│   │   │   └── dashboard.py  # GET /api/v1/dashboard/summary
-│   │   └── websocket/
-│   │       └── alerts.py     # WS /api/v1/ws/alerts
-│   ├── schemas/
-│   │   ├── health.py         # HealthResponse
-│   │   ├── alerts.py         # AlertResponse, enums, WebSocketMessage
-│   │   └── dashboard.py      # DashboardSummaryResponse
-│   ├── services/
-│   │   ├── alert_service.py  # AlertService interface + MockAlertService
-│   │   └── dashboard_service.py  # DashboardService interface + MockDashboardService
-│   ├── core/
-│   │   └── config.py         # App metadata, API prefix, WS settings
-│   └── mock/
-│       └── data.py           # 12 static mock alerts + 6 live templates
-├── tests/
-│   ├── conftest.py           # TestClient fixture
-│   ├── test_health.py        # 2 tests
-│   ├── test_alerts.py        # 9 tests
-│   ├── test_dashboard.py     # 6 tests
-│   └── test_websocket.py     # 3 tests
-├── Dockerfile
-├── requirements.txt
-└── README.md
-```
+The backend is fully wired to actual infrastructure services:
+
+- **Entry Point:** `app/main.py` instantiates and starts the `DetectionPipeline` during the FastAPI lifespan.
+- **Streaming:** `KafkaConsumerService` handles real Redpanda messages.
+- **State/Caching:** `FeatureEngine` relies on `RedisStateService`.
+- **Detectors:** `DdosDetector` (1000 pps), `ReconDetector` (50 ports), and `DnsDetector` (DGA via `.joblib`) are actively registered.
+- **Alert Persistence:** `AlertEngine` saves to PostgreSQL via `PostgresAlertService`.
+- **Live Updates:** Alerts are pushed through `RedisPubSubService`.
 
 ## Endpoints
 
 | Method | Path | Status |
 |---|---|---|
 | GET | `/api/v1/health` | ✅ Working |
-| GET | `/api/v1/alerts` | ✅ Working |
-| GET | `/api/v1/alerts/{alert_id}` | ✅ Working (404 for missing) |
-| GET | `/api/v1/dashboard/summary` | ✅ Working |
-| WS | `/api/v1/ws/alerts` | ✅ Working (backfill + live) |
+| GET | `/api/v1/alerts` | ✅ Working (Queries PostgreSQL) |
+| GET | `/api/v1/alerts/{alert_id}` | ✅ Working (Queries PostgreSQL) |
+| GET | `/api/v1/dashboard/summary` | ✅ Working (Queries PostgreSQL) |
+| WS | `/api/v1/ws/alerts` | ✅ Working (Backfill via DB, Live via Redis Pub/Sub) |
 
-## Design Contracts (current status per DATA_CONTRACTS.md)
+## Evaluation Tooling & Findings
 
-- Redpanda topic design — DRAFT / IN PROGRESS
-- Feature/Window Schema — DRAFT / IN PROGRESS
-- Detector input/output contracts — DRAFT / IN PROGRESS
-- Alert Schema — DRAFT / IN PROGRESS
-- PostgreSQL Schema — DRAFT / IN PROGRESS
-- Final API Contract — DRAFT / IN PROGRESS
+**Evaluation Tools (`backend/tools/`):**
+- `evaluate_detectors.py`: Core Level 1 (synthetic) and Level 2 (CIC-IDS2017) evaluation harness.
+- `diagnostic_analysis.py`: Error profiles and packet rate distributions.
+- `sensitivity_analysis.py`: Tests multiple thresholds against ground truth.
+- `cross_validation.py`: Generalization testing across different day captures.
 
-## Pending
+**Findings:**
+- **DDoS Detector:** The default 1000 pps threshold misses low-bandwidth DoS attacks (e.g. Wednesday DoS Hulk). Candidate thresholds of 500-600 pps improve detection but introduce false positives in background traffic.
+- **Recon Detector:** The default 50 ports threshold is sensitive but generates false positives. Candidate threshold of 900 ports improves precision but requires more tuning.
+- **Flow/Window Distortion:** Reconstructing flows from PCAP causes artificial burstiness due to missing real-time inter-arrival spacing, heavily penalizing simple rate-based detection.
 
-- Real Zeek integration
-- Real ML models
-- Production Redis (hot state + Pub/Sub)
-- Real NetFlow/IPFIX adapter
-- Production authentication (JWT + RBAC + Argon2)
-- Final API contract implementation (contract design is DRAFT / IN PROGRESS in `docs/shared/API_CONTRACT_DRAFT_v1.md`; runtime implementation is pending)
-- Final WebSocket protocol implementation (contract design is DRAFT / IN PROGRESS; runtime implementation is pending)
+**Note:** The production defaults remain 1000 pps and 50 ports. Candidate thresholds are currently evaluation outputs, not finalized rules. See [`docs/EVALUATION.md`](../EVALUATION.md) for the full methodology and findings.
 
-## Known Constraints
+## Known Constraints / Limitations
 
-- Real detection pipeline is not implemented
-- Mock services are temporary placeholders
-- Final API contract is not locked
-- No real database, message broker, or ML in this phase
-- CORS is permissive ("*") for dummy phase
-- WebSocket live interval is 4 seconds (configurable in core/config.py)
-
-## Next Steps
-
-Wait for project lead approval to proceed to production infrastructure (Checkpoint 5).
+- DGA (`DnsDetector`) strictly relies on an external `.joblib` model artifact to run.
+- Production authentication (JWT + RBAC + Argon2) is pending.
+- Real NetFlow/IPFIX adapter is pending.
+- Stale-update concurrency in Alert Engine requires review under load.

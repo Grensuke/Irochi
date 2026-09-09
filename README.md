@@ -10,13 +10,20 @@ Passive, real-time network threat-detection and security-intelligence system.
 
 ## Current Status
 
-> **CURRENT: Checkpoint 4 (FINAL DUMMY END-TO-END INTEGRATION)**
+> **CURRENT: Active Infrastructure & Detector Evaluation Phase**
 >
-> The repository contains a complete, verified dummy end-to-end application.
-> - **Backend:** FastAPI skeleton with mock data endpoints and simulated WebSocket live alerts.
-> - **Frontend:** Complete React + Vite product shell with dummy integration.
+> The repository contains a fully integrated pipeline with active infrastructure.
+> - **Backend:** FastAPI with `DetectionPipeline` consuming from Redpanda, routing to active detectors, saving to PostgreSQL, and streaming via Redis Pub/Sub to real REST/WebSocket endpoints.
+> - **Frontend:** React + Vite product shell. The alerts integration uses the *real* API, while other telemetry dashboards remain in a demo state.
+> - **Evaluation:** Extensive detector evaluation tooling (Level 1 & Level 2 methodology using CIC-IDS2017) has been implemented and run to establish baselines.
 >
-> **This is NOT the real SIH26145 production pipeline yet.** No real Zeek, Redpanda, PostgreSQL, or ML is implemented in this dummy phase.
+> **Active Detectors & Defaults:**
+> - DDoS Detector (default threshold: 1000 pps)
+> - Recon Detector (default threshold: 50 ports)
+> - DNS/DGA Detector (Requires external `.joblib` model artifact)
+>
+> **Known Limitations:**
+> Evaluation has shown severe limitations with the current flow-window distortion and default thresholds (e.g., 1000 pps misses low-bandwidth DoS). These default thresholds remain active but candidate improvements are documented. DGA relies on an external model artifact.
 
 ---
 
@@ -108,8 +115,8 @@ Irochi/
 │   ├── backend/          # Backend context + decisions
 │   ├── frontend/         # Frontend context + decisions
 │   └── shared/           # API contract, data contracts, integration notes
-├── frontend/             # React + Vite + TypeScript (Dummy Shell)
-├── backend/              # Python + FastAPI (Dummy API)
+├── frontend/             # React + Vite + TypeScript
+├── backend/              # Python + FastAPI
 ├── infra/                # Infrastructure configs
 ├── tests/                # Cross-cutting tests
 ├── AGENTS.md             # Agent rules and project reference
@@ -152,7 +159,7 @@ Edit `.env` and fill in appropriate values. **Never commit `.env`** — it is gi
 
 ---
 
-## Backend Setup / Run (Dummy Phase)
+## Backend Setup / Run
 
 ```bash
 cd backend
@@ -163,12 +170,18 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
+
+# To run the FastAPI server (requires active Docker infrastructure):
 uvicorn app.main:app --reload --port 8000
+
+# To manually ingest a PCAP for detection (requires active Docker infrastructure):
+# Note: Ensure Redpanda is accessible at localhost:19092
+python run_prototype.py --pcap C:\path\to\your\traffic.pcap
 ```
 
 ---
 
-## Frontend Setup / Run (Dummy Phase)
+## Frontend Setup / Run
 
 ```bash
 cd frontend
@@ -183,4 +196,5 @@ npm run dev
 - [Architecture Checkpoint](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md)
 - [Canonical Event Schema](docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md)
 - [API Contract (Draft)](docs/shared/API_CONTRACT.md)
+- [Evaluation](docs/EVALUATION.md)
 - [AGENTS.md](AGENTS.md)

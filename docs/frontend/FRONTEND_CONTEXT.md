@@ -7,7 +7,7 @@
 
 ## Phase
 
-Checkpoint 4 (Dummy End-to-End Integration Validated)
+Active Infrastructure Integration (Alerts integrated with real backend)
 
 ## Completed
 
@@ -23,9 +23,9 @@ Checkpoint 4 (Dummy End-to-End Integration Validated)
 - WebSocket connection state display (connecting, backfilling, live, reconnecting, disconnected) (Checkpoint 3)
 - Visible distinction between backfilled and live alerts (phase badges) (Checkpoint 3)
 - Frontend Dockerfile (Checkpoint 3)
-- TypeScript check passes (0 errors) (Checkpoint 3 & 4)
-- Production build succeeds (Checkpoint 3 & 4)
-- End-to-End dummy integration with FastAPI backend verified (Checkpoint 4)
+- TypeScript check passes (0 errors)
+- Production build succeeds
+- Alerts and Live WebSocket integrated with REAL backend pipeline
 - Meniscus liquid-socket navigation dock component (`MeniscusNavbar`) implemented for public and app navigation
 - Simplex Data-Diode Flow Dynamics visualizer (`DiodeFlowVisualizer`) implemented and integrated into Network page
 
@@ -86,32 +86,30 @@ frontend/
 └── vite.config.ts           # Proxy to backend
 ```
 
-## API Endpoints Consumed
+## Integration Status: Real vs Mock
 
+**REAL (Integrated with PostgreSQL / Redis via Backend):**
 | Endpoint | Used By |
 |---|---|
-| GET /api/v1/health | api.ts (available, not displayed in UI) |
-| GET /api/v1/alerts | useAlerts → AlertTable, Alerts page |
-| GET /api/v1/dashboard/summary | useDashboard → SummaryBar, ThreatBreakdown, Threats page, Analytics page |
-| WS /api/v1/ws/alerts | useLiveAlerts → LiveFeed |
+| GET /api/v1/health | `api.ts` (available, not displayed in UI) |
+| GET /api/v1/alerts | `useAlerts` → AlertTable, Alerts page |
+| GET /api/v1/dashboard/summary | `useDashboard` → SummaryBar, ThreatBreakdown, Threats page, Analytics page |
+| WS /api/v1/ws/alerts | `useLiveAlerts` → LiveFeed |
 
-*Other pages (Network, Analytics trends, Settings) use mock data from `src/services/mockData.ts`.*
+**MOCK / DEMO (Using `src/services/mockData.ts`):**
+- Network page (uses synthetic traffic data for DiodeFlowVisualizer)
+- Analytics trends (synthetic historical charts)
+- Settings (UI only)
 
 ## Pending
 
-- Final API contract integration
-- Real backend implementation for all mock data
+- Replace remaining mock telemetry dashboards with real API aggregations
 - Real authentication and authorization
 - Real multi-tenancy support
 
 ## Known Constraints
 
-- Uses dummy backend endpoints and mock data.
+- Telemetry screens (Network/Analytics) are still mock demos.
 - CORS is permissive ("*") on backend — suitable for dev only.
 - Vite dev proxy handles API routing — production will need nginx/reverse proxy.
 - No real authentication (auth context is mock only).
-- No real-time data beyond dummy WS.
-
-## Next Steps
-
-Wait for project lead approval to proceed to production infrastructure and real architecture implementation.
