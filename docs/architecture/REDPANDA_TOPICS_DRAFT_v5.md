@@ -1,5 +1,7 @@
 # SIH26145 — REDPANDA TOPIC DESIGN (DRAFT v5)
 
+**[STATUS: DRAFT]**
+
 > **Status:** DRAFT — one item below is LOCKED; the document as a whole remains DRAFT pending project-lead / team review of the remaining OPEN items before promotion to `_FINAL`.
 >
 > **Continues from:** `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md` and the architecture checkpoint's §33a ("Immediate Next Task — Redpanda Topics").

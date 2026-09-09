@@ -49,26 +49,26 @@ Irochi is an intelligence system. It produces:
 
 ### Threat Capabilities
 
-| # | Threat Capability |
-|---|---|
-| 1 | Volumetric / Protocol DDoS |
-| 2 | Botnet C2 Beaconing |
-| 3 | DGA / DNS Tunneling |
-| 4 | Malware inside encrypted sessions |
-| 5 | Reconnaissance / Port Scanning |
-| 6 | Data Exfiltration |
+| # | Threat Capability | Status |
+|---|---|---|
+| 1 | Volumetric / Protocol DDoS | **Active** |
+| 2 | Botnet C2 Beaconing | Planned |
+| 3 | DGA / DNS Tunneling | **Active** (Requires ML Model) |
+| 4 | Malware inside encrypted sessions | Planned |
+| 5 | Reconnaissance / Port Scanning | **Active** |
+| 6 | Data Exfiltration | Planned |
 
 ### Detector Modules
 
-| # | Detector Module |
-|---|---|
-| 1 | DDoS Detector |
-| 2 | Recon Detector |
-| 3 | DNS/DGA/DNS-Tunneling Detector |
-| 4 | TLS/C2 Detector |
-| 5 | Exfiltration Detector |
+| # | Detector Module | Status |
+|---|---|---|
+| 1 | DDoS Detector | **Active** |
+| 2 | Recon Detector | **Active** |
+| 3 | DNS/DGA/DNS-Tunneling Detector | **Active** (Requires `.joblib`) |
+| 4 | TLS/C2 Detector | Planned |
+| 5 | Exfiltration Detector | Planned |
 
-These are five logical modules — **not** five microservices.
+These are logical modules — **not** microservices.
 
 ---
 
@@ -110,20 +110,22 @@ See: [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](d
 Irochi/
 ├── .agents/              # Antigravity skills
 ├── docs/
-│   ├── architecture/     # Architecture checkpoint (source of truth)
+│   ├── architecture/     # Architecture checkpoints (source of truth)
 │   ├── data/             # Canonical Event Schema (source of truth)
 │   ├── backend/          # Backend context + decisions
 │   ├── frontend/         # Frontend context + decisions
 │   └── shared/           # API contract, data contracts, integration notes
 ├── frontend/             # React + Vite + TypeScript
 ├── backend/              # Python + FastAPI
-├── infra/                # Infrastructure configs
-├── tests/                # Cross-cutting tests
+│   ├── app/              # Application source
+│   ├── tests/            # Automated tests
+│   └── tools/            # Offline evaluation and diagnostic tools
+├── infra/                # Infrastructure configs (future/Zeek)
 ├── AGENTS.md             # Agent rules and project reference
 ├── README.md             # This file
 ├── .gitignore
 ├── .env.example
-└── docker-compose.yml
+└── docker-compose.yml    # Root Docker Compose for backend, frontend, DBs
 ```
 
 ---
@@ -146,47 +148,48 @@ Irochi/
 
 ---
 
-## Environment Setup
+## Environment Setup & Configuration
 
-Before running the backend or frontend:
+Before running any services, set up your local environment configuration:
 
 ```bash
-# Copy the environment template to create your local config
+# Copy the environment template
 cp .env.example .env
 ```
 
-Edit `.env` and fill in appropriate values. **Never commit `.env`** — it is gitignored.
+Edit `.env` and fill in appropriate values. **Never commit `.env`**.
+
+### Important Network Configurations
+When running the stack, pay attention to Redpanda connectivity depending on where the producer/consumer is running:
+- **From within Docker (e.g. FastAPI Backend)**: Connect to Redpanda using `REDPANDA_BROKER=redpanda:9092`
+- **From Host Machine (e.g. PCAP Runner script)**: Connect to Redpanda using `localhost:19092`
 
 ---
 
-## Backend Setup / Run
+## Running the Application (Docker Workflow)
+
+The recommended way to run Irochi is using the root `docker-compose.yml`. This spins up the active infrastructure (PostgreSQL, Redis, Redpanda) alongside the FastAPI backend and React frontend.
+
+```bash
+docker compose up --build
+```
+- Frontend available at: `http://localhost:5173`
+- Backend API available at: `http://localhost:8000`
+
+### Ingesting Traffic (Host PCAP Runner)
+To manually ingest a PCAP file for detection while the Docker stack is running:
 
 ```bash
 cd backend
 python -m venv .venv
 # Windows:
-.venv\Scripts\activate
-# macOS/Linux:
+.\.venv\Scripts\activate
+# Linux/macOS:
 source .venv/bin/activate
-
 pip install -r requirements.txt
 
-# To run the FastAPI server (requires active Docker infrastructure):
-uvicorn app.main:app --reload --port 8000
-
-# To manually ingest a PCAP for detection (requires active Docker infrastructure):
-# Note: Ensure Redpanda is accessible at localhost:19092
+# Run the prototype ingestor from the host machine (targets localhost:19092)
 python run_prototype.py --pcap C:\path\to\your\traffic.pcap
-```
-
----
-
-## Frontend Setup / Run
-
-```bash
-cd frontend
-npm install
-npm run dev
 ```
 
 ---

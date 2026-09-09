@@ -1,5 +1,7 @@
 # SIH26145 — CANONICAL ARCHITECTURE CHECKPOINT
 
+**[STATUS: ACTIVE]**
+
 > **Purpose**
 >
 > This document is the single recovery/reference point for the SIH26145 architecture discussion completed so far. It records what is **locked**, what is **conditional/not yet finalized**, why the major decisions were made, the exact component order, the important implementation invariants, and the next design task.
