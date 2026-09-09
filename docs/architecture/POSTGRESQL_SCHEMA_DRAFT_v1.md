@@ -1,5 +1,7 @@
 # SIH26145 — POSTGRESQL SCHEMA (DRAFT v1)
 
+**[STATUS: DRAFT]**
+
 > **Status:** DRAFT — structural PostgreSQL persistence model for review; individual section statuses vary (see §20). Requires project-lead / team review before promotion to `_FINAL`.
 >
 > **Continues from:** `docs/architecture/ALERT_SCHEMA_DRAFT_v1.md`, `docs/architecture/DETECTOR_IO_CONTRACT_DRAFT_v1.md`, and upstream design-chain documents.

@@ -1,5 +1,7 @@
 # Architecture Review Log
 
+**[STATUS: ACTIVE]**
+
 ## AR-01 — Review 1
 - **Reviewer / Approver:** Project Lead
 - **Date:** 2026-08-30

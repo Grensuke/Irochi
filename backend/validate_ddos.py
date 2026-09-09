@@ -1,3 +1,12 @@
+"""
+LEGACY / TEST-ONLY SCRIPT
+
+This script is an early integration prototype used to validate the pipeline
+from Redpanda to the FeatureEngine and Detector. It is kept for historical
+and local-debugging purposes. It is not part of the active production
+runtime or the official evaluation tooling.
+"""
+
 import asyncio
 import logging
 import json

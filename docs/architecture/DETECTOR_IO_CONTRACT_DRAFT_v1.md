@@ -1,5 +1,7 @@
 # SIH26145 — DETECTOR INPUT / OUTPUT CONTRACT (DRAFT v1)
 
+**[STATUS: DRAFT]**
+
 > **Status:** DRAFT — structural contract for review; individual section statuses vary (see §19). Requires project-lead / team review before promotion to `_FINAL`.
 >
 > **Continues from:** `docs/architecture/FEATURE_WINDOW_SCHEMA_DRAFT_v7.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` (§11, §12, §14, §15, §17, §18), and `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md`.

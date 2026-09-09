@@ -1,5 +1,7 @@
 # SIH26145 — FEATURE / WINDOW SCHEMA (DRAFT v7)
 
+**[STATUS: DRAFT]**
+
 > **Status:** DRAFT — Redis state modeling pass complete; individual section statuses vary (see §23). Requires project-lead / team review before promotion to `_FINAL`.
 >
 > **Continues from:** `docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` (§9, §10, §12, §14, §15), and `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md`.
