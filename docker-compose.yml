@@ -21,9 +21,9 @@ version: "3.9"
 
 services:
   # ------------------------------------------------
-  # Backend — FastAPI (dummy)
+  # Backend — FastAPI
   # ------------------------------------------------
-  # Requires: backend/Dockerfile (Checkpoint 2)
+  # Requires: backend/Dockerfile
   # ------------------------------------------------
   backend:
     build:
@@ -45,9 +45,9 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # ------------------------------------------------
-  # Frontend — React + Vite (dummy)
+  # Frontend — React + Vite
   # ------------------------------------------------
-  # Requires: frontend/Dockerfile (Checkpoint 3)
+  # Requires: frontend/Dockerfile
   # ------------------------------------------------
   frontend:
     build:
@@ -131,10 +131,10 @@ services:
       retries: 5
 
 # ==================================================
-# FUTURE SERVICES (not yet implemented)
+# FUTURE SERVICES (not yet active)
 # ==================================================
-# The following will be added when the real pipeline
-# is built. Do NOT uncomment until then.
+# The following will be added when observability and
+# Zeek containerization are implemented.
 #
 #  prometheus:
 #    image: prom/prometheus:v2.53.0

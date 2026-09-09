@@ -3,6 +3,7 @@ import sys
 import uuid
 import time
 import asyncio
+import argparse
 import pandas as pd
 from pathlib import Path
 
@@ -18,14 +19,12 @@ from app.schemas.features import (
     EntityType,
     WindowType,
 )
-from app.schemas.detectors import DetectorInput, Decision
+from app.schemas.detectors import DetectorInput, DetectorId, Decision
 from app.services.detectors.ddos import DdosDetector
 from app.services.detectors.recon import ReconDetector
 from tools.evaluate_detectors import custom_agg_ddos, custom_agg_recon, clean_columns, EvaluatorMetrics
 
-DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
-DDOS_FILE = os.path.join(DATASET_ROOT, "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv")
-RECON_FILE = os.path.join(DATASET_ROOT, "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv")
+DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
 
 def calculate_metrics_summary(metrics: EvaluatorMetrics):
@@ -36,12 +35,13 @@ def calculate_metrics_summary(metrics: EvaluatorMetrics):
     return precision, recall, f1, fpr
 
 
-async def sweep_ddos():
+async def sweep_ddos(dataset_root):
+    ddos_file = os.path.join(dataset_root, "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv")
     print("\n" + "="*80)
     print("DDoS THRESHOLD SENSITIVITY SWEEP")
     print("="*80)
 
-    df = pd.read_csv(DDOS_FILE, encoding='cp1252', engine='python', on_bad_lines='skip')
+    df = pd.read_csv(ddos_file, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
     df = df.dropna(subset=['Timestamp', 'Destination IP', 'Total Fwd Packets', 'Total Backward Packets'])
     df['Timestamp'] = pd.to_datetime(df['Timestamp'], format='mixed', dayfirst=True)
@@ -50,7 +50,7 @@ async def sweep_ddos():
     aggregated = grouped.apply(custom_agg_ddos).reset_index()
     aggregated = aggregated[aggregated['Total_Flows'] > 0]
 
-    inputs = []
+    records = []
     metadata = []
 
     attack_w = 0
@@ -79,11 +79,10 @@ async def sweep_ddos():
             computed_at=int(time.time() * 1000000), schema_version="1.0",
             revision=1, payload=payload
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id="ddos_detector", feature_record=record)
-        inputs.append(inp)
+        records.append(record)
         metadata.append((truth, ratio))
 
-    print(f"Total Evaluated Windows: {len(inputs)}")
+    print(f"Total Evaluated Windows: {len(records)}")
     print(f"Attack Windows: {attack_w} | Pure Benign: {benign_w} | Mixed: {mixed_w}\n")
 
     thresholds = [400, 500, 600, 700, 750, 800, 850, 900, 950, 1000]
@@ -94,8 +93,11 @@ async def sweep_ddos():
 
     for th in thresholds:
         detector = DdosDetector(packet_rate_threshold=float(th))
-        for inp in inputs:
-            inp.detector_id = detector.detector_id
+        # Create fresh inputs per threshold to avoid shared-object mutation
+        inputs = [
+            DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.DDOS, feature_record=rec)
+            for rec in records
+        ]
 
         outputs = await detector.evaluate(inputs)
         metrics = EvaluatorMetrics()
@@ -121,12 +123,13 @@ async def sweep_ddos():
     print(f"Lowest FPR:        {min(results, key=lambda x: x['fpr'])['th']:.1f}")
 
 
-async def sweep_recon():
+async def sweep_recon(dataset_root):
+    recon_file = os.path.join(dataset_root, "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv")
     print("\n" + "="*80)
     print("RECON THRESHOLD SENSITIVITY SWEEP")
     print("="*80)
 
-    df = pd.read_csv(RECON_FILE, encoding='cp1252', engine='python', on_bad_lines='skip')
+    df = pd.read_csv(recon_file, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
     df = df.dropna(subset=['Timestamp', 'Source IP', 'Destination Port'])
     df['Timestamp'] = pd.to_datetime(df['Timestamp'], format='mixed', dayfirst=True)
@@ -135,7 +138,7 @@ async def sweep_recon():
     aggregated = grouped.apply(custom_agg_recon).reset_index()
     aggregated = aggregated[aggregated['Total_Flows'] > 0]
 
-    inputs = []
+    records = []
     metadata = []
 
     attack_w = 0
@@ -163,11 +166,10 @@ async def sweep_recon():
             computed_at=int(time.time() * 1000000), schema_version="1.0",
             revision=1, payload=payload
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id="recon_detector", feature_record=record)
-        inputs.append(inp)
+        records.append(record)
         metadata.append((truth, ratio))
 
-    print(f"Total Evaluated Windows: {len(inputs)}")
+    print(f"Total Evaluated Windows: {len(records)}")
     print(f"Attack Windows: {attack_w} | Pure Benign: {benign_w} | Mixed: {mixed_w}\n")
 
     thresholds = [50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 900]
@@ -178,8 +180,11 @@ async def sweep_recon():
 
     for th in thresholds:
         detector = ReconDetector(portscan_threshold=int(th))
-        for inp in inputs:
-            inp.detector_id = detector.detector_id
+        # Create fresh inputs per threshold to avoid shared-object mutation
+        inputs = [
+            DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.RECON, feature_record=rec)
+            for rec in records
+        ]
 
         outputs = await detector.evaluate(inputs)
         metrics = EvaluatorMetrics()
@@ -205,6 +210,12 @@ async def sweep_recon():
     print(f"Lowest FPR:        {min(results, key=lambda x: x['fpr'])['th']:.1f}")
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Threshold sensitivity sweep")
+    parser.add_argument("--dataset-dir", type=str, default=DEFAULT_DATASET_ROOT, help="Path to CIC-IDS2017 TrafficLabelling dir")
+    args = parser.parse_args()
+    asyncio.run(sweep_ddos(args.dataset_dir))
+    asyncio.run(sweep_recon(args.dataset_dir))
+
 if __name__ == "__main__":
-    asyncio.run(sweep_ddos())
-    asyncio.run(sweep_recon())
+    main()

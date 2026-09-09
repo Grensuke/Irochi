@@ -58,7 +58,7 @@ The backend is fully wired to actual infrastructure services:
 - **Recon Detector:** The default 50 ports threshold is sensitive but generates false positives. Candidate threshold of 900 ports improves precision but requires more tuning.
 - **Flow/Window Distortion:** Reconstructing flows from PCAP causes artificial burstiness due to missing real-time inter-arrival spacing, heavily penalizing simple rate-based detection.
 
-**Note:** The production defaults remain 1000 pps and 50 ports. Candidate thresholds are currently evaluation outputs, not finalized rules.
+**Note:** The production defaults remain 1000 pps and 50 ports. Candidate thresholds are currently evaluation outputs, not finalized rules. See [`docs/EVALUATION.md`](../EVALUATION.md) for the full methodology and findings.
 
 ## Known Constraints / Limitations
 

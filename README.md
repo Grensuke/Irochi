@@ -115,8 +115,8 @@ Irochi/
 │   ├── backend/          # Backend context + decisions
 │   ├── frontend/         # Frontend context + decisions
 │   └── shared/           # API contract, data contracts, integration notes
-├── frontend/             # React + Vite + TypeScript (Dummy Shell)
-├── backend/              # Python + FastAPI (Dummy API)
+├── frontend/             # React + Vite + TypeScript
+├── backend/              # Python + FastAPI
 ├── infra/                # Infrastructure configs
 ├── tests/                # Cross-cutting tests
 ├── AGENTS.md             # Agent rules and project reference
@@ -159,7 +159,7 @@ Edit `.env` and fill in appropriate values. **Never commit `.env`** — it is gi
 
 ---
 
-## Backend Setup / Run (Dummy Phase)
+## Backend Setup / Run
 
 ```bash
 cd backend
@@ -181,7 +181,7 @@ python run_prototype.py --pcap C:\path\to\your\traffic.pcap
 
 ---
 
-## Frontend Setup / Run (Dummy Phase)
+## Frontend Setup / Run
 
 ```bash
 cd frontend
@@ -196,4 +196,5 @@ npm run dev
 - [Architecture Checkpoint](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md)
 - [Canonical Event Schema](docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md)
 - [API Contract (Draft)](docs/shared/API_CONTRACT.md)
+- [Evaluation](docs/EVALUATION.md)
 - [AGENTS.md](AGENTS.md)

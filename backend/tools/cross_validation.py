@@ -3,6 +3,7 @@ import sys
 import uuid
 import time
 import asyncio
+import argparse
 import pandas as pd
 from pathlib import Path
 
@@ -18,12 +19,12 @@ from app.schemas.features import (
     EntityType,
     WindowType,
 )
-from app.schemas.detectors import DetectorInput, Decision
+from app.schemas.detectors import DetectorInput, DetectorId, Decision
 from app.services.detectors.ddos import DdosDetector
 from app.services.detectors.recon import ReconDetector
 from tools.evaluate_detectors import clean_columns, EvaluatorMetrics
 
-DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
+DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
 DDOS_FILES = [
     "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",
@@ -71,8 +72,8 @@ def calculate_metrics_summary(metrics: EvaluatorMetrics):
     fpr = metrics.fp / (metrics.fp + metrics.tn) if (metrics.fp + metrics.tn) > 0 else 0
     return precision, recall, f1, fpr
 
-async def process_ddos_file(filename, thresholds):
-    filepath = os.path.join(DATASET_ROOT, filename)
+async def process_ddos_file(filename, thresholds, dataset_root):
+    filepath = os.path.join(dataset_root, filename)
     df = pd.read_csv(filepath, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
     if 'Destination IP' not in df.columns:
@@ -84,7 +85,8 @@ async def process_ddos_file(filename, thresholds):
     aggregated = grouped.apply(custom_agg_cross_ddos).reset_index()
     aggregated = aggregated[aggregated['Total_Flows'] > 0]
 
-    inputs = []
+    # Pre-compute records and metadata (immutable across thresholds)
+    records = []
     metadata = []
 
     for idx, row in aggregated.iterrows():
@@ -99,17 +101,18 @@ async def process_ddos_file(filename, thresholds):
             window_start=0, window_end=60, computed_at=0, schema_version="1.0",
             revision=1, payload=payload
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id="ddos_detector", feature_record=record)
-        inputs.append(inp)
+        records.append(record)
         metadata.append((truth, ratio))
 
     file_results = {}
     for th in thresholds:
         detector = DdosDetector(packet_rate_threshold=float(th))
-        for inp in inputs:
-            inp.detector_id = detector.detector_id
+        # Create fresh inputs per threshold to avoid shared-object mutation
+        inputs = [
+            DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.DDOS, feature_record=rec)
+            for rec in records
+        ]
 
-        # Batch size limits to avoid memory/event loop blocking if inputs are too huge
         batch_size = 50000
         metrics = EvaluatorMetrics()
         for i in range(0, len(inputs), batch_size):
@@ -127,8 +130,8 @@ async def process_ddos_file(filename, thresholds):
     return file_results
 
 
-async def process_recon_file(filename, thresholds):
-    filepath = os.path.join(DATASET_ROOT, filename)
+async def process_recon_file(filename, thresholds, dataset_root):
+    filepath = os.path.join(dataset_root, filename)
     df = pd.read_csv(filepath, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
     if 'Source IP' not in df.columns:
@@ -140,7 +143,8 @@ async def process_recon_file(filename, thresholds):
     aggregated = grouped.apply(custom_agg_cross_recon).reset_index()
     aggregated = aggregated[aggregated['Total_Flows'] > 0]
 
-    inputs = []
+    # Pre-compute records and metadata (immutable across thresholds)
+    records = []
     metadata = []
 
     for idx, row in aggregated.iterrows():
@@ -154,15 +158,17 @@ async def process_recon_file(filename, thresholds):
             window_start=0, window_end=3600, computed_at=0, schema_version="1.0",
             revision=1, payload=payload
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id="recon_detector", feature_record=record)
-        inputs.append(inp)
+        records.append(record)
         metadata.append((truth, ratio))
 
     file_results = {}
     for th in thresholds:
         detector = ReconDetector(portscan_threshold=int(th))
-        for inp in inputs:
-            inp.detector_id = detector.detector_id
+        # Create fresh inputs per threshold to avoid shared-object mutation
+        inputs = [
+            DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.RECON, feature_record=rec)
+            for rec in records
+        ]
 
         batch_size = 50000
         metrics = EvaluatorMetrics()
@@ -187,7 +193,7 @@ def print_table(results_dict, thresholds):
         p, r, f1, fpr = calculate_metrics_summary(m)
         print(f"{th:<10.1f} | {m.tp:<5} | {m.fp:<5} | {m.tn:<5} | {m.fn:<5} | {p:<10.4f} | {r:<10.4f} | {f1:<10.4f} | {fpr:<10.4f}")
 
-async def run_cross_validation():
+async def run_cross_validation(dataset_root):
     ddos_thresholds = [400, 500, 600, 700]
     recon_thresholds = [200, 300, 400, 500, 700, 900]
 
@@ -198,10 +204,9 @@ async def run_cross_validation():
     ddos_combined = {th: EvaluatorMetrics() for th in ddos_thresholds}
     for file in DDOS_FILES:
         print(f"\nProcessing DDoS File: {file}...")
-        res = await process_ddos_file(file, ddos_thresholds)
+        res = await process_ddos_file(file, ddos_thresholds, dataset_root)
         if res:
             for th in ddos_thresholds:
-                # add to combined
                 ddos_combined[th].tp += res[th].tp
                 ddos_combined[th].fp += res[th].fp
                 ddos_combined[th].tn += res[th].tn
@@ -218,10 +223,9 @@ async def run_cross_validation():
     recon_combined = {th: EvaluatorMetrics() for th in recon_thresholds}
     for file in RECON_FILES:
         print(f"\nProcessing Recon File: {file}...")
-        res = await process_recon_file(file, recon_thresholds)
+        res = await process_recon_file(file, recon_thresholds, dataset_root)
         if res:
             for th in recon_thresholds:
-                # add to combined
                 recon_combined[th].tp += res[th].tp
                 recon_combined[th].fp += res[th].fp
                 recon_combined[th].tn += res[th].tn
@@ -231,5 +235,11 @@ async def run_cross_validation():
     print(f"\n>>> COMBINED RECON RESULTS <<<")
     print_table(recon_combined, recon_thresholds)
 
+def main():
+    parser = argparse.ArgumentParser(description="Cross-dataset threshold validation")
+    parser.add_argument("--dataset-dir", type=str, default=DEFAULT_DATASET_ROOT, help="Path to CIC-IDS2017 TrafficLabelling dir")
+    args = parser.parse_args()
+    asyncio.run(run_cross_validation(args.dataset_dir))
+
 if __name__ == "__main__":
-    asyncio.run(run_cross_validation())
+    main()

@@ -1,21 +1,23 @@
 import os
 import sys
+import argparse
 import pandas as pd
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from tools.evaluate_detectors import custom_agg_ddos, custom_agg_recon, clean_columns
 
-DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
-DDOS_FILE = os.path.join(DATASET_ROOT, "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv")
-RECON_FILE = os.path.join(DATASET_ROOT, "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv")
+DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
-def analyze_ddos():
+
+
+def analyze_ddos(dataset_root):
+    ddos_file = os.path.join(dataset_root, "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv")
     print("\n" + "="*50)
     print("DDoS DIAGNOSTIC ANALYSIS")
     print("="*50)
 
-    df = pd.read_csv(DDOS_FILE, encoding='cp1252', engine='python', on_bad_lines='skip')
+    df = pd.read_csv(ddos_file, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
 
     total_raw_rows = len(df)
@@ -67,12 +69,13 @@ def analyze_ddos():
     print_stats("FN Windows", fn_windows)
     print_stats("Pure Benign", pure_benign)
 
-def analyze_recon():
+def analyze_recon(dataset_root):
+    recon_file = os.path.join(dataset_root, "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv")
     print("\n" + "="*50)
     print("RECON DIAGNOSTIC ANALYSIS")
     print("="*50)
 
-    df = pd.read_csv(RECON_FILE, encoding='cp1252', engine='python', on_bad_lines='skip')
+    df = pd.read_csv(recon_file, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
 
     total_raw_rows = len(df)
@@ -122,7 +125,12 @@ def analyze_recon():
     print_stats("FP Windows", fp_windows)
     print_stats("TN Windows", tn_windows)
 
+def main():
+    parser = argparse.ArgumentParser(description="Diagnostic analysis of evaluation windows")
+    parser.add_argument("--dataset-dir", type=str, default=DEFAULT_DATASET_ROOT, help="Path to CIC-IDS2017 TrafficLabelling dir")
+    args = parser.parse_args()
+    analyze_ddos(args.dataset_dir)
+    analyze_recon(args.dataset_dir)
 
 if __name__ == "__main__":
-    analyze_ddos()
-    analyze_recon()
+    main()
