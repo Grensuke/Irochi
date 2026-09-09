@@ -1,11 +1,10 @@
 # ==================================================
 # Irochi — Docker Compose
 # ==================================================
-# STATUS: CHECKPOINT 4 — DUMMY END-TO-END BASELINE
+# STATUS: CORE INFRASTRUCTURE ACTIVE
 #
-# This docker-compose.yml is intended for the current
-# dummy phase. The backend and frontend Dockerfiles
-# now exist and are wired to these services.
+# This docker-compose.yml runs the active backend pipeline
+# with PostgreSQL, Redis, and Redpanda fully integrated.
 #
 # Prerequisites:
 #
@@ -69,10 +68,9 @@ services:
     command: npm run dev -- --host 0.0.0.0
 
 # ==================================================
-# FUTURE SERVICES (not yet implemented)
+# CORE INFRASTRUCTURE SERVICES
 # ==================================================
-# The following will be added when the real pipeline
-# is built. Do NOT uncomment until then.
+# These services support the active detection pipeline.
 #
   postgres:
     image: postgres:16-alpine
