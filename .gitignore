@@ -66,3 +66,8 @@ logs/
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+
+# --------------------------------------------------
+# Reference Material
+# --------------------------------------------------
+/reference/IrochiCy-main/

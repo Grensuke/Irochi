@@ -241,15 +241,35 @@ async def process_tumbling(
 
     if detector_domain == DetectorDomain.RECON and event.event_type == EventType.CONNECTION:
         dst_port = event.dst_port
+        dst_ip = event.dst_ip
+
+        await state_adapter.increment_tumbling_metric(
+            entity_type, entity_key, window_id, {"total_conns": 1}, ttl_seconds=window_size_sec*2
+        )
+
         if dst_port is not None:
             await state_adapter.add_tumbling_distinct(
                 entity_type, entity_key, window_id, "dst_port", str(dst_port), ttl_seconds=window_size_sec*2
             )
+        if dst_ip is not None:
+            await state_adapter.add_tumbling_distinct(
+                entity_type, entity_key, window_id, "dst_ip", str(dst_ip), ttl_seconds=window_size_sec*2
+            )
 
-        # Get count
+        # Get metrics
+        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+        total_conns = int(metrics.get("total_conns", 0))
+
+        # Get counts
         unique_ports = await state_adapter.count_tumbling_distinct(
             entity_type, entity_key, window_id, "dst_port"
         )
+        unique_hosts = await state_adapter.count_tumbling_distinct(
+            entity_type, entity_key, window_id, "dst_ip"
+        )
+
+        scan_rate = total_conns / window_size_sec
+        connection_fan_out = unique_hosts / max(total_conns, 1)
 
         envelope_args = await build_envelope(
             state_adapter, event, FeatureMechanism.WINDOWED,
@@ -258,20 +278,60 @@ async def process_tumbling(
             window_start=window_id * 1000000,
             window_end=(window_id + window_size_sec) * 1000000
         )
-        payload = ReconFeaturePayload(unique_destination_ports=unique_ports)
+        payload = ReconFeaturePayload(
+            unique_destination_ports=unique_ports,
+            unique_destination_hosts=unique_hosts,
+            scan_rate=scan_rate,
+            connection_fan_out=connection_fan_out
+        )
         return ReconFeatureRecord(**envelope_args, payload=payload)
 
     if detector_domain == DetectorDomain.DDOS and event.event_type == EventType.CONNECTION:
         orig_pkts = event.payload.orig_pkts or 0
         resp_pkts = event.payload.resp_pkts or 0
+        orig_bytes = event.payload.orig_bytes or 0
+        resp_bytes = event.payload.resp_bytes or 0
         total_pkts = orig_pkts + resp_pkts
+        total_bytes = orig_bytes + resp_bytes
+
+        # SYN-only calculation
+        conn_state = event.payload.conn_state or ""
+        history = event.payload.history or ""
+        is_syn_only = conn_state in ("S0", "SH") or ("S" in history and "A" not in history)
+        syn_only_val = 1 if is_syn_only else 0
+
+        increments = {
+            "total_pkts": total_pkts,
+            "total_bytes": total_bytes,
+            "total_conns": 1,
+            "syn_only_conns": syn_only_val
+        }
 
         await state_adapter.increment_tumbling_metric(
-            entity_type, entity_key, window_id, {"total_pkts": total_pkts}, ttl_seconds=window_size_sec*2
+            entity_type, entity_key, window_id, increments, ttl_seconds=window_size_sec*2
         )
 
+        src_ip = event.src_ip
+        if src_ip is not None:
+            await state_adapter.add_tumbling_distinct(
+                entity_type, entity_key, window_id, "src_ip", str(src_ip), ttl_seconds=window_size_sec*2
+            )
+
         metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
-        current_total = int(metrics.get("total_pkts", 0))
+        current_pkts = int(metrics.get("total_pkts", 0))
+        current_bytes = int(metrics.get("total_bytes", 0))
+        current_conns = int(metrics.get("total_conns", 0))
+        current_syn_only = int(metrics.get("syn_only_conns", 0))
+
+        unique_src_count = await state_adapter.count_tumbling_distinct(
+            entity_type, entity_key, window_id, "src_ip"
+        )
+
+        packet_rate = current_pkts / window_size_sec
+        byte_rate = current_bytes / window_size_sec
+        syn_ratio = current_syn_only / max(current_conns, 1)
+        # Log-scaled source diversity count mapped to source_ip_entropy
+        source_ip_entropy = math.log2(max(unique_src_count, 1))
 
         envelope_args = await build_envelope(
             state_adapter, event, FeatureMechanism.WINDOWED,
@@ -280,8 +340,12 @@ async def process_tumbling(
             window_start=window_id * 1000000,
             window_end=(window_id + window_size_sec) * 1000000
         )
-        packet_rate = current_total / window_size_sec
-        payload = DdosFeaturePayload(packet_rate=packet_rate)
+        payload = DdosFeaturePayload(
+            packet_rate=packet_rate,
+            byte_rate=byte_rate,
+            syn_ratio=syn_ratio,
+            source_ip_entropy=source_ip_entropy
+        )
         return DdosFeatureRecord(**envelope_args, payload=payload)
 
     return None

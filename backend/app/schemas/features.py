@@ -53,7 +53,7 @@ class DdosFeaturePayload(BaseModel):
 class ReconFeaturePayload(BaseModel):
     unique_destination_ports: Optional[int] = None
     unique_destination_hosts: Optional[int] = None
-    connection_fan_out: Optional[int] = None
+    connection_fan_out: Optional[float] = None
     scan_rate: Optional[float] = None
 
 class DnsFeaturePayload(BaseModel):

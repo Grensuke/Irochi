@@ -1,6 +1,6 @@
 import uuid
 import time
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from app.schemas.detectors import (
     DetectorId,
@@ -15,14 +15,33 @@ from app.services.detectors.base import BaseDetector
 
 class ReconDetector(BaseDetector):
     """
-    Initial Recon Detector for Irochi MVP.
-    Uses a deterministic rule-based / statistical baseline.
-    Evaluates 'unique_destination_ports' produced by WP-D Tumbling Window.
+    Context-Aware Recon Detector for Irochi.
+    Evaluates unique_destination_ports, unique_destination_hosts,
+    scan_rate, and connection_fan_out using a multi-signal weighted scoring model.
     """
-    def __init__(self, portscan_threshold: int = 50):
-        # DEVELOPMENT CONFIG ONLY: Open parameter.
-        self.portscan_threshold = portscan_threshold
-        self._version = "1.0.0"
+    def __init__(
+        self,
+        thresholds: Optional[Dict[str, float]] = None,
+        weights: Optional[Dict[str, float]] = None,
+        min_triggers: int = 1,
+        confidence_cutoff: float = 0.60
+    ):
+        # INITIAL / UNVALIDATED Defaults based on design baseline
+        self.thresholds = thresholds or {
+            "unique_destination_ports": 50.0,
+            "unique_destination_hosts": 50.0,
+            "scan_rate": 10.0,
+            "connection_fan_out": 0.5,
+        }
+        self.weights = weights or {
+            "unique_destination_ports": 0.40,
+            "unique_destination_hosts": 0.10,
+            "scan_rate": 0.40,
+            "connection_fan_out": 0.10,
+        }
+        self.min_triggers = min_triggers
+        self.confidence_cutoff = confidence_cutoff
+        self._version = "2.0.0"
 
     @property
     def detector_id(self) -> DetectorId:
@@ -37,37 +56,62 @@ class ReconDetector(BaseDetector):
         for inp in inputs:
             record = inp.feature_record
 
-            # WP-E Validation ensures we only receive compatible records (ReconFeatureRecord).
             if not isinstance(record, ReconFeatureRecord):
                 outputs.append(self._create_output(
                     inp, Decision.INVALID_INPUT, evidence={"reason": "Expected ReconFeatureRecord"}
                 ))
                 continue
 
-            unique_ports = record.payload.unique_destination_ports
+            signals = {
+                "unique_destination_ports": record.payload.unique_destination_ports,
+                "unique_destination_hosts": record.payload.unique_destination_hosts,
+                "scan_rate": record.payload.scan_rate,
+                "connection_fan_out": record.payload.connection_fan_out,
+            }
 
-            # Missing != Zero Behavior
-            if unique_ports is None:
+            # Safely handle missing optional fields
+            if signals["unique_destination_ports"] is None:
                 outputs.append(self._create_output(
                     inp, Decision.INSUFFICIENT_DATA, evidence={"reason": "unique_destination_ports is missing"}
                 ))
                 continue
 
-            # Deterministic Threshold Evaluation
-            if unique_ports > self.portscan_threshold:
+            scores = {}
+            evidence_items = []
+
+            for name, val in signals.items():
+                if val is not None:
+                    thresh = self.thresholds.get(name, 1.0)
+                    score = min(val / thresh, 1.0) if thresh > 0 else 0.0
+                    scores[name] = score
+                    evidence_items.append({
+                        "signal_name": name,
+                        "value": round(val, 4) if isinstance(val, float) else val,
+                        "threshold": thresh,
+                        "triggered": score >= 0.5
+                    })
+                else:
+                    scores[name] = 0.0
+
+            confidence = sum(self.weights.get(s, 0.0) * scores[s] for s in scores)
+            confidence = min(confidence, 1.0)
+
+            triggered_count = sum(1 for v in scores.values() if v >= 0.5)
+
+            if triggered_count >= self.min_triggers and confidence > self.confidence_cutoff:
                 decision = Decision.DETECTION
             else:
                 decision = Decision.NO_THREAT
 
             evidence = {
-                "feature": "unique_destination_ports",
-                "observed": unique_ports,
-                "threshold": self.portscan_threshold,
-                "rule": "unique_destination_ports > threshold"
+                "signals": evidence_items,
+                "triggered_count": triggered_count,
+                "min_triggers": self.min_triggers,
+                "confidence_cutoff": self.confidence_cutoff
             }
 
             outputs.append(self._create_output(
-                inp, decision, score=float(unique_ports), evidence=evidence
+                inp, decision, score=float(confidence), confidence=float(confidence), evidence=evidence
             ))
 
         return outputs
@@ -77,6 +121,7 @@ class ReconDetector(BaseDetector):
         inp: DetectorInput,
         decision: Decision,
         score: Optional[float] = None,
+        confidence: Optional[float] = None,
         evidence: Optional[dict] = None
     ) -> DetectorOutput:
         record = inp.feature_record
@@ -89,10 +134,10 @@ class ReconDetector(BaseDetector):
             evaluated_at=int(time.time() * 1000000),
             detector_version=self.detector_version,
             decision=decision,
-            threat_type=ThreatType.RECON_PORTSCAN, # Must be populated as specified
+            threat_type=ThreatType.RECON_PORTSCAN,
             score=score,
-            confidence=None,           # Do not invent confidence semantics for a deterministic rule
-            severity_candidate=None,   # Severity mapping remains outside the detector's policy
+            confidence=confidence,
+            severity_candidate=None,
             evidence=evidence,
             source_feature_references=[
                 SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)

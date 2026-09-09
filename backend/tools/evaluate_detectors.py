@@ -6,7 +6,7 @@ import asyncio
 import argparse
 import pandas as pd
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 
 # Add backend to sys path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -21,114 +21,84 @@ from app.schemas.features import (
     EntityType,
     WindowType,
 )
-from app.schemas.detectors import DetectorInput, Decision
+from app.schemas.detectors import DetectorInput, Decision, DetectorOutput, ThreatType, SourceFeatureReference, DetectorId
 from app.services.detectors.ddos import DdosDetector
 from app.services.detectors.recon import ReconDetector
 
 DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
 # =====================================================================
-# LEVEL 1: DETECTOR BENCHMARK
+# LEGACY BASELINES
 # =====================================================================
-async def run_level1_benchmark():
-    print("\n" + "="*50)
-    print("LEVEL 1: DETECTOR BEHAVIOUR BENCHMARK")
-    print("="*50)
 
-    # --- DDoS Benchmark ---
-    ddos_detector = DdosDetector(packet_rate_threshold=1000.0)
-    ddos_matrix = [
-        (None, Decision.INSUFFICIENT_DATA),
-        (0.0, Decision.NO_THREAT),
-        (999.9, Decision.NO_THREAT),
-        (1000.0, Decision.NO_THREAT),
-        (1000.1, Decision.DETECTION),
-        (5000.0, Decision.DETECTION)
-    ]
+class LegacyDdosDetector:
+    def __init__(self, packet_rate_threshold: float = 1000.0):
+        self.packet_rate_threshold = packet_rate_threshold
 
-    ddos_passed = True
-    print("\n--- DdosDetector Threshold: 1000.0 ---")
-    for rate, expected in ddos_matrix:
-        payload = DdosFeaturePayload(packet_rate=rate, byte_rate=None, syn_ratio=None, source_ip_entropy=None)
-        record = DdosFeatureRecord(
-            feature_id=str(uuid.uuid4()), mechanism=FeatureMechanism.WINDOWED,
-            detector_domain=DetectorDomain.DDOS, entity_type=EntityType.DESTINATION,
-            entity_key="10.0.0.1", window_type=WindowType.TUMBLING,
-            window_start=0, window_end=60, computed_at=0, schema_version="1.0",
-            revision=1, payload=payload
+    @property
+    def detector_id(self) -> DetectorId: return DetectorId.DDOS
+
+    async def evaluate(self, inputs: List[DetectorInput]) -> List[DetectorOutput]:
+        outputs = []
+        for inp in inputs:
+            record = inp.feature_record
+            if not isinstance(record, DdosFeatureRecord):
+                outputs.append(self._create_output(inp, Decision.INVALID_INPUT, evidence={"reason": "Expected DdosFeatureRecord"}))
+                continue
+            packet_rate = record.payload.packet_rate
+            if packet_rate is None:
+                outputs.append(self._create_output(inp, Decision.INSUFFICIENT_DATA, evidence={"reason": "packet_rate is missing"}))
+                continue
+            if packet_rate > self.packet_rate_threshold:
+                decision = Decision.DETECTION
+            else:
+                decision = Decision.NO_THREAT
+            outputs.append(self._create_output(inp, decision, score=float(packet_rate)))
+        return outputs
+
+    def _create_output(self, inp, decision, score=None, evidence=None):
+        return DetectorOutput(
+            output_id=str(uuid.uuid4()), detector_id=DetectorId.DDOS, input_id=inp.input_id,
+            entity_type=inp.feature_record.entity_type, entity_key=inp.feature_record.entity_key,
+            evaluated_at=0, detector_version="1.0.0", decision=decision, threat_type=ThreatType.VOLUMETRIC_DDOS,
+            score=score, evidence=evidence, source_feature_references=[]
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=ddos_detector.detector_id, feature_record=record)
-        outputs = await ddos_detector.evaluate([inp])
-        actual = outputs[0].decision
-        status = "PASS" if actual == expected else "FAIL"
-        if status == "FAIL": ddos_passed = False
-        print(f"[{status}] packet_rate={rate} -> expected={expected.name}, actual={actual.name}")
 
-    # Test Invalid Schema Type
-    recon_record = ReconFeatureRecord(
-        feature_id=str(uuid.uuid4()), mechanism=FeatureMechanism.WINDOWED,
-        detector_domain=DetectorDomain.RECON, entity_type=EntityType.SOURCE,
-        entity_key="10.0.0.1", window_type=WindowType.TUMBLING,
-        window_start=0, window_end=3600, computed_at=0, schema_version="1.0",
-        revision=1, payload=ReconFeaturePayload(unique_destination_ports=10)
-    )
-    invalid_inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=ddos_detector.detector_id, feature_record=recon_record)
-    out = await ddos_detector.evaluate([invalid_inp])
-    actual_inv = out[0].decision
-    status_inv = "PASS" if actual_inv == Decision.INVALID_INPUT else "FAIL"
-    if status_inv == "FAIL": ddos_passed = False
-    print(f"[{status_inv}] Record Type Mismatch -> expected=INVALID_INPUT, actual={actual_inv.name}")
-    print(f"DDoS Level 1 Result: {'PASS ALL' if ddos_passed else 'FAIL'}")
+class LegacyReconDetector:
+    def __init__(self, portscan_threshold: int = 50):
+        self.portscan_threshold = portscan_threshold
 
-    # --- Recon Benchmark ---
-    recon_detector = ReconDetector(portscan_threshold=50)
-    recon_matrix = [
-        (None, Decision.INSUFFICIENT_DATA),
-        (0, Decision.NO_THREAT),
-        (49, Decision.NO_THREAT),
-        (50, Decision.NO_THREAT),
-        (51, Decision.DETECTION),
-        (100, Decision.DETECTION)
-    ]
+    @property
+    def detector_id(self) -> DetectorId: return DetectorId.RECON
 
-    recon_passed = True
-    print("\n--- ReconDetector Threshold: 50 ---")
-    for ports, expected in recon_matrix:
-        payload = ReconFeaturePayload(unique_destination_ports=ports, unique_destination_hosts=None, connection_fan_out=None, scan_rate=None)
-        record = ReconFeatureRecord(
-            feature_id=str(uuid.uuid4()), mechanism=FeatureMechanism.WINDOWED,
-            detector_domain=DetectorDomain.RECON, entity_type=EntityType.SOURCE,
-            entity_key="10.0.0.1", window_type=WindowType.TUMBLING,
-            window_start=0, window_end=3600, computed_at=0, schema_version="1.0",
-            revision=1, payload=payload
+    async def evaluate(self, inputs: List[DetectorInput]) -> List[DetectorOutput]:
+        outputs = []
+        for inp in inputs:
+            record = inp.feature_record
+            if not isinstance(record, ReconFeatureRecord):
+                outputs.append(self._create_output(inp, Decision.INVALID_INPUT, evidence={"reason": "Expected ReconFeatureRecord"}))
+                continue
+            unique_ports = record.payload.unique_destination_ports
+            if unique_ports is None:
+                outputs.append(self._create_output(inp, Decision.INSUFFICIENT_DATA, evidence={"reason": "unique_destination_ports is missing"}))
+                continue
+            if unique_ports > self.portscan_threshold:
+                decision = Decision.DETECTION
+            else:
+                decision = Decision.NO_THREAT
+            outputs.append(self._create_output(inp, decision, score=float(unique_ports)))
+        return outputs
+
+    def _create_output(self, inp, decision, score=None, evidence=None):
+        return DetectorOutput(
+            output_id=str(uuid.uuid4()), detector_id=DetectorId.RECON, input_id=inp.input_id,
+            entity_type=inp.feature_record.entity_type, entity_key=inp.feature_record.entity_key,
+            evaluated_at=0, detector_version="1.0.0", decision=decision, threat_type=ThreatType.RECON_PORTSCAN,
+            score=score, evidence=evidence, source_feature_references=[]
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=recon_detector.detector_id, feature_record=record)
-        outputs = await recon_detector.evaluate([inp])
-        actual = outputs[0].decision
-        status = "PASS" if actual == expected else "FAIL"
-        if status == "FAIL": recon_passed = False
-        print(f"[{status}] unique_ports={ports} -> expected={expected.name}, actual={actual.name}")
-
-    ddos_record_for_recon = DdosFeatureRecord(
-        feature_id=str(uuid.uuid4()), mechanism=FeatureMechanism.WINDOWED,
-        detector_domain=DetectorDomain.DDOS, entity_type=EntityType.DESTINATION,
-        entity_key="10.0.0.1", window_type=WindowType.TUMBLING,
-        window_start=0, window_end=60, computed_at=0, schema_version="1.0",
-        revision=1, payload=DdosFeaturePayload(packet_rate=10.0)
-    )
-    invalid_inp2 = DetectorInput(input_id=str(uuid.uuid4()), detector_id=recon_detector.detector_id, feature_record=ddos_record_for_recon)
-    out2 = await recon_detector.evaluate([invalid_inp2])
-    actual_inv2 = out2[0].decision
-    status_inv2 = "PASS" if actual_inv2 == Decision.INVALID_INPUT else "FAIL"
-    if status_inv2 == "FAIL": recon_passed = False
-    print(f"[{status_inv2}] Record Type Mismatch -> expected=INVALID_INPUT, actual={actual_inv2.name}")
-    print(f"Recon Level 1 Result: {'PASS ALL' if recon_passed else 'FAIL'}")
-
-    return ddos_passed and recon_passed
-
 
 # =====================================================================
-# LEVEL 2: UTILITIES
+# UTILITIES
 # =====================================================================
 
 def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -136,24 +106,31 @@ def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def custom_agg_ddos(group):
-    # Total flows
     total_flows = len(group)
-    # Attack flows (contains DDoS)
-    attack_flows = group['Label'].str.contains('DDoS', na=False).sum()
-    # Benign flows
+    attack_flows = group['Label'].str.contains('DDoS|DoS', na=False, regex=True).sum()
     benign_flows = group['Label'].str.contains('BENIGN', na=False).sum()
-    # Other non-benign, non-DDoS flows
     other_flows = total_flows - (attack_flows + benign_flows)
 
-    # Feature
     total_packets = group['Total Fwd Packets'].sum() + group['Total Backward Packets'].sum()
+
+    # Safe fallback if bytes column name differs slightly across CIC files
+    byte_col_fwd = 'Total Length of Fwd Packets' if 'Total Length of Fwd Packets' in group.columns else 'Total Length of Fwd Packet'
+    byte_col_bwd = 'Total Length of Bwd Packets' if 'Total Length of Bwd Packets' in group.columns else 'Total Length of Bwd Packet'
+    total_bytes = group[byte_col_fwd].sum() + group[byte_col_bwd].sum() if byte_col_fwd in group.columns and byte_col_bwd in group.columns else 0
+
+    # SYN flag fallback
+    syn_col = 'SYN Flag Count'
+    syn_conns = group[syn_col].sum() if syn_col in group.columns else 0
 
     return pd.Series({
         'Total_Flows': total_flows,
         'Attack_Flows': attack_flows,
         'Benign_Flows': benign_flows,
         'Other_Flows': other_flows,
-        'Total_Packets': total_packets
+        'Total_Packets': total_packets,
+        'Total_Bytes': total_bytes,
+        'Syn_Conns': syn_conns,
+        'Unique_Src': group['Source IP'].nunique()
     })
 
 def custom_agg_recon(group):
@@ -163,13 +140,15 @@ def custom_agg_recon(group):
     other_flows = total_flows - (attack_flows + benign_flows)
 
     unique_ports = group['Destination Port'].nunique()
+    unique_hosts = group['Destination IP'].nunique()
 
     return pd.Series({
         'Total_Flows': total_flows,
         'Attack_Flows': attack_flows,
         'Benign_Flows': benign_flows,
         'Other_Flows': other_flows,
-        'Unique_Ports': unique_ports
+        'Unique_Ports': unique_ports,
+        'Unique_Hosts': unique_hosts
     })
 
 class EvaluatorMetrics:
@@ -178,113 +157,79 @@ class EvaluatorMetrics:
         self.attack_windows = 0
         self.pure_benign_windows = 0
         self.mixed_windows = 0
-
         self.tp = 0
         self.fp = 0
         self.tn = 0
         self.fn = 0
-
         self.insufficient_data = 0
         self.invalid_input = 0
 
-        self.tp_attack_ratios = []
-        self.fn_attack_ratios = []
-
-    def add_result(self, truth: int, pred: int, ratio: float):
-        if truth == 1 and pred == 1:
-            self.tp += 1
-            self.tp_attack_ratios.append(ratio)
-        elif truth == 0 and pred == 1:
-            self.fp += 1
-        elif truth == 0 and pred == 0:
-            self.tn += 1
-        elif truth == 1 and pred == 0:
-            self.fn += 1
-            self.fn_attack_ratios.append(ratio)
+    def add_result(self, truth: int, pred: int):
+        if truth == 1 and pred == 1: self.tp += 1
+        elif truth == 0 and pred == 1: self.fp += 1
+        elif truth == 0 and pred == 0: self.tn += 1
+        elif truth == 1 and pred == 0: self.fn += 1
 
     def print_report(self, title: str):
-        print(f"\n--- {title} Level 2 Results ---")
-        print(f"Total Evaluated Windows: {self.total_evaluated}")
-        print(f"  Attack Windows (Truth=1): {self.attack_windows}")
-        print(f"  Pure Benign Windows (Truth=0): {self.pure_benign_windows}")
-        print(f"  Mixed Windows (Attack > 0 & Benign > 0): {self.mixed_windows}")
-        print(f"Excluded (INSUFFICIENT_DATA): {self.insufficient_data}")
-        print(f"Excluded (INVALID_INPUT): {self.invalid_input}")
-
-        print("\nConfusion Matrix:")
-        print(f"  TP: {self.tp}")
-        print(f"  FP: {self.fp}")
-        print(f"  TN: {self.tn}")
-        print(f"  FN: {self.fn}")
-
+        print(f"\n--- {title} Results ---")
         precision = self.tp / (self.tp + self.fp) if (self.tp + self.fp) > 0 else 0
         recall = self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0
         f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
         fpr = self.fp / (self.fp + self.tn) if (self.fp + self.tn) > 0 else 0
 
-        print("\nMetrics:")
-        print(f"  Precision: {precision:.4f}")
-        print(f"  Recall:    {recall:.4f}")
-        print(f"  F1 Score:  {f1:.4f}")
-        print(f"  FPR:       {fpr:.4f}")
-
-        avg_tp_ratio = sum(self.tp_attack_ratios)/len(self.tp_attack_ratios) if self.tp_attack_ratios else 0
-        avg_fn_ratio = sum(self.fn_attack_ratios)/len(self.fn_attack_ratios) if self.fn_attack_ratios else 0
-        print("\nLabel Composition Statistics:")
-        print(f"  Avg Attack-Flow Ratio in TP: {avg_tp_ratio:.4f}")
-        print(f"  Avg Attack-Flow Ratio in FN: {avg_fn_ratio:.4f}")
-
+        print(f"  TP: {self.tp} | FP: {self.fp} | TN: {self.tn} | FN: {self.fn}")
+        print(f"  Precision: {precision:.4f} | Recall: {recall:.4f} | F1: {f1:.4f} | FPR: {fpr:.4f}")
 
 # =====================================================================
-# LEVEL 2: EVALUATION
+# EVALUATION
 # =====================================================================
 
-async def run_level2_ddos(csv_path: str):
+async def evaluate_ddos_dataset(csv_path: str, compare: bool, threshold_config: dict = None):
     print("\n" + "="*50)
-    print(f"LEVEL 2: DDoS EVALUATION -> {csv_path}")
+    print(f"EVALUATING DDoS -> {csv_path}")
     print("="*50)
 
     df = pd.read_csv(csv_path, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
 
-    required = ['Destination IP', 'Timestamp', 'Total Fwd Packets', 'Total Backward Packets', 'Label']
-    for col in required:
+    for col in ['Destination IP', 'Timestamp', 'Total Fwd Packets', 'Total Backward Packets', 'Label', 'Source IP']:
         if col not in df.columns:
             print(f"Missing column: {col}")
             return
 
-    # Remove rows with null timestamps or critical features
     df = df.dropna(subset=['Timestamp', 'Destination IP', 'Total Fwd Packets', 'Total Backward Packets'])
-
     df['Timestamp'] = pd.to_datetime(df['Timestamp'], format='mixed', dayfirst=True)
 
     df = df.set_index('Timestamp')
     grouped = df.groupby(['Destination IP', pd.Grouper(freq='60s')])
-
     aggregated = grouped.apply(custom_agg_ddos).reset_index()
     aggregated = aggregated[aggregated['Total_Flows'] > 0]
 
-    metrics = EvaluatorMetrics()
-    detector = DdosDetector(packet_rate_threshold=1000.0)
+    baseline_metrics = EvaluatorMetrics()
+    improved_metrics = EvaluatorMetrics()
+
+    baseline_detector = LegacyDdosDetector()
+    kwargs = {}
+    if threshold_config:
+        kwargs['thresholds'] = threshold_config
+    improved_detector = DdosDetector(**kwargs)
 
     inputs = []
     metadata = []
 
+    import math
+
     for idx, row in aggregated.iterrows():
         packet_rate = row['Total_Packets'] / 60.0
+        byte_rate = row['Total_Bytes'] / 60.0 if 'Total_Bytes' in row else 0.0
+        syn_ratio = row['Syn_Conns'] / row['Total_Flows'] if 'Syn_Conns' in row and row['Total_Flows'] > 0 else 0.0
+        source_ip_entropy = math.log2(max(row['Unique_Src'], 1))
 
         truth = 1 if row['Attack_Flows'] > 0 else 0
-        ratio = row['Attack_Flows'] / row['Total_Flows'] if row['Total_Flows'] > 0 else 0
 
-        metrics.total_evaluated += 1
-        if truth == 1:
-            metrics.attack_windows += 1
-            if row['Benign_Flows'] > 0:
-                metrics.mixed_windows += 1
-        else:
-            metrics.pure_benign_windows += 1
-
-        payload = DdosFeaturePayload(packet_rate=packet_rate, byte_rate=None, syn_ratio=None, source_ip_entropy=None)
+        payload = DdosFeaturePayload(
+            packet_rate=packet_rate, byte_rate=byte_rate, syn_ratio=syn_ratio, source_ip_entropy=source_ip_entropy
+        )
         record = DdosFeatureRecord(
             feature_id=str(uuid.uuid4()), mechanism=FeatureMechanism.WINDOWED,
             detector_domain=DetectorDomain.DDOS, entity_type=EntityType.DESTINATION,
@@ -294,34 +239,40 @@ async def run_level2_ddos(csv_path: str):
             computed_at=int(time.time() * 1000000), schema_version="1.0",
             revision=1, payload=payload
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=detector.detector_id, feature_record=record)
+        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=baseline_detector.detector_id, feature_record=record)
         inputs.append(inp)
-        metadata.append((truth, ratio))
+        metadata.append(truth)
 
-    print(f"Evaluating {len(inputs)} reconstructed windows through DdosDetector...")
-    outputs = await detector.evaluate(inputs)
+    print(f"Evaluating {len(inputs)} reconstructed windows...")
 
-    for out, meta in zip(outputs, metadata):
-        truth, ratio = meta
-        if out.decision == Decision.INSUFFICIENT_DATA:
-            metrics.insufficient_data += 1
-        elif out.decision == Decision.INVALID_INPUT:
-            metrics.invalid_input += 1
-        else:
-            pred = 1 if out.decision == Decision.DETECTION else 0
-            metrics.add_result(truth, pred, ratio)
+    if compare:
+        out_b = await baseline_detector.evaluate(inputs)
+        out_i = await improved_detector.evaluate(inputs)
 
-    metrics.print_report("DDoS")
+        for b, i, truth in zip(out_b, out_i, metadata):
+            pred_b = 1 if b.decision == Decision.DETECTION else 0
+            pred_i = 1 if i.decision == Decision.DETECTION else 0
+            baseline_metrics.add_result(truth, pred_b)
+            improved_metrics.add_result(truth, pred_i)
 
-async def run_level2_recon(csv_path: str):
+        baseline_metrics.print_report("DDoS BASELINE")
+        improved_metrics.print_report("DDoS IMPROVED")
+    else:
+        out_i = await improved_detector.evaluate(inputs)
+        for i, truth in zip(out_i, metadata):
+            pred_i = 1 if i.decision == Decision.DETECTION else 0
+            improved_metrics.add_result(truth, pred_i)
+        improved_metrics.print_report("DDoS IMPROVED")
+
+async def evaluate_recon_dataset(csv_path: str, compare: bool, threshold_config: dict = None):
     print("\n" + "="*50)
-    print(f"LEVEL 2: RECON EVALUATION -> {csv_path}")
+    print(f"EVALUATING RECON -> {csv_path}")
     print("="*50)
 
     df = pd.read_csv(csv_path, encoding='cp1252', engine='python', on_bad_lines='skip')
     df = clean_columns(df)
 
-    required = ['Source IP', 'Timestamp', 'Destination Port', 'Label']
+    required = ['Source IP', 'Timestamp', 'Destination Port', 'Label', 'Destination IP']
     for col in required:
         if col not in df.columns:
             print(f"Missing column: {col}")
@@ -332,29 +283,35 @@ async def run_level2_recon(csv_path: str):
 
     df = df.set_index('Timestamp')
     grouped = df.groupby(['Source IP', pd.Grouper(freq='3600s')])
-
     aggregated = grouped.apply(custom_agg_recon).reset_index()
     aggregated = aggregated[aggregated['Total_Flows'] > 0]
 
-    metrics = EvaluatorMetrics()
-    detector = ReconDetector(portscan_threshold=50)
+    baseline_metrics = EvaluatorMetrics()
+    improved_metrics = EvaluatorMetrics()
+
+    baseline_detector = LegacyReconDetector()
+    kwargs = {}
+    if threshold_config:
+        kwargs['thresholds'] = threshold_config
+    improved_detector = ReconDetector(**kwargs)
 
     inputs = []
     metadata = []
 
     for idx, row in aggregated.iterrows():
         truth = 1 if row['Attack_Flows'] > 0 else 0
-        ratio = row['Attack_Flows'] / row['Total_Flows'] if row['Total_Flows'] > 0 else 0
 
-        metrics.total_evaluated += 1
-        if truth == 1:
-            metrics.attack_windows += 1
-            if row['Benign_Flows'] > 0:
-                metrics.mixed_windows += 1
-        else:
-            metrics.pure_benign_windows += 1
+        unique_ports = int(row['Unique_Ports'])
+        unique_hosts = int(row['Unique_Hosts'])
+        scan_rate = row['Total_Flows'] / 3600.0
+        connection_fan_out = unique_hosts / max(row['Total_Flows'], 1)
 
-        payload = ReconFeaturePayload(unique_destination_ports=int(row['Unique_Ports']), unique_destination_hosts=None, connection_fan_out=None, scan_rate=None)
+        payload = ReconFeaturePayload(
+            unique_destination_ports=unique_ports,
+            unique_destination_hosts=unique_hosts,
+            connection_fan_out=connection_fan_out,
+            scan_rate=scan_rate
+        )
         record = ReconFeatureRecord(
             feature_id=str(uuid.uuid4()), mechanism=FeatureMechanism.WINDOWED,
             detector_domain=DetectorDomain.RECON, entity_type=EntityType.SOURCE,
@@ -364,47 +321,49 @@ async def run_level2_recon(csv_path: str):
             computed_at=int(time.time() * 1000000), schema_version="1.0",
             revision=1, payload=payload
         )
-        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=detector.detector_id, feature_record=record)
+        inp = DetectorInput(input_id=str(uuid.uuid4()), detector_id=baseline_detector.detector_id, feature_record=record)
         inputs.append(inp)
-        metadata.append((truth, ratio))
+        metadata.append(truth)
 
-    print(f"Evaluating {len(inputs)} reconstructed windows through ReconDetector...")
-    outputs = await detector.evaluate(inputs)
+    print(f"Evaluating {len(inputs)} reconstructed windows...")
 
-    for out, meta in zip(outputs, metadata):
-        truth, ratio = meta
-        if out.decision == Decision.INSUFFICIENT_DATA:
-            metrics.insufficient_data += 1
-        elif out.decision == Decision.INVALID_INPUT:
-            metrics.invalid_input += 1
-        else:
-            pred = 1 if out.decision == Decision.DETECTION else 0
-            metrics.add_result(truth, pred, ratio)
+    if compare:
+        out_b = await baseline_detector.evaluate(inputs)
+        out_i = await improved_detector.evaluate(inputs)
 
-    metrics.print_report("Recon")
+        for b, i, truth in zip(out_b, out_i, metadata):
+            pred_b = 1 if b.decision == Decision.DETECTION else 0
+            pred_i = 1 if i.decision == Decision.DETECTION else 0
+            baseline_metrics.add_result(truth, pred_b)
+            improved_metrics.add_result(truth, pred_i)
 
+        baseline_metrics.print_report("Recon BASELINE")
+        improved_metrics.print_report("Recon IMPROVED")
+    else:
+        out_i = await improved_detector.evaluate(inputs)
+        for i, truth in zip(out_i, metadata):
+            pred_i = 1 if i.decision == Decision.DETECTION else 0
+            improved_metrics.add_result(truth, pred_i)
+        improved_metrics.print_report("Recon IMPROVED")
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-dir", type=str, default=DEFAULT_DATASET_ROOT, help="Path to CIC-IDS2017 TrafficLabelling dir")
     parser.add_argument("--ddos-file", type=str, default="Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv")
     parser.add_argument("--recon-file", type=str, default="Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv")
+    parser.add_argument("--compare", action="store_true", help="Compare Baseline vs Improved models")
     args = parser.parse_args()
 
-    # Level 1
-    asyncio.run(run_level1_benchmark())
-
-    # Level 2
     ddos_path = os.path.join(args.dataset_dir, args.ddos_file)
     recon_path = os.path.join(args.dataset_dir, args.recon_file)
 
     if os.path.exists(ddos_path):
-        asyncio.run(run_level2_ddos(ddos_path))
+        asyncio.run(evaluate_ddos_dataset(ddos_path, args.compare))
     else:
         print(f"\nDDoS dataset not found: {ddos_path}")
 
     if os.path.exists(recon_path):
-        asyncio.run(run_level2_recon(recon_path))
+        asyncio.run(evaluate_recon_dataset(recon_path, args.compare))
     else:
         print(f"\nRecon dataset not found: {recon_path}")
 

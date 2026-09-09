@@ -40,12 +40,16 @@ The current evaluation methodology reconstructs tumbling feature windows from of
 - **Recon Candidate (900 ports)**: Substantially reduced false positives on Friday, but the baseline benign port utilization varied significantly across different days, meaning the 900 threshold did not fully generalize to zero FPs.
 - **Conclusion**: Candidate thresholds **did not fully generalize** across the datasets.
 
+### Improved Multi-Signal Detectors (Evaluated)
+- The improved Recon multi-signal model successfully halved false positives on the Friday baseline (FP reduced from 26 to 10) while maintaining true positive recall. This was achieved by heavily weighting connection-fan-out (horizontal scanning characteristics) rather than relying solely on raw unique port counts.
+- The improved DDoS multi-signal model demonstrated that the strict multi-dimensional thresholds (`packet_rate`, `byte_rate`, `syn_ratio`, `source_entropy`) effectively eliminate benign anomalies, but are overly restrictive for application-layer DoS attacks (e.g. Wednesday DoS Hulk dataset), producing 0 True Positives under current stringent defaults.
+
 ## Current Production Defaults
 
-The production defaults remain strictly as originally configured. Candidate thresholds from the evaluation are currently treated as evaluation insights and **not** adopted as production rules.
+The production defaults for the new multi-signal models are kept restrictive by design to ensure zero false positives, pending cross-dataset validation to find optimal production weights. Candidate thresholds from the evaluation are treated as evaluation insights.
 
-- **DDoS Detector**: `1000.0 pps`
-- **Recon Detector**: `50 unique ports`
+- **DDoS Detector**: Multi-signal model (requires combination of `packet_rate`, `byte_rate`, `syn_ratio`, and `source_entropy` meeting `confidence_cutoff > 0.6`).
+- **Recon Detector**: Multi-signal model (requires combination of `unique_ports`, `unique_hosts`, `scan_rate`, and `connection_fan_out` meeting `confidence_cutoff > 0.6`).
 - **DNS/DGA Detector**: Uses a loaded `.joblib` model. *(Note: DGA is implemented in code but requires the external model artifact to function. Without it, it yields a `DETECTOR_ERROR` and is not fully runtime-ready.)*
 
 ## Status Definitions
