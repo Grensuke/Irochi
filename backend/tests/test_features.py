@@ -310,6 +310,82 @@ async def test_tumbling_mechanism_recon(engine, redis_service):
     record = tumb_records[0]
     assert record.window_type == WindowType.TUMBLING
     assert record.payload.unique_destination_ports == 2
+    assert record.payload.unique_destination_hosts == 1
+    assert record.payload.scan_rate > 0
+    assert record.payload.connection_fan_out == 0.5  # 1 unique host / 2 conns
+
+@pytest.mark.asyncio
+async def test_tumbling_mechanism_ddos(engine, redis_service):
+    await redis_service._client.flushdb()
+
+    msg1 = ConsumerMessage(
+        topic="irochi.events.connection.v1",
+        partition=0,
+        offset=1,
+        key=None,
+        payload={
+            "event_id": str(uuid.uuid4()),
+            "event_type": "connection",
+            "connection_id": "conn_ddos_1",
+            "timestamp": 1000000000000000,
+            "timestamp_precision": "microsecond",
+            "ingest_timestamp": 1000000000000000,
+            "sensor_source": "zeek",
+            "src_ip": "10.0.0.1",
+            "dst_ip": "10.0.0.100",
+            "src_port": 1000,
+            "dst_port": 80,
+            "protocol": "tcp",
+            "schema_version": "1.0",
+            "payload": {
+                "orig_pkts": 10,
+                "resp_pkts": 5,
+                "orig_bytes": 1000,
+                "resp_bytes": 500,
+                "conn_state": "S0"
+            }
+        }
+    )
+    msg2 = ConsumerMessage(
+        topic="irochi.events.connection.v1",
+        partition=0,
+        offset=2,
+        key=None,
+        payload={
+            "event_id": str(uuid.uuid4()),
+            "event_type": "connection",
+            "connection_id": "conn_ddos_2",
+            "timestamp": 1000000000000000,
+            "timestamp_precision": "microsecond",
+            "ingest_timestamp": 1000000000000000,
+            "sensor_source": "zeek",
+            "src_ip": "10.0.0.2",
+            "dst_ip": "10.0.0.100",
+            "src_port": 1001,
+            "dst_port": 80,
+            "protocol": "tcp",
+            "schema_version": "1.0",
+            "payload": {
+                "orig_pkts": 5,
+                "resp_pkts": 0,
+                "orig_bytes": 500,
+                "resp_bytes": 0,
+                "conn_state": "SF"
+            }
+        }
+    )
+    await engine.process(msg1)
+    records = await engine.process(msg2)
+
+    tumb_records = [r for r in records if r.mechanism == FeatureMechanism.WINDOWED and r.detector_domain == DetectorDomain.DDOS]
+    assert len(tumb_records) == 1
+
+    record = tumb_records[0]
+    assert record.window_type == WindowType.TUMBLING
+    assert record.payload.packet_rate > 0
+    assert record.payload.byte_rate > 0
+    assert record.payload.syn_ratio == 0.5  # 1 SYN-only out of 2 total conns
+    assert record.payload.source_ip_entropy == 1.0  # math.log2(2) = 1.0
 
 @pytest.mark.asyncio
 async def test_correlation_mechanism(engine, redis_service):
