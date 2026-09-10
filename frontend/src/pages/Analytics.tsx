@@ -15,8 +15,6 @@ import './Analytics.css';
 export function Analytics() {
   const { summary, loading } = useDashboard();
 
-  const threatTypes = Object.keys(THREAT_TYPE_LABELS) as ThreatType[];
-  const detectorIds = Object.keys(DETECTOR_LABELS) as DetectorId[];
 
   const maxTrend = Math.max(...MOCK_ALERT_TREND.map(d => d.value), 1);
   const maxSev = Math.max(...MOCK_SEVERITY_TREND.map(d => d.critical + d.high + d.medium + d.low), 1);
@@ -124,12 +122,12 @@ export function Analytics() {
               <div className="skeleton" style={{ height: 120, width: '100%' }} />
             ) : (
               <div className="h-bar-chart">
-                {threatTypes.map(tt => {
-                  const count = summary?.by_threat_type[tt] ?? 0;
-                  const maxT = Math.max(...threatTypes.map(t => summary?.by_threat_type[t] ?? 0), 1);
+                {summary && Object.keys(summary.by_threat_type).map(tt => {
+                  const count = summary.by_threat_type[tt] ?? 0;
+                  const maxT = Math.max(...Object.values(summary.by_threat_type), 1);
                   return (
                     <div key={tt} className="h-bar-row">
-                      <span className="h-bar-label">{THREAT_TYPE_LABELS[tt]}</span>
+                      <span className="h-bar-label">{THREAT_TYPE_LABELS[tt as ThreatType] || tt}</span>
                       <div className="h-bar-track">
                         <div className="h-bar-fill" style={{ width: `${(count / maxT) * 100}%`, background: 'var(--accent-primary)' }} />
                       </div>
@@ -152,12 +150,12 @@ export function Analytics() {
               <div className="skeleton" style={{ height: 100, width: '100%' }} />
             ) : (
               <div className="h-bar-chart">
-                {detectorIds.map(did => {
-                  const count = summary?.by_detector[did] ?? 0;
-                  const maxD = Math.max(...detectorIds.map(d => summary?.by_detector[d] ?? 0), 1);
+                {summary && Object.keys(summary.by_detector).map(did => {
+                  const count = summary.by_detector[did] ?? 0;
+                  const maxD = Math.max(...Object.values(summary.by_detector), 1);
                   return (
                     <div key={did} className="h-bar-row">
-                      <span className="h-bar-label">{DETECTOR_LABELS[did]}</span>
+                      <span className="h-bar-label">{DETECTOR_LABELS[did as DetectorId] || did}</span>
                       <div className="h-bar-track">
                         <div className="h-bar-fill" style={{ width: `${(count / maxD) * 100}%`, background: 'var(--accent-purple)' }} />
                       </div>
@@ -189,11 +187,11 @@ export function Analytics() {
               <span className="stat-label">High</span>
             </div>
             <div className="stat">
-              <span className="stat-value" style={{ color: 'var(--accent-primary)' }}>6</span>
+              <span className="stat-value" style={{ color: 'var(--accent-primary)' }}>{loading || !summary ? '—' : Object.keys(summary.by_threat_type).length}</span>
               <span className="stat-label">Threat Types</span>
             </div>
             <div className="stat">
-              <span className="stat-value" style={{ color: 'var(--accent-purple)' }}>5</span>
+              <span className="stat-value" style={{ color: 'var(--accent-purple)' }}>{loading || !summary ? '—' : Object.keys(summary.by_detector).length}</span>
               <span className="stat-label">Detectors</span>
             </div>
           </div>

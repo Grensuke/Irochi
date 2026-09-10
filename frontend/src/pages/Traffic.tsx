@@ -144,8 +144,8 @@ function ProtocolBar() {
 export function Traffic() {
   return (
     <div className="traffic-page">
-      <div className="demo-banner" role="status" style={{ marginBottom: 'var(--space-4)' }}>
-        All traffic data shown is DEMO/MOCK — not real production telemetry.
+      <div className="demo-banner" role="status" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--severity-high)', borderRadius: 'var(--radius-md)', color: 'var(--severity-high)', fontWeight: 'bold' }}>
+        SIMULATED DEMO DATA: Live backend traffic telemetry is not currently available.
       </div>
 
       <div className="traffic-grid">

@@ -13,10 +13,11 @@ from typing import Annotated
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 
 from app.core.config import WS_BACKFILL_COUNT
+from app.core.database import AsyncSessionLocal
 from app.schemas.alerts import WebSocketMessage, AlertResponse
 from app.services.postgres_alert_service import PostgresAlertService
 from app.services.redis_pubsub import RedisPubSubService
-from app.api.dependencies import get_postgres_alert_service, get_redis_pubsub
+from app.api.dependencies import get_redis_pubsub
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,6 @@ router = APIRouter()
 @router.websocket("/ws/alerts")
 async def websocket_alerts(
     websocket: WebSocket,
-    alert_service: Annotated[PostgresAlertService, Depends(get_postgres_alert_service)],
     pubsub_service: Annotated[RedisPubSubService, Depends(get_redis_pubsub)],
 ) -> None:
     """WebSocket endpoint pushing backfill + live alerts."""
@@ -36,7 +36,9 @@ async def websocket_alerts(
 
     try:
         # --- Phase 1: Real Postgres backfill ---
-        backfill_alerts_orm = await alert_service.list_alerts(limit=WS_BACKFILL_COUNT)
+        async with AsyncSessionLocal() as session:
+            alert_service = PostgresAlertService(session)
+            backfill_alerts_orm = await alert_service.list_alerts(limit=WS_BACKFILL_COUNT)
 
         # We need to reverse them so the oldest of the backfill comes first
         for a in reversed(backfill_alerts_orm):

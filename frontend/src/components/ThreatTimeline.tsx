@@ -28,7 +28,7 @@ export function ThreatTimeline() {
   return (
     <div className="panel" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="panel-header">
-        <span className="panel-title">Threat Activity (24h)</span>
+        <span className="panel-title">Threat Activity (24h) <span style={{ color: 'var(--severity-high)', marginLeft: 8, fontSize: '10px' }}>[SIMULATED DEMO DATA]</span></span>
       </div>
       <div className="panel-body" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
