@@ -229,3 +229,44 @@ async def test_status_constraint_rejects_invalid(db_session: AsyncSession):
 
     with pytest.raises(IntegrityError):
         await service.create_alert(new_alert)
+
+
+@pytest.mark.asyncio
+async def test_get_dashboard_summary(db_session: AsyncSession):
+    service = PostgresAlertService(db_session)
+    now = datetime.now(timezone.utc)
+
+    # Insert some mock alerts to test aggregation
+    for i in range(3):
+        await service.create_alert(Alert(
+            alert_id=uuid.uuid4(),
+            detector_output_id=f"out-{i}",
+            detector_id="ddos_detector",
+            threat_type="volumetric_ddos",
+            entity_type="destination",
+            entity_key=f"192.168.1.{i}",
+            detected_at=now,
+            created_at=now,
+            first_seen_at=now,
+            last_seen_at=now,
+            status="new",
+            severity="critical" if i == 0 else "high",
+            severity_candidate="critical" if i == 0 else "high",
+            confidence=0.9,
+            score=90.0,
+            title="DDoS",
+            evidence_summary="DDoS evidence",
+            evidence={},
+            source_feature_references=[],
+            detector_version="1.0",
+            schema_version="1.0"
+        ))
+
+    summary = await service.get_dashboard_summary()
+    assert summary.total_alerts == 3
+    assert summary.critical_count == 1
+    assert summary.high_count == 2
+    assert summary.medium_count == 0
+    assert summary.by_threat_type["volumetric_ddos"] == 3
+    assert summary.by_detector["ddos_detector"] == 3
+    assert len(summary.recent_alerts) == 3

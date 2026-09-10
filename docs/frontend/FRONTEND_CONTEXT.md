@@ -96,14 +96,16 @@ frontend/
 | GET /api/v1/dashboard/summary | `useDashboard` → SummaryBar, ThreatBreakdown, Threats page, Analytics page |
 | WS /api/v1/ws/alerts | `useLiveAlerts` → LiveFeed |
 
-**MOCK / DEMO (Using `src/services/mockData.ts`):**
+**MOCK / DEMO (Simulated Data):**
 - Network page (uses synthetic traffic data for DiodeFlowVisualizer)
 - Analytics trends (synthetic historical charts)
+- Traffic charts (synthetic throughput/protocol data)
 - Settings (UI only)
 
 ## Pending
 
-- Replace remaining mock telemetry dashboards with real API aggregations
+- Implement historical analytics APIs to replace mock Analytics trends
+- Replace mock traffic generator for Network page
 - Real authentication and authorization
 - Real multi-tenancy support
 

@@ -16,7 +16,7 @@ import { formatTimestamp } from '../utils/format';
 import './Overview.css';
 
 export function Overview() {
-  const { summary, loading: summaryLoading, isMock: summaryMock } = useDashboard();
+  const { summary, loading: summaryLoading, error: summaryError, isMock: summaryMock } = useDashboard();
   const { alerts, loading: alertsLoading, isMock: alertsMock } = useAlerts();
   const { liveAlerts, connectionState } = useLiveAlerts();
 
@@ -39,6 +39,11 @@ export function Overview() {
       </div>
 
       <div className="overview-grid">
+        {summaryError && (
+          <div className="grid-span-12" style={{ padding: 'var(--space-4)', backgroundColor: 'var(--bg-card)', border: '1px solid var(--severity-high)', borderRadius: 'var(--radius-md)', color: 'var(--severity-high)', marginBottom: 'var(--space-4)' }}>
+            <strong>Error loading dashboard:</strong> {summaryError}
+          </div>
+        )}
         <div className="grid-span-12">
           <SummaryBar summary={summary} loading={summaryLoading} />
         </div>

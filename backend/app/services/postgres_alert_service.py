@@ -2,10 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Any, Sequence
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.alert import Alert
+from app.schemas.dashboard import DashboardSummaryResponse
+from app.schemas.alerts import AlertResponse
 
 
 class StaleUpdateError(Exception):
@@ -65,6 +67,55 @@ class PostgresAlertService:
             stmt = stmt.limit(limit)
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def get_dashboard_summary(self) -> DashboardSummaryResponse:
+        """Compute dashboard metrics directly via SQL aggregation."""
+        severity_stmt = select(Alert.severity, func.count(Alert.alert_id)).group_by(Alert.severity)
+        severity_rows = (await self.session.execute(severity_stmt)).all()
+        severity_counts = {sev: count for sev, count in severity_rows}
+
+        threat_stmt = select(Alert.threat_type, func.count(Alert.alert_id)).group_by(Alert.threat_type)
+        threat_rows = (await self.session.execute(threat_stmt)).all()
+        by_threat_type = {threat: count for threat, count in threat_rows}
+
+        detector_stmt = select(Alert.detector_id, func.count(Alert.alert_id)).group_by(Alert.detector_id)
+        detector_rows = (await self.session.execute(detector_stmt)).all()
+        by_detector = {det: count for det, count in detector_rows}
+
+        recent_stmt = select(Alert).order_by(Alert.last_seen_at.desc()).limit(5)
+        recent_orm = (await self.session.execute(recent_stmt)).scalars().all()
+
+        recent_alerts = []
+        for a in recent_orm:
+            recent_alerts.append(AlertResponse(
+                alert_id=str(a.alert_id),
+                timestamp=a.last_seen_at,
+                threat_type=a.threat_type,
+                detector_id=a.detector_id,
+                severity=a.severity,
+                confidence=a.confidence or 0.0,
+                entity_type=a.entity_type,
+                entity_key=a.entity_key,
+                first_seen_at=a.first_seen_at,
+                last_seen_at=a.last_seen_at,
+                resolved_at=a.resolved_at,
+                evidence_summary=a.evidence_summary or "",
+                status=a.status
+            ))
+
+        total_alerts = sum(severity_counts.values())
+
+        return DashboardSummaryResponse(
+            total_alerts=total_alerts,
+            critical_count=severity_counts.get("critical", 0),
+            high_count=severity_counts.get("high", 0),
+            medium_count=severity_counts.get("medium", 0),
+            low_count=severity_counts.get("low", 0),
+            info_count=severity_counts.get("info", 0),
+            by_threat_type=by_threat_type,
+            by_detector=by_detector,
+            recent_alerts=recent_alerts,
+        )
 
     async def update_alert_fields(
         self,

@@ -6,17 +6,17 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.api.dependencies import get_postgres_alert_service, get_redis_pubsub
+from app.api.dependencies import get_redis_pubsub
 from app.services.postgres_alert_service import PostgresAlertService
 from app.services.redis_pubsub import RedisPubSubService
 from app.mock.data import MOCK_ALERTS, LIVE_ALERT_TEMPLATES
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from app.schemas.alerts import AlertStatus
 from datetime import datetime, timezone
 import uuid
 
 @pytest.fixture(autouse=True)
-def override_ws_dependencies():
+def override_ws_dependencies(monkeypatch):
     mock_db = AsyncMock(spec=PostgresAlertService)
 
     class MockOrmAlert:
@@ -83,7 +83,17 @@ def override_ws_dependencies():
 
     mock_pubsub.subscribe_alerts = mock_subscribe_alerts
 
-    app.dependency_overrides[get_postgres_alert_service] = lambda: mock_db
+    # Mock the AsyncSessionLocal used in websocket_alerts
+    mock_session = AsyncMock()
+    # When async with AsyncSessionLocal() is called, return mock_session
+    mock_session_factory = MagicMock(return_value=mock_session)
+    mock_session.__aenter__.return_value = mock_session
+    mock_session.__aexit__.return_value = False
+
+    # Also patch PostgresAlertService so it uses our mock_db when initialized
+    monkeypatch.setattr("app.api.websocket.alerts.AsyncSessionLocal", mock_session_factory)
+    monkeypatch.setattr("app.api.websocket.alerts.PostgresAlertService", lambda s: mock_db)
+
     app.dependency_overrides[get_redis_pubsub] = lambda: mock_pubsub
     yield
     app.dependency_overrides.clear()
