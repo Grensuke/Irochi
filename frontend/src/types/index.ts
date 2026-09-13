@@ -61,6 +61,8 @@ export interface Alert {
   dst_ip: string | null;
   dst_port?: number | null;
   evidence_summary: string;
+  evidence?: Record<string, any> | null;
+  score?: number | null;
   status: AlertStatus;
 }
 

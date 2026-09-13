@@ -5,6 +5,7 @@ from app.services.features.keys import (
     build_sliding_bucket_key,
     build_tumbling_distinct_key,
     build_tumbling_metric_key,
+    build_tumbling_list_key,
     build_correlation_key,
     build_revision_key
 )
@@ -143,6 +144,40 @@ class FeatureStateAdapter:
         if self.redis._client is None:
             raise RuntimeError("Redis client is not started")
         return await self.redis._client.hgetall(key)
+
+    async def append_tumbling_list(
+        self,
+        entity_type: EntityType,
+        entity_key: str,
+        window_id: int,
+        field: str,
+        value: str,
+        ttl_seconds: int,
+        max_length: int = 1000
+    ):
+        """Appends a value to a bounded list for a tumbling window."""
+        key = build_tumbling_list_key(entity_type, entity_key, window_id, field)
+        if self.redis._client is None:
+            raise RuntimeError("Redis client is not started")
+
+        async with self.redis._client.pipeline(transaction=True) as pipe:
+            pipe.rpush(key, value)
+            pipe.ltrim(key, -max_length, -1)
+            pipe.expire(key, ttl_seconds)
+            await pipe.execute()
+
+    async def get_tumbling_list(
+        self,
+        entity_type: EntityType,
+        entity_key: str,
+        window_id: int,
+        field: str
+    ) -> List[str]:
+        """Gets all values in a bounded list for a tumbling window."""
+        key = build_tumbling_list_key(entity_type, entity_key, window_id, field)
+        if self.redis._client is None:
+            raise RuntimeError("Redis client is not started")
+        return await self.redis._client.lrange(key, 0, -1)
 
     async def set_correlation_state(
         self,

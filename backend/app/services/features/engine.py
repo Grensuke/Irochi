@@ -84,4 +84,16 @@ class FeatureEngine:
             )
             if tls_corr_conn: records.append(tls_corr_conn)
 
+            tls_c2_tumble = await process_tumbling(
+                self.state_adapter, event, DetectorDomain.TLS_C2, EntityType.PAIR,
+                window_size_sec=60
+            )
+            if tls_c2_tumble: records.append(tls_c2_tumble)
+
+            exfil_tumble = await process_tumbling(
+                self.state_adapter, event, DetectorDomain.EXFIL, EntityType.SOURCE,
+                window_size_sec=60
+            )
+            if exfil_tumble: records.append(exfil_tumble)
+
         return records

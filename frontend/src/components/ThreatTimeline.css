@@ -1,0 +1,61 @@
+.threat-timeline-svg {
+  overflow: visible;
+}
+
+/* Base line animations */
+.series-line {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: drawLine 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.3s ease;
+}
+
+.series-area {
+  opacity: 0;
+  animation: fadeInArea 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeInArea {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hover behaviors */
+.threat-timeline-svg .series-group.has-hover .series-line {
+  opacity: 0.3;
+}
+.threat-timeline-svg .series-group.has-hover .series-area {
+  opacity: 0.1;
+}
+
+/* The hover tooltip and points should appear instantly but smoothly */
+.hover-point {
+  animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Premium Legend */
+.timeline-legend-item {
+  transition: opacity 0.2s ease;
+}
+.timeline-legend-item:hover {
+  opacity: 1;
+}

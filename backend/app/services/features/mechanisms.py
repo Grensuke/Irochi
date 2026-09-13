@@ -348,6 +348,105 @@ async def process_tumbling(
         )
         return DdosFeatureRecord(**envelope_args, payload=payload)
 
+    if detector_domain == DetectorDomain.EXFIL and event.event_type == EventType.CONNECTION:
+        orig_bytes = event.payload.orig_bytes or 0
+        resp_bytes = event.payload.resp_bytes or 0
+
+        increments = {
+            "orig_bytes": orig_bytes,
+            "resp_bytes": resp_bytes
+        }
+
+        await state_adapter.increment_tumbling_metric(
+            entity_type, entity_key, window_id, increments, ttl_seconds=window_size_sec*2
+        )
+
+        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+        current_orig = int(metrics.get("orig_bytes", 0))
+        current_resp = int(metrics.get("resp_bytes", 0))
+
+        outbound_inbound_ratio = current_orig / max(current_resp, 1)
+        byte_rate = (current_orig + current_resp) / window_size_sec
+
+        envelope_args = await build_envelope(
+            state_adapter, event, FeatureMechanism.WINDOWED,
+            detector_domain, entity_type, entity_key,
+            window_type=WindowType.TUMBLING,
+            window_start=window_id * 1000000,
+            window_end=(window_id + window_size_sec) * 1000000
+        )
+        from app.schemas.features import ExfilFeaturePayload, ExfilFeatureRecord
+        payload = ExfilFeaturePayload(
+            outbound_inbound_ratio=outbound_inbound_ratio,
+            byte_rate=byte_rate
+        )
+        
+        return ExfilFeatureRecord(**envelope_args, payload=payload)
+
+    if detector_domain == DetectorDomain.TLS_C2 and event.event_type == EventType.CONNECTION:
+        # 1. Increment connection count
+        await state_adapter.increment_tumbling_metric(
+            entity_type, entity_key, window_id, {"total_conns": 1}, ttl_seconds=window_size_sec*2
+        )
+        
+        # 2. Append timestamp to list for behavioral analysis
+        # event.timestamp is in microseconds
+        await state_adapter.append_tumbling_list(
+            entity_type, entity_key, window_id, "timestamps", str(event.timestamp), 
+            ttl_seconds=window_size_sec*2, max_length=1000
+        )
+        
+        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+        current_conns = int(metrics.get("total_conns", 0))
+        
+        # 3. Retrieve timestamps and calculate exact variance/mean
+        raw_timestamps = await state_adapter.get_tumbling_list(entity_type, entity_key, window_id, "timestamps")
+        # Ensure we decode bytes if returned by Redis
+        decoded_timestamps = [int(ts.decode('utf-8') if isinstance(ts, bytes) else ts) for ts in raw_timestamps]
+        
+        inter_arrival_times = []
+        if len(decoded_timestamps) > 1:
+            for i in range(1, len(decoded_timestamps)):
+                # delta in seconds
+                delta = (decoded_timestamps[i] - decoded_timestamps[i-1]) / 1000000.0
+                inter_arrival_times.append(delta)
+        
+        mean_iat = 0.0
+        variance = None
+        stddev = None
+        timing_regularity = None
+        jitter = None
+        if len(inter_arrival_times) > 0:
+            mean_iat = sum(inter_arrival_times) / len(inter_arrival_times)
+            
+            # Require at least 5 connections (4 intervals) for meaningful regularity/jitter
+            if len(inter_arrival_times) >= 4:
+                variance = sum((x - mean_iat) ** 2 for x in inter_arrival_times) / (len(inter_arrival_times) - 1)
+                stddev = math.sqrt(variance)
+                # Normalizing variance: lower variance = higher regularity
+                timing_regularity = 1.0 / (1.0 + variance)
+                if mean_iat > 0:
+                    jitter = stddev / mean_iat
+        
+        connection_frequency = current_conns / window_size_sec
+
+        envelope_args = await build_envelope(
+            state_adapter, event, FeatureMechanism.WINDOWED,
+            detector_domain, entity_type, entity_key,
+            window_type=WindowType.TUMBLING,
+            window_start=window_id * 1000000,
+            window_end=(window_id + window_size_sec) * 1000000
+        )
+        from app.schemas.features import TlsC2FeaturePayload, TlsC2FeatureRecord
+        payload = TlsC2FeaturePayload(
+            connection_frequency=connection_frequency,
+            periodicity_variance=variance,
+            timing_regularity=timing_regularity,
+            jitter=jitter,
+            inter_arrival_time=mean_iat if len(inter_arrival_times) > 0 else None
+        )
+        return TlsC2FeatureRecord(**envelope_args, payload=payload)
+
     return None
 
 # --- M3.8 Session / Correlation Mechanism ---

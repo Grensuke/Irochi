@@ -30,6 +30,8 @@ def override_alert_service():
             self.last_seen_at = dumped.get("last_seen_at") or dumped["timestamp"]
             self.resolved_at = dumped.get("resolved_at")
             self.evidence_summary = dumped["evidence_summary"]
+            self.evidence = dumped.get("evidence", {})
+            self.score = dumped.get("score")
             self.status = dumped["status"]
 
     mock_service.list_alerts.return_value = [MockOrmAlert(a) for a in MOCK_ALERTS]

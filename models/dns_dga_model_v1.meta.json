@@ -1,0 +1,32 @@
+{
+  "model_version": "v1.0.0",
+  "model_type": "Random Forest",
+  "feature_names": [
+    "query_length",
+    "label_count",
+    "max_label_length",
+    "domain_entropy",
+    "vowel_consonant_ratio",
+    "digit_ratio"
+  ],
+  "feature_order": [
+    "query_length",
+    "label_count",
+    "max_label_length",
+    "domain_entropy",
+    "vowel_consonant_ratio",
+    "digit_ratio"
+  ],
+  "target_definition": "0=Benign, 1=DGA",
+  "dataset_source": "UMUDGA",
+  "training_timestamp": "2026-09-01T01:10:03.290796+00:00",
+  "preprocessing_definition": "extract_dns_lexical_features from mechanisms.py",
+  "evaluation_split_strategy": "Primary: Family-Aware (Held out ['gozi_nasa', 'sisron', 'qadars', 'tinba', 'locky']). Secondary: Random Stratified.",
+  "evaluation_metrics_heldout": {
+    "precision": 0.8936436884512086,
+    "recall": 1.0,
+    "f1": 0.9438350983358548,
+    "roc_auc": 0.9857250050090163
+  },
+  "threshold": 0.8
+}

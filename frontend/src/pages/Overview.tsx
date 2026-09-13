@@ -12,6 +12,9 @@ import { ThreatBreakdown } from '../components/ThreatBreakdown';
 import { LiveFeed } from '../components/LiveFeed';
 import { DetectorHealth } from '../components/DetectorHealth';
 import { ThreatTimeline } from '../components/ThreatTimeline';
+import { TopSources } from '../components/TopSources';
+import { TopTargets } from '../components/TopTargets';
+import { SeverityDistribution } from '../components/SeverityDistribution';
 import { formatTimestamp } from '../utils/format';
 import './Overview.css';
 
@@ -44,13 +47,15 @@ export function Overview() {
             <strong>Error loading dashboard:</strong> {summaryError}
           </div>
         )}
+        
+        {/* Row 1: Summary KPIs */}
         <div className="grid-span-12">
           <SummaryBar summary={summary} loading={summaryLoading} />
         </div>
 
-        {/* Row 2: Volume Timeline (8) + Severity breakdown (4) */}
+        {/* Row 2: Volume Timeline (8) + Threat breakdown (donut) (4) */}
         <div className="grid-span-8">
-          <ThreatTimeline />
+          <ThreatTimeline alerts={alerts} />
         </div>
         <div className="grid-span-4">
           <ThreatBreakdown summary={summary} loading={summaryLoading} />
@@ -64,7 +69,18 @@ export function Overview() {
           <LiveFeed liveAlerts={liveAlerts} connectionState={connectionState} />
         </div>
 
-        {/* Row 4: Health status (12) */}
+        {/* Row 4: Top Sources (4) + Top Targets (4) + Severity Distribution (4) */}
+        <div className="grid-span-4">
+          <TopSources alerts={alerts} />
+        </div>
+        <div className="grid-span-4">
+          <TopTargets alerts={alerts} />
+        </div>
+        <div className="grid-span-4">
+          <SeverityDistribution summary={summary} loading={summaryLoading} />
+        </div>
+
+        {/* Row 5: Health status (12) */}
         <div className="grid-span-12">
           <DetectorHealth />
         </div>

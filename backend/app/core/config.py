@@ -54,3 +54,6 @@ REDPANDA_CONSUMER_GROUP = os.getenv("REDPANDA_CONSUMER_GROUP", "irochi-pipeline-
 # Note: In a real environment, this might come from a robust config. For MVP we use comma-separated env var.
 _default_topics = "irochi.events.connection.v1,irochi.events.dns.v1,irochi.events.tls.v1"
 REDPANDA_TOPICS = [t.strip() for t in os.getenv("REDPANDA_TOPICS", _default_topics).split(",") if t.strip()]
+
+# --- Models ---
+IROCHI_DGA_MODEL_PATH = os.getenv("IROCHI_DGA_MODEL_PATH", "/app/models/dns_dga_model_v1.joblib")
