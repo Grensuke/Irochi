@@ -147,8 +147,9 @@ Established in runtime (`API_V1_PREFIX = "/api/v1"`). Path-based versioning — 
 | `GET` | `/api/v1/alerts/{alert_id}` | Single alert detail |
 | `GET` | `/api/v1/dashboard/summary` | Aggregate dashboard metrics |
 | `WS` | `/api/v1/ws/alerts` | Live alert stream (backfill + live) |
+| `POST` | `/api/v1/narrative/generate` | Generate AI narrative for an alert context |
 
-No new endpoints are introduced in this pass.
+No new endpoints are introduced in this pass, except for the new `narrative` AI capability.
 
 ### Status
 
@@ -173,6 +174,8 @@ No new endpoints are introduced in this pass.
 | `dst_ip` | string \| null | Optional | `entity_key` / `alert_context` | Derived; see §6 | Nullable; depends on entity_type |
 | `dst_port` | integer \| null | Optional | `alert_context` | Derived; see §6 | Nullable for all entity types |
 | `evidence_summary` | string | Yes | `evidence_summary` | Direct passthrough | Human-readable summary |
+| `evidence` | dict \| null | Yes | `evidence` | Direct passthrough | Structured payload for AI Narrative context |
+| `score` | float \| null | Yes | `score` | Direct passthrough | Raw detector score |
 | `status` | enum string | Yes | `status` | Direct passthrough | `new\|investigating\|closed\|false_positive` |
 | `entity_type` | enum string | Yes | `entity_type` | Direct passthrough | 4-value: `source\|destination\|pair\|connection` |
 | `entity_key` | string | Yes | `entity_key` | Direct passthrough | Canonical entity identifier |
@@ -186,14 +189,12 @@ No new endpoints are introduced in this pass.
 |---|---|---|
 | `title` | Internal for MVP | `title` and `evidence_summary` have different semantic roles: `title` is a concise alert identifier; `evidence_summary` summarizes the evidence. They do not semantically replace each other. No current frontend consumer requires a separate `title` field; `evidence_summary` serves present display needs. `title` remains available in the canonical Alert for future exposure without redesign. |
 | `severity_candidate` | Internal audit | Detector's severity suggestion; preserved in PostgreSQL for audit but not analyst-facing in MVP |
-| `score` | System/debugging | Raw detector score; not analyst-relevant |
 | `detector_output_id` | Internal plumbing | Internal DetectorOutput reference |
 | `update_count` | Internal concurrency | Alert Engine concurrency signal; not analyst-facing |
 | `dedup_identity` | Internal | Represented by component columns; not analyst-facing |
 | `source_feature_references` | Internal provenance | Future debug/detail endpoint concern |
 | `detector_version` / `model_version` | System/debugging | MVP omit; may be added to a future analyst-optional detail view |
 | `schema_version` | Internal contract | Not analyst-facing |
-| `evidence` (structured JSONB) | Internal/partial | `evidence_summary` serves MVP display; structured exposure is OPEN for future detail endpoint |
 | `alert_context` internals | Internal | Used to derive `src_ip`/`dst_ip`/ports; not exposed raw |
 
 ### `confidence` null rule
@@ -262,14 +263,14 @@ Per PostgreSQL Schema §3, the Alert Engine captures representative entity conte
 | `resolved_at` | Analyst-facing | Yes (nullable) |
 | `title` | Internal for MVP | No — deliberate omission (see §5) |
 | `severity_candidate` | Internal audit | No |
-| `score` | System/debugging | No |
+| `score` | Analyst-facing | Yes (nullable; exposed for advanced context) |
 | `detector_output_id` | Internal plumbing | No |
 | `update_count` | Internal concurrency | No |
 | `dedup_identity` | Internal | No |
 | `source_feature_references` | Internal provenance | No |
 | `detector_version` / `model_version` | System/debugging | No (MVP) |
 | `schema_version` | Internal contract | No |
-| `evidence` (structured) | Internal/partial | No (MVP) |
+| `evidence` (structured) | Analyst-facing | Yes (exposed for AI Narrative Engine context) |
 | `alert_context` | Internal | No (derived from) |
 
 ---
@@ -536,9 +537,9 @@ API field (this document)
 | `severity` | text enum column | `severity` | Direct |
 | `severity_candidate` | text enum column | — | **Not exposed** |
 | `confidence` | float column (nullable) | `confidence` | Direct; null when column is null |
-| `score` | float column (nullable) | — | **Not exposed** |
+| `score` | float column (nullable) | `score` | Direct; null when column is null |
 | `evidence_summary` | text column | `evidence_summary` | Direct |
-| `evidence` (JSONB) | JSONB column | — | Not exposed raw; `alert_context` sub-field used to derive `src_ip`/`dst_ip`/ports |
+| `evidence` (JSONB) | JSONB column | `evidence` | Direct passthrough |
 | `alert_context` (inside evidence JSONB) | JSONB sub-field | `src_ip`, `dst_ip`, `src_port`, `dst_port` | Derived per entity_type (see §6) |
 | `entity_key` (pair type) | text column | `src_ip`, `dst_ip` | Parsed: left/right of `\|` |
 | `resolved_at` (int64 µs) | `timestamptz` column (nullable) | `resolved_at` | int64→ISO 8601; null when column is null |
@@ -686,6 +687,8 @@ Redis is **not** a source of truth (BD-004). Redis Pub/Sub is the fan-out mechan
 | `dst_ip: string \| null` | `dst_ip: string \| null` | ✅ Unchanged |
 | `dst_port: number \| null` | `dst_port: integer \| null` | ✅ Compatible |
 | `evidence_summary: string` | `evidence_summary: string` | ✅ Unchanged |
+| `evidence?: Record<string, any> \| null` | `evidence: dict \| null` | ✅ Additive — explicitly matches new UI needs |
+| `score?: number \| null` | `score: float \| null` | ✅ Additive — explicitly matches new UI needs |
 | `status: AlertStatus` | `status: string enum` | ✅ Unchanged |
 | — | `entity_type` (new) | ✅ Additive — frontend can ignore |
 | — | `entity_key` (new) | ✅ Additive — frontend can ignore |
@@ -710,7 +713,7 @@ Frontend `WsMessage` interface expects `{type: WsMessageType, alert: Alert | nul
 ### Summary
 
 - **One soft breaking change:** `confidence` becomes nullable. Frontend type update required when real implementation is deployed. **No frontend code changes in this pass.**
-- **Five additive fields:** All backward-compatible; frontend can safely ignore.
+- **Seven additive fields:** All backward-compatible; frontend uses `evidence` and `score`, can safely ignore the others.
 - **Dashboard and WebSocket:** Fully compatible.
 
 ---
@@ -732,6 +735,8 @@ Frontend `WsMessage` interface expects `{type: WsMessageType, alert: Alert | nul
 | `dst_ip` | string \| null | Optional | `entity_key` / `alert_context` | Derived | See §6 | Frontend, analysts |
 | `dst_port` | integer \| null | Optional | `alert_context` | Derived | See §6 | Frontend, analysts |
 | `evidence_summary` | string | Yes | `evidence_summary` | text column | Direct | Frontend, analysts |
+| `evidence` | dict \| null | Yes | `evidence` | JSONB column | Direct | Frontend, analysts (AI Narrative Context) |
+| `score` | float \| null | Yes | `score` | float column | Direct | Frontend, analysts (Advanced Metric) |
 | `status` | string enum | Yes | `status` | text column | Direct | Frontend, analysts |
 | `entity_type` | string enum | Yes | `entity_type` | text column | Direct | Frontend, analysts |
 | `entity_key` | string | Yes | `entity_key` | text column | Direct | Frontend, analysts |

@@ -28,6 +28,8 @@ Active Infrastructure Integration (Alerts integrated with real backend)
 - Alerts and Live WebSocket integrated with REAL backend pipeline
 - Meniscus liquid-socket navigation dock component (`MeniscusNavbar`) implemented for public and app navigation
 - Simplex Data-Diode Flow Dynamics visualizer (`DiodeFlowVisualizer`) implemented and integrated into Network page
+- Visual Polish Phase: Updated `ThreatTimeline`, `SeverityDistribution`, `TopSources`, `TopTargets`, and `SummaryBar` with SOC-grade aesthetics and data-sync capabilities.
+- Added `NarrativePanel` and AI progression/correlation utilities (`correlation.ts`, `explanation.ts`, `progression.ts`, `recommendations.ts`).
 
 ## Frontend Structure
 
