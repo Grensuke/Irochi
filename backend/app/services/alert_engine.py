@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from app.schemas.detectors import DetectorOutput, Decision
-from app.schemas.alerts import AlertStatus, Severity
+from app.schemas.alerts import AlertStatus, Severity, AlertResponse
 from app.services.postgres_alert_service import PostgresAlertService
 from app.services.redis_pubsub import RedisPubSubService
 from app.models.alert import Alert
@@ -164,20 +164,7 @@ class AlertEngine:
         # 6. Redis Publish
         # Create dictionary payload for pubsub
         # We manually map the ORM attributes since it's an SQLAlchemy model
-        alert_payload = {
-            "alert_id": str(alert_to_publish.alert_id),
-            "timestamp": alert_to_publish.last_seen_at.isoformat(),
-            "first_seen_at": alert_to_publish.first_seen_at.isoformat() if alert_to_publish.first_seen_at else alert_to_publish.last_seen_at.isoformat(),
-            "last_seen_at": alert_to_publish.last_seen_at.isoformat(),
-            "threat_type": alert_to_publish.threat_type,
-            "detector_id": alert_to_publish.detector_id,
-            "severity": alert_to_publish.severity,
-            "confidence": alert_to_publish.confidence,
-            "evidence_summary": alert_to_publish.evidence_summary,
-            "status": alert_to_publish.status,
-            "entity_type": alert_to_publish.entity_type,
-            "entity_key": alert_to_publish.entity_key
-        }
+        alert_payload = AlertResponse.from_orm(alert_to_publish).model_dump(mode="json")
 
         try:
             await self.redis_service.publish_alert(alert_payload)

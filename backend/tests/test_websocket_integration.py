@@ -5,19 +5,33 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 import asyncio
 
-from app.core import config
+import pytest
+import pytest_asyncio
+
 from app.models.base import Base
 from app.main import app
 from app.api.dependencies import get_redis_pubsub
 from app.services.redis_pubsub import RedisPubSubService
+from app.core import config
 from unittest.mock import AsyncMock
+
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb(type_, compiler, **kw):
+    return "JSON"
+
+@compiles(UUID, "sqlite")
+def compile_uuid(type_, compiler, **kw):
+    return "TEXT"
 
 @pytest.fixture(autouse=True)
 def setup_test_db():
     import asyncpg
     import asyncio
     async def init_db():
-        test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/irochi_test"
+        test_url = "sqlite+aiosqlite:///:memory:"
         engine = create_async_engine(test_url, pool_pre_ping=True)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)

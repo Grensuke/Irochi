@@ -46,13 +46,17 @@ export type AlertStatus = 'new' | 'investigating' | 'closed' | 'false_positive';
 
 export interface Alert {
   alert_id: string;
+  detector_output_id?: string | null;
   timestamp: string;
   threat_type: ThreatType;
   detector_id: DetectorId;
   severity: Severity;
+  severity_candidate?: string | null;
   confidence: number | null;
   entity_type: 'source' | 'destination' | 'pair' | 'connection';
   entity_key: string;
+  detected_at?: string | null;
+  created_at?: string | null;
   first_seen_at: string;
   last_seen_at: string;
   resolved_at?: string | null;
@@ -60,10 +64,15 @@ export interface Alert {
   src_port?: number | null;
   dst_ip: string | null;
   dst_port?: number | null;
+  title?: string | null;
   evidence_summary: string;
   evidence?: Record<string, any> | null;
+  source_feature_references?: Record<string, any>[] | null;
   score?: number | null;
   status: AlertStatus;
+  detector_version?: string | null;
+  model_version?: string | null;
+  schema_version?: string | null;
 }
 
 // ------------------------------------------------------------------

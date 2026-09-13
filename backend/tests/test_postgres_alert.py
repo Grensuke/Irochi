@@ -11,11 +11,21 @@ from app.models.alert import Alert
 from app.models.base import Base
 from app.services.postgres_alert_service import PostgresAlertService, StaleUpdateError
 
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb(type_, compiler, **kw):
+    return "JSON"
+
+@compiles(UUID, "sqlite")
+def compile_uuid(type_, compiler, **kw):
+    return "TEXT"
+
 
 @pytest_asyncio.fixture
 async def async_session_factory():
-    # Create a test URL by replacing the DB name from the config URL
-    test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/irochi_test"
+    test_url = "sqlite+aiosqlite:///:memory:"
     engine = create_async_engine(test_url, pool_pre_ping=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
