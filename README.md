@@ -21,6 +21,11 @@ Passive, real-time network threat-detection and security-intelligence system.
 > - DDoS Detector (default threshold: 1000 pps)
 > - Recon Detector (default threshold: 50 ports)
 > - DNS/DGA Detector (Requires external `.joblib` model artifact)
+> - TLS/C2 Detector (active monitoring for periodicity)
+> - Exfiltration Detector (active volume analysis)
+>
+> **Active AI Capabilities:**
+> - AI Narrative Engine (`/api/v1/narrative/generate`)
 >
 > **Known Limitations:**
 > Evaluation has shown severe limitations with the current flow-window distortion and default thresholds (e.g., 1000 pps misses low-bandwidth DoS). These default thresholds remain active but candidate improvements are documented. DGA relies on an external model artifact.
@@ -52,11 +57,11 @@ Irochi is an intelligence system. It produces:
 | # | Threat Capability | Status |
 |---|---|---|
 | 1 | Volumetric / Protocol DDoS | **Active** |
-| 2 | Botnet C2 Beaconing | Planned |
+| 2 | Botnet C2 Beaconing | **Active** |
 | 3 | DGA / DNS Tunneling | **Active** (Requires ML Model) |
 | 4 | Malware inside encrypted sessions | Planned |
 | 5 | Reconnaissance / Port Scanning | **Active** |
-| 6 | Data Exfiltration | Planned |
+| 6 | Data Exfiltration | **Active** |
 
 ### Detector Modules
 
@@ -65,8 +70,8 @@ Irochi is an intelligence system. It produces:
 | 1 | DDoS Detector | **Active** |
 | 2 | Recon Detector | **Active** |
 | 3 | DNS/DGA/DNS-Tunneling Detector | **Active** (Requires `.joblib`) |
-| 4 | TLS/C2 Detector | Planned |
-| 5 | Exfiltration Detector | Planned |
+| 4 | TLS/C2 Detector | **Active** |
+| 5 | Exfiltration Detector | **Active** |
 
 These are logical modules — **not** microservices.
 

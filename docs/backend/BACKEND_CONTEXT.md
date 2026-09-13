@@ -19,8 +19,8 @@ Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infras
 - WP-E ✅ Detector Framework
 - WP-F ✅ PCAP, Recon, DDoS, DNS/DGA
 - WP-G ✅ Alert Engine
-- WP-H = PENDING
-- WP-I = PENDING
+- WP-H ✅ TLS/C2 Detector
+- WP-I ✅ Exfiltration Detector
 - EVALUATION ✅ Baseline Evaluation & Threshold Sensitivity completed
 - M8 = IN PROGRESS — end-to-end MVP validation
 
@@ -31,9 +31,10 @@ The backend is fully wired to actual infrastructure services:
 - **Entry Point:** `app/main.py` instantiates and starts the `DetectionPipeline` during the FastAPI lifespan.
 - **Streaming:** `KafkaConsumerService` handles real Redpanda messages.
 - **State/Caching:** `FeatureEngine` relies on `RedisStateService`.
-- **Detectors:** `DdosDetector` (1000 pps), `ReconDetector` (50 ports), and `DnsDetector` (DGA via `.joblib`) are actively registered.
+- **Detectors:** All 5 core detectors (`DdosDetector`, `ReconDetector`, `DnsDetector`, `C2Detector`, `ExfiltrationDetector`) are actively registered.
 - **Alert Persistence:** `AlertEngine` saves to PostgreSQL via `PostgresAlertService`.
 - **Live Updates:** Alerts are pushed through `RedisPubSubService`.
+- **AI Analytics:** `ai_narrative.py` provides grounded threat storytelling based on deterministic evidence.
 
 ## Endpoints
 
@@ -44,6 +45,7 @@ The backend is fully wired to actual infrastructure services:
 | GET | `/api/v1/alerts/{alert_id}` | ✅ Working (Queries PostgreSQL) |
 | GET | `/api/v1/dashboard/summary` | ✅ Working (Queries PostgreSQL) |
 | WS | `/api/v1/ws/alerts` | ✅ Working (Backfill via DB, Live via Redis Pub/Sub) |
+| POST | `/api/v1/narrative/generate` | ✅ Working (Generates AI explanation) |
 
 ## Evaluation Tooling & Findings
 
