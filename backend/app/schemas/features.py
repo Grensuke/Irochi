@@ -74,9 +74,9 @@ class TlsC2FeaturePayload(BaseModel):
     ja3_blacklist_match: Optional[bool] = None
     # Windowed
     inter_arrival_time: Optional[float] = None
-    beacon_periodicity: Optional[float] = None
     periodicity_variance: Optional[float] = None
-    regularity: Optional[float] = None
+    timing_regularity: Optional[float] = None
+    jitter: Optional[float] = None
     connection_frequency: Optional[float] = None
     # Correlation
     correlation_status: Optional[CorrelationStatus] = None

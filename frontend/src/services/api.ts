@@ -21,6 +21,22 @@ async function fetchJson<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function postJson<T>(path: string, body: any): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = new Error(`${res.status} ${res.statusText}`);
+    err.name = 'ApiError';
+    throw err;
+  }
+  return res.json() as Promise<T>;
+}
+
 /** Service layer for REST API calls. */
 export const api = {
   /** GET /api/v1/health */
@@ -41,5 +57,10 @@ export const api = {
   /** GET /api/v1/dashboard/summary */
   getDashboardSummary(): Promise<DashboardSummary> {
     return fetchJson<DashboardSummary>('/dashboard/summary');
+  },
+
+  /** POST /api/v1/narrative/generate */
+  generateNarrative(context: any): Promise<{ what_was_observed: string, why_it_matters: string, what_to_investigate: string }> {
+    return postJson('/narrative/generate', context);
   },
 };

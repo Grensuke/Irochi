@@ -40,6 +40,8 @@ async def list_alerts(
             last_seen_at=a.last_seen_at,
             resolved_at=a.resolved_at,
             evidence_summary=a.evidence_summary or "",
+            evidence=a.evidence,
+            score=a.score,
             status=a.status
         ))
 
@@ -79,5 +81,7 @@ async def get_alert(
         last_seen_at=alert_orm.last_seen_at,
         resolved_at=alert_orm.resolved_at,
         evidence_summary=alert_orm.evidence_summary or "",
+        evidence=alert_orm.evidence,
+        score=alert_orm.score,
         status=alert_orm.status
     )

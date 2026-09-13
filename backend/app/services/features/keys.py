@@ -51,6 +51,10 @@ def build_tumbling_metric_key(entity_type: EntityType, entity_key: str, window_i
     """Builds the Redis key for a tumbling window metric state (Hash)."""
     return f"irochi:feature:{entity_type.value}:{entity_key}:tumbling:{window_id}"
 
+def build_tumbling_list_key(entity_type: EntityType, entity_key: str, window_id: int, field: str) -> str:
+    """Builds the Redis key for a tumbling window list state."""
+    return f"irochi:feature:{entity_type.value}:{entity_key}:list:{window_id}:{field}"
+
 def build_correlation_key(connection_id: str) -> str:
     """Builds the Redis key for connection correlation state."""
     return f"irochi:feature:connection:{connection_id}:correlation"

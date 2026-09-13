@@ -44,6 +44,18 @@ export function threatLabel(type: ThreatType): string {
   return THREAT_TYPE_LABELS[type] ?? type;
 }
 
+export function threatColor(type: ThreatType | string): string {
+  switch (type) {
+    case 'volumetric_ddos': return '#FF5C6C';
+    case 'recon_portscan': return '#FBBF24';
+    case 'dga_dns_tunnel': return '#C084FC';
+    case 'c2_beaconing': return '#7EA8D8';
+    case 'data_exfiltration': return '#F43F5E';
+    case 'encrypted_malware': return '#A78BFA';
+    default: return '#9CA3AF';
+  }
+}
+
 export function detectorLabel(id: DetectorId): string {
   return DETECTOR_LABELS[id] ?? id;
 }

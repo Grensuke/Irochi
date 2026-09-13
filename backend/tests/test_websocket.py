@@ -33,6 +33,8 @@ def override_ws_dependencies(monkeypatch):
             self.last_seen_at = data.get("last_seen_at") or data["timestamp"]
             self.resolved_at = data.get("resolved_at")
             self.evidence_summary = data["evidence_summary"]
+            self.evidence = data.get("evidence", {})
+            self.score = data.get("score")
             self.status = data["status"]
 
     # We need list_alerts to return in descending time order, websocket route reverses it.

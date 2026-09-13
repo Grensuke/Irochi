@@ -6,7 +6,9 @@
 const MOCK_DETECTORS = [
   { id: 'ddos', name: 'DDoS Detector', status: 'active', info: 'Operational' },
   { id: 'recon', name: 'Recon Detector', status: 'active', info: 'Operational' },
-  { id: 'dns', name: 'DNS / DGA Tunneling', status: 'degraded', info: 'Model artifact unavailable in current deployment' },
+  { id: 'dns', name: 'DNS / DGA Tunneling', status: 'active', info: 'Operational' },
+  { id: 'c2', name: 'TLS/C2 Detector', status: 'active', info: 'Operational (Behavioral Heuristic)' },
+  { id: 'exfil', name: 'Exfiltration Detector', status: 'active', info: 'Operational (Behavioral Heuristic)' },
 ];
 
 export function DetectorHealth() {

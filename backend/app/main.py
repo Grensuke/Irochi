@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import alerts as alert_routes
 from app.api.routes import dashboard as dashboard_routes
 from app.api.routes import health as health_routes
+from app.api.routes import narrative as narrative_routes
 from app.api.websocket import alerts as ws_alerts
 from contextlib import asynccontextmanager
 
@@ -79,6 +80,11 @@ async def lifespan(app: FastAPI):
         registry.register(DdosDetector())
         registry.register(ReconDetector())
         registry.register(DnsDetector())
+        
+        from app.services.detectors.c2 import C2Detector
+        from app.services.detectors.exfil import ExfiltrationDetector
+        registry.register(C2Detector())
+        registry.register(ExfiltrationDetector())
 
         grouping = PassThroughGrouping()
         router = DetectorRouter(registry, grouping)
@@ -134,6 +140,7 @@ app.add_middleware(
 app.include_router(health_routes.router, prefix=API_V1_PREFIX, tags=["health"])
 app.include_router(alert_routes.router, prefix=API_V1_PREFIX, tags=["alerts"])
 app.include_router(dashboard_routes.router, prefix=API_V1_PREFIX, tags=["dashboard"])
+app.include_router(narrative_routes.router, prefix=f"{API_V1_PREFIX}/narrative", tags=["narrative"])
 
 # ------------------------------------------------------------------
 # WebSocket routes — also under /api/v1

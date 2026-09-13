@@ -84,6 +84,8 @@ class AlertResponse(BaseModel):
     dst_ip: str | None = None
     dst_port: int | None = None
     evidence_summary: str
+    evidence: dict | None = None
+    score: float | None = None
     status: AlertStatus
 
 

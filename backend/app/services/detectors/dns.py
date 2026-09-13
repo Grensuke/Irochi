@@ -25,7 +25,8 @@ class DnsDetector(BaseDetector):
 
     def _load_model(self):
         """Loads the model artifact outside the git repo."""
-        model_path = os.getenv("IROCHI_DGA_MODEL_PATH", r"C:\Users\STARK\Documents\Irochi-Data\models\dns_dga_model_v1.joblib")
+        from app.core.config import IROCHI_DGA_MODEL_PATH
+        model_path = IROCHI_DGA_MODEL_PATH
         meta_path = model_path.replace(".joblib", ".meta.json")
 
         try:
