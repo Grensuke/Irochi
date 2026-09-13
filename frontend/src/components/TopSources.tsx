@@ -9,10 +9,8 @@ export function TopSources({ alerts }: TopSourcesProps) {
   const { topSources, maxCount } = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const a of alerts) {
-      const src = a.src_ip || a.evidence?.src_ip;
-      if (src) {
-        counts[src] = (counts[src] || 0) + 1;
-      }
+      const src = a.src_ip || a.evidence?.src_ip || 'Unavailable';
+      counts[src] = (counts[src] || 0) + 1;
     }
     const sorted = Object.entries(counts)
       .sort((a, b) => b[1] - a[1])

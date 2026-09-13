@@ -30,18 +30,23 @@ export function SummaryBar({ summary, loading }: SummaryBarProps) {
         />
         <KPIMetric 
           label="Flows / Sec" 
-          value="14,203"
+          value="Telemetry unavailable"
           trend="neutral"
+          trendValue=""
           loading={loading}
         />
         <KPIMetric 
           label="Throughput" 
-          value="3.4 Gbps"
+          value="Telemetry unavailable"
+          trend="neutral"
+          trendValue=""
           loading={loading}
         />
         <KPIMetric 
           label="Detection Latency" 
-          value="12 ms"
+          value="Not measured"
+          trend="neutral"
+          trendValue=""
           loading={loading}
         />
       </div>

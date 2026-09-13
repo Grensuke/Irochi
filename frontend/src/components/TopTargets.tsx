@@ -9,10 +9,8 @@ export function TopTargets({ alerts }: TopTargetsProps) {
   const { topTargets, maxCount } = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const a of alerts) {
-      const dst = a.dst_ip || a.evidence?.dst_ip;
-      if (dst) {
-        counts[dst] = (counts[dst] || 0) + 1;
-      }
+      const dst = a.dst_ip || a.evidence?.dst_ip || 'Unavailable';
+      counts[dst] = (counts[dst] || 0) + 1;
     }
     const sorted = Object.entries(counts)
       .sort((a, b) => b[1] - a[1])

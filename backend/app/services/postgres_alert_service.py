@@ -87,21 +87,7 @@ class PostgresAlertService:
 
         recent_alerts = []
         for a in recent_orm:
-            recent_alerts.append(AlertResponse(
-                alert_id=str(a.alert_id),
-                timestamp=a.last_seen_at,
-                threat_type=a.threat_type,
-                detector_id=a.detector_id,
-                severity=a.severity,
-                confidence=a.confidence or 0.0,
-                entity_type=a.entity_type,
-                entity_key=a.entity_key,
-                first_seen_at=a.first_seen_at,
-                last_seen_at=a.last_seen_at,
-                resolved_at=a.resolved_at,
-                evidence_summary=a.evidence_summary or "",
-                status=a.status
-            ))
+            recent_alerts.append(AlertResponse.from_orm(a))
 
         total_alerts = sum(severity_counts.values())
 
