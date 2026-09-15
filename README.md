@@ -1,136 +1,163 @@
-# Irochi
+﻿# Irochi
 
 **SIH 2026 — Problem Statement SIH26145**
 
 **Problem Statement Title:** AI-Based Detection of Cyber Threats in Unidirectional IP Traffic
 
-Passive, real-time network threat-detection and security-intelligence system.
+Irochi is a passive, real-time network threat-detection and security-intelligence system for unidirectional IP traffic.
 
 ---
 
 ## Current Status
 
-> **CURRENT: Active Infrastructure & Detector Evaluation Phase**
+> **Phase: Active Detection & Incident Correlation**
 >
-> The repository contains a fully integrated pipeline with active infrastructure.
-> - **Backend:** FastAPI with `DetectionPipeline` consuming from Redpanda, routing to active detectors, saving to PostgreSQL, and streaming via Redis Pub/Sub to real REST/WebSocket endpoints.
-> - **Frontend:** React + Vite product shell. The alerts integration uses the *real* API, while other telemetry dashboards remain in a demo state.
-> - **Evaluation:** Extensive detector evaluation tooling (Level 1 & Level 2 methodology using CIC-IDS2017) has been implemented and run to establish baselines.
+> The system has a fully operational detection pipeline backed by real infrastructure. The frontend connects to a live backend via REST and WebSockets.
 >
-> **Active Detectors & Defaults:**
-> - DDoS Detector (default threshold: 1000 pps)
-> - Recon Detector (default threshold: 50 ports)
-> - DNS/DGA Detector (Requires external `.joblib` model artifact)
-> - TLS/C2 Detector (active monitoring for periodicity)
-> - Exfiltration Detector (active volume analysis)
+> **What is live:**
+> - All 6 detector modules are active and producing alerts
+> - Alerts persist to PostgreSQL and stream via Redis Pub/Sub → WebSocket → React dashboard
+> - Incident Engine groups correlated alerts into multi-stage incidents
+> - Anomaly Detector runs Z-Score / Isolation Forest baseline analysis
+> - AI Narrative Engine generates human-readable summaries for analysts
+> - PCAP-based live demo pipeline is functional (`backend/scripts/live_demo.py`)
 >
-> **Active AI Capabilities:**
-> - AI Narrative Engine (`/api/v1/narrative/generate`)
->
-> **Known Limitations:**
-> Evaluation has shown severe limitations with the current flow-window distortion and default thresholds (e.g., 1000 pps misses low-bandwidth DoS). These default thresholds remain active but candidate improvements are documented. DGA relies on an external model artifact.
+> **Known limitations:**
+> - DNS/DGA detector requires an external `.joblib` model artifact at startup
+> - Window duration and threshold tuning is ongoing (see evaluation docs)
+> - TimescaleDB is not yet enabled (conditional decision, not locked)
 
 ---
 
-## Project Purpose & Design Philosophy
+## What Irochi Is (and Is Not)
 
-Irochi is a passive, real-time network threat-detection system. It is strictly designed for:
+Irochi is a **passive intelligence system**. It strictly:
 
-- **Passive observation** of one-directional IP traffic
-- **Read-only ingest** (via Zeek and NetFlow/IPFIX)
-- **No return path** into the production network
-- **No active probing**
-- **No mitigation or blocking action**
-- **No payload decryption** (TLS/metadata analysis only)
-- **Incremental/streaming processing**
-- **Near-real-time detection and alerting**
+- Observes unidirectional IP traffic passively
+- Normalises traffic from multiple sources (Zeek logs, NetFlow/IPFIX)
+- Detects and classifies cyber threats with confidence scores
+- Produces labelled security alerts with supporting evidence
+- Clusters related alerts into incidents for analyst workflow
+- Delivers alerts live to a React security dashboard via WebSockets
 
-Irochi is an intelligence system. It produces:
-- **Labelled alerts**
-- **Confidence scores**
-- **Supporting evidence**
+Irochi does **NOT**:
+- Probe or contact traffic sources/destinations
+- Decrypt TLS/QUIC payloads
+- Send mitigation or blocking commands
+- Act inline on production network traffic
 
-**Irochi does NOT claim to mitigate the detected threat.** Alerts are provided to security analysts for review (with states like New, Investigating, Closed, and False Positive).
+> **"Closed" is an analyst workflow status.** It does not mean Irochi blocked or mitigated the threat.
 
-### Threat Capabilities
+---
 
-| # | Threat Capability | Status |
+## Threat Capabilities
+
+| # | Threat Capability | Detector Module | Status |
+|---|---|---|---|
+| 1 | Volumetric / Protocol DDoS | DDoS Detector | **Active** |
+| 2 | Reconnaissance / Port Scanning | Recon Detector | **Active** |
+| 3 | DGA / DNS Tunneling | DNS/DGA/Tunnel Detector | **Active** (requires `.joblib`) |
+| 4 | Botnet C2 Beaconing | TLS/C2 Detector | **Active** |
+| 5 | Malware inside encrypted sessions | TLS/C2 Detector | **Active** |
+| 6 | Data Exfiltration | Exfiltration Detector | **Active** |
+| 7 | Novel Anomaly / Baseline Deviation | Anomaly Detector | **Active** |
+
+---
+
+## Detector Modules
+
+There are **six logical detector modules** — not six microservices. Each module may emit one or more threat types.
+
+| # | Module | Threat Types Emitted |
 |---|---|---|
-| 1 | Volumetric / Protocol DDoS | **Active** |
-| 2 | Botnet C2 Beaconing | **Active** |
-| 3 | DGA / DNS Tunneling | **Active** (Requires ML Model) |
-| 4 | Malware inside encrypted sessions | Planned |
-| 5 | Reconnaissance / Port Scanning | **Active** |
-| 6 | Data Exfiltration | **Active** |
-
-### Detector Modules
-
-| # | Detector Module | Status |
-|---|---|---|
-| 1 | DDoS Detector | **Active** |
-| 2 | Recon Detector | **Active** |
-| 3 | DNS/DGA/DNS-Tunneling Detector | **Active** (Requires `.joblib`) |
-| 4 | TLS/C2 Detector | **Active** |
-| 5 | Exfiltration Detector | **Active** |
-
-These are logical modules — **not** microservices.
+| 1 | DDoS Detector | `volumetric_ddos` |
+| 2 | Recon Detector | `recon_portscan` |
+| 3 | DNS/DGA/Tunnel Detector | `dga_dns_tunnel` |
+| 4 | TLS/C2 Detector | `c2_beaconing`, `encrypted_malware` |
+| 5 | Exfiltration Detector | `data_exfiltration` |
+| 6 | Anomaly Detector | `novel_anomaly` |
 
 ---
 
 ## High-Level Architecture
 
-```text
-PCAP / Live Packets ─────→ Zeek ─────→ Zeek Logs
-                                            │
-NetFlow / IPFIX ────────────────────────────┤
-                                            ↓
-                                    Ingest Normalizer
-                                            ↓
-                                        Redpanda
-                                            ↓
-                                    Feature Processing
-                                            ↓
-                                        Detectors
-                                            ↓
-                                      Alert Engine
-                                            ↓
-                                    PostgreSQL INSERT
-                                            ↓
-                                      AWAIT COMMIT
-                                            ↓
-                                    Redis Pub/Sub
-                                            ↓
-                                   FastAPI WebSocket
-                                            ↓
-                                    React Dashboard
+```
+PCAP / Live Packets --> Zeek --> Zeek Logs (conn / dns / ssl)
+                                        |
+NetFlow / IPFIX ────────────────────────┤
+                                        v
+                               Ingest Normalizer
+                                        v
+                                    Redpanda
+                                        v
+                              Feature Processing
+                              (in-memory + Redis)
+                                        v
+              +─────────────────────────────────────────+
+              |               Detectors                 |
+              |  DDoS | Recon | DNS | TLS/C2 |          |
+              |             Exfil | Anomaly             |
+              +─────────────────────────────────────────+
+                                        v
+                                  Alert Engine
+                                        v
+                            PostgreSQL INSERT / UPDATE
+                                        v
+                                  AWAIT COMMIT
+                                        v
+                              Incident Engine
+                          (cluster correlated alerts)
+                                        v
+                               Redis Pub/Sub
+                                        v
+                             FastAPI WebSocket
+                                        v
+                              React Dashboard
 ```
 
-See: [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md)
+See [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md) for the full annotated architecture.
 
 ---
 
 ## Repository Structure
 
-```text
+```
 Irochi/
-├── .agents/              # Antigravity skills
+├── .agents/              # Antigravity agent skills
 ├── docs/
-│   ├── architecture/     # Architecture checkpoints (source of truth)
+│   ├── architecture/     # Architecture checkpoint + schema drafts (source of truth)
 │   ├── data/             # Canonical Event Schema (source of truth)
 │   ├── backend/          # Backend context + decisions
 │   ├── frontend/         # Frontend context + decisions
 │   └── shared/           # API contract, data contracts, integration notes
-├── frontend/             # React + Vite + TypeScript
-├── backend/              # Python + FastAPI
-│   ├── app/              # Application source
+├── backend/
+│   ├── app/
+│   │   ├── api/          # FastAPI routes + WebSocket handlers
+│   │   ├── core/         # Config, security, DB connections
+│   │   ├── models/       # SQLAlchemy ORM models (Alert, Incident)
+│   │   ├── schemas/      # Pydantic request/response schemas
+│   │   └── services/
+│   │       ├── detectors/    # 6 detector modules + router + registry
+│   │       ├── features/     # Feature extraction
+│   │       ├── ingest/       # Ingest normalizer
+│   │       ├── state/        # Hot state management
+│   │       ├── streaming/    # Redpanda consumer
+│   │       ├── alert_engine.py
+│   │       ├── incident_engine.py
+│   │       ├── ai_narrative.py
+│   │       ├── postgres_alert_service.py
+│   │       ├── postgres_incident_service.py
+│   │       └── redis_pubsub.py
+│   ├── scripts/          # Live demo + PCAP runner scripts
 │   ├── tests/            # Automated tests
-│   └── tools/            # Offline evaluation and diagnostic tools
-├── infra/                # Infrastructure configs (future/Zeek)
-├── AGENTS.md             # Agent rules and project reference
+│   └── requirements.txt
+├── frontend/             # React + Vite + TypeScript
+├── infra/                # Infrastructure configs (Zeek)
+├── models/               # ML model artifacts (.joblib)
+├── AGENTS.md             # Agent governance rules
 ├── README.md             # This file
-├── .gitignore
-├── .env.example
-└── docker-compose.yml    # Root Docker Compose for backend, frontend, DBs
+├── .env.example          # Environment variable template
+└── docker-compose.yml    # Full stack orchestration
 ```
 
 ---
@@ -143,8 +170,9 @@ Irochi/
 | Backend | Python + FastAPI |
 | Network Telemetry | Zeek + Python Ingest Normalizer |
 | Streaming | Redpanda |
-| AI/ML | Scikit-learn + XGBoost + River |
-| Hot State | In-memory + Redis |
+| AI / ML | Scikit-learn + XGBoost + River |
+| Hot State | In-memory Python/River + Redis Data Structures |
+| Pub/Sub | Redis Pub/Sub (live alert fan-out) |
 | Persistent Storage | PostgreSQL |
 | Real-time | WebSockets |
 | Security | JWT + RBAC + Argon2 |
@@ -153,56 +181,94 @@ Irochi/
 
 ---
 
-## Environment Setup & Configuration
+## Environment Setup
 
-Before running any services, set up your local environment configuration:
+Copy the environment template and fill in your values. **Never commit `.env`.**
 
 ```bash
-# Copy the environment template
 cp .env.example .env
 ```
 
-Edit `.env` and fill in appropriate values. **Never commit `.env`**.
+### Network Connectivity Notes
 
-### Important Network Configurations
-When running the stack, pay attention to Redpanda connectivity depending on where the producer/consumer is running:
-- **From within Docker (e.g. FastAPI Backend)**: Connect to Redpanda using `REDPANDA_BROKER=redpanda:9092`
-- **From Host Machine (e.g. PCAP Runner script)**: Connect to Redpanda using `localhost:19092`
+| Context | Redpanda Address |
+|---|---|
+| Inside Docker (FastAPI backend) | `redpanda:9092` |
+| Host machine (PCAP / demo scripts) | `localhost:19092` |
 
 ---
 
-## Running the Application (Docker Workflow)
-
-The recommended way to run Irochi is using the root `docker-compose.yml`. This spins up the active infrastructure (PostgreSQL, Redis, Redpanda) alongside the FastAPI backend and React frontend.
+## Running the Stack (Docker)
 
 ```bash
 docker compose up --build
 ```
-- Frontend available at: `http://localhost:5173`
-- Backend API available at: `http://localhost:8000`
 
-### Ingesting Traffic (Host PCAP Runner)
-To manually ingest a PCAP file for detection while the Docker stack is running:
-
-```bash
-cd backend
-python -m venv .venv
-# Windows:
-.\.venv\Scripts\activate
-# Linux/macOS:
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# Run the prototype ingestor from the host machine (targets localhost:19092)
-python run_prototype.py --pcap C:\path\to\your\traffic.pcap
-```
+| Service | URL |
+|---|---|
+| Frontend (React) | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
+| API Docs (Swagger) | http://localhost:8000/docs |
 
 ---
 
-## References
+## API Endpoints
 
-- [Architecture Checkpoint](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md)
-- [Canonical Event Schema](docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md)
-- [API Contract (Draft)](docs/shared/API_CONTRACT.md)
-- [Evaluation](docs/EVALUATION.md)
-- [AGENTS.md](AGENTS.md)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/alerts` | List alerts with filters |
+| `GET` | `/api/v1/alerts/{id}` | Get alert detail |
+| `PATCH` | `/api/v1/alerts/{id}/status` | Update alert status |
+| `GET` | `/api/v1/incidents` | List incidents |
+| `GET` | `/api/v1/incidents/{id}` | Get incident detail |
+| `POST` | `/api/v1/narrative/generate` | Generate AI narrative for an alert |
+| `GET` | `/api/v1/dashboard/stats` | Dashboard summary statistics |
+| `WS` | `/ws/alerts` | Live alert WebSocket stream |
+| `GET` | `/health` | Health check |
+
+---
+
+## Running the Live Demo (PCAP)
+
+To drive detections using a PCAP file while the Docker stack is running:
+
+```bash
+# 1. Set up a Python environment with requirements installed
+cd backend
+python -m venv .venv
+
+# Windows
+.\.venv\Scripts\activate
+# Linux / macOS
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+# 2. Run the live demo script (targets host-side Redpanda at localhost:19092)
+python scripts/live_demo.py --pcap /path/to/traffic.pcap
+```
+
+The script replays the PCAP through the Ingest Normalizer → Redpanda pipeline, triggering the full detection flow in real time.
+
+---
+
+## Source-of-Truth Documents
+
+| Document | Purpose |
+|---|---|
+| [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md) | Locked architecture decisions |
+| [`docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`](docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md) | Canonical event contract |
+| [`docs/shared/API_CONTRACT_DRAFT_v1.md`](docs/shared/API_CONTRACT_DRAFT_v1.md) | REST + WebSocket API contract |
+| [`AGENTS.md`](AGENTS.md) | Agent governance and project rules |
+
+---
+
+## Contributing / Agent Rules
+
+All AI agents working on this project must read [`AGENTS.md`](AGENTS.md) before making any changes. It governs:
+
+- Architecture protection rules
+- Documentation synchronisation requirements
+- Git and branch workflow
+- Approval / escalation rules
+- Locked vs conditional vs open decisions

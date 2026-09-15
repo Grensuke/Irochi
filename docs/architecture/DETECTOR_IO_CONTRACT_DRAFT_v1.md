@@ -87,6 +87,7 @@ Final API Contract
 | `dns_dga_tunnel_detector` | DNS/DGA/DNS-Tunneling Detector | DGA detection, DNS tunneling detection | Source (windowed and enrichment) |
 | `tls_c2_detector` | TLS/C2 Detector | Encrypted-session malware, C2 beaconing | Connection (enrichment and correlation), Pair (beaconing) |
 | `exfiltration_detector` | Exfiltration Detector | Data exfiltration detection | Source |
+| `anomaly_detector` | Anomaly Detector | Baseline deviation / novel anomalies | Source / Destination |
 
 These are logically distinct modules, **not** separate microservices (Architecture §11).
 
@@ -101,6 +102,7 @@ A detector may emit **one or more** threat types. `detector_id ≠ threat_type`.
 | `dns_dga_tunnel_detector` | `dga_dns_tunnel` |
 | `tls_c2_detector` | `c2_beaconing`, `encrypted_malware` |
 | `exfiltration_detector` | `data_exfiltration` |
+| `anomaly_detector` | `novel_anomaly` |
 
 Note: `tls_c2_detector` emits two distinct threat types — `encrypted_malware` (JA3 blacklist match evidence) and `c2_beaconing` (periodic connection pattern evidence). These represent different threat interpretations from the same detector module.
 
@@ -113,6 +115,7 @@ Note: `tls_c2_detector` emits two distinct threat types — `encrypted_malware` 
 | `dns_dga_tunnel_detector` | `domain_entropy`, `query_length`, `n_gram_score`, label-length statistics, `query_frequency`, record-type distribution | Enrichment + Windowed (Sliding + Tumbling) |
 | `tls_c2_detector` | `ja3_blacklist_match`, connection↔tls correlation, `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Enrichment + Correlation + Windowed (Sliding) |
 | `exfiltration_detector` | `outbound_inbound_ratio`, `byte_rate` | Windowed (Sliding) |
+| `anomaly_detector` | Z-Score/Isolation Forest multivariate deviations | Windowed (Sliding) |
 
 **Heterogeneous feature mechanisms are explicitly permitted.** `dns_dga_tunnel_detector`, `tls_c2_detector`, and `recon_detector` all consume features from multiple mechanisms and/or differently-timed windows. The contract must support this without forcing a single mechanism/window shape onto all inputs.
 
@@ -429,6 +432,7 @@ This is a **base grouping identity**, not a complete evaluation identity. It ide
 | `dns_dga_tunnel_detector` | `src_ip` |
 | `tls_c2_detector` | varies — `connection_id` (enrichment and correlation), `src_ip\|dst_ip` (pair/beaconing) |
 | `exfiltration_detector` | `src_ip` |
+| `anomaly_detector` | `src_ip` or `dst_ip` |
 
 ### Why `evaluation_window` is not part of the base grouping identity
 
@@ -609,6 +613,7 @@ The exact evidence structure remains **PROPOSED** — it will be refined during 
 | `encrypted_malware` | Malware inside encrypted sessions | `tls_c2_detector` |
 | `recon_portscan` | Reconnaissance / Port Scanning | `recon_detector` |
 | `data_exfiltration` | Data Exfiltration | `exfiltration_detector` |
+| `novel_anomaly` | Novel anomaly / baseline deviation | `anomaly_detector` |
 
 ### Mapping rules
 

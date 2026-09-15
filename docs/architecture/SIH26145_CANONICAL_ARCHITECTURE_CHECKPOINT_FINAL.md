@@ -275,14 +275,14 @@ The React application remains the analyst-facing security dashboard.
                        ↘           ↙
                              v
                          DETECTORS
-       +----------+----------+----------+----------+----------+
-       |          |          |          |          |
-       v          v          v          v          v
-      DDoS      Recon      DNS/DGA/    TLS/C2   Exfiltration
-     Detector  Detector   DNS-Tunnel   Detector    Detector
+       +----------+----------+----------+----------+----------+----------+
+       |          |          |          |          |          |
+       v          v          v          v          v          v
+      DDoS      Recon      DNS/DGA/    TLS/C2   Exfiltration Anomaly
+     Detector  Detector   DNS-Tunnel   Detector    Detector  Detector
                            Detector
-       |          |          |          |          |
-       +----------+----------+----------+----------+
+       |          |          |          |          |          |
+       +----------+----------+----------+----------+----------+----------+
                              |
                              v
                      SCORED DETECTIONS
@@ -292,6 +292,15 @@ The React application remains the analyst-facing security dashboard.
                              |
                              v
                      CREATE ALERT ID
+                             |
+                             v
+                  INSERT INTO POSTGRESQL
+                             |
+                             v
+                      INCIDENT ENGINE
+                             |
+                             v
+                   CLUSTER INTO INCIDENTS
                              |
                              v
                   INSERT INTO POSTGRESQL
@@ -678,7 +687,7 @@ Redis Pub/Sub is **not** durable storage.
 
 # 11. Detector Architecture
 
-There are **five logical detector modules**:
+There are **six logical detector modules**:
 
 ```text
 1. DDoS Detector
@@ -686,6 +695,7 @@ There are **five logical detector modules**:
 3. DNS/DGA/DNS-Tunneling Detector
 4. TLS/C2 Detector
 5. Exfiltration Detector
+6. Anomaly Detector
 ```
 
 These are logically distinct modules.
