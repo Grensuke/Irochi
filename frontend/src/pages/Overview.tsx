@@ -7,6 +7,7 @@ import { useDashboard } from '../hooks/useDashboard';
 import { useAlerts } from '../hooks/useAlerts';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
 import { SummaryBar } from '../components/SummaryBar';
+import { SecurityPosture } from '../components/SecurityPosture';
 import { RecentAlerts } from '../components/RecentAlerts';
 import { ThreatBreakdown } from '../components/ThreatBreakdown';
 import { LiveFeed } from '../components/LiveFeed';
@@ -48,8 +49,9 @@ export function Overview() {
           </div>
         )}
         
-        {/* Row 1: Summary KPIs */}
+        {/* Row 1: Summary KPIs & Security Posture */}
         <div className="grid-span-12">
+          <SecurityPosture summary={summary} loading={summaryLoading} />
           <SummaryBar summary={summary} loading={summaryLoading} />
         </div>
 

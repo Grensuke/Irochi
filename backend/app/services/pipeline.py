@@ -7,6 +7,7 @@ from app.services.streaming.consumer import KafkaConsumerService
 from app.services.features.engine import FeatureEngine
 from app.services.detectors.router import DetectorRouter
 from app.services.alert_engine import AlertEngine
+from app.services.incident_engine import IncidentEngine
 from app.services.postgres_alert_service import PostgresAlertService
 from app.services.redis_pubsub import RedisPubSubService
 
@@ -101,9 +102,12 @@ class DetectionPipeline:
                         postgres_service=pg_service,
                         redis_service=self.redis_service
                     )
+                    incident_engine = IncidentEngine()
 
                     try:
-                        await alert_engine.process_detector_output(output)
+                        alert_payload = await alert_engine.process_detector_output(output)
+                        if alert_payload:
+                            await incident_engine.on_alert(alert_payload, session)
                     except Exception as e:
                         logger.error(
                             f"Error persisting detector output {output.output_id} "

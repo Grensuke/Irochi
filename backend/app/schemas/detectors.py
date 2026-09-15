@@ -14,6 +14,7 @@ class DetectorId(str, Enum):
     DNS_DGA_TUNNEL = "dns_dga_tunnel_detector"
     TLS_C2 = "tls_c2_detector"
     EXFILTRATION = "exfiltration_detector"
+    ANOMALY = "anomaly_detector"
 
 class Decision(str, Enum):
     NO_THREAT = "no_threat"
@@ -29,6 +30,7 @@ class ThreatType(str, Enum):
     ENCRYPTED_MALWARE = "encrypted_malware"
     RECON_PORTSCAN = "recon_portscan"
     DATA_EXFILTRATION = "data_exfiltration"
+    NOVEL_ANOMALY = "novel_anomaly"
 
 class Severity(str, Enum):
     CRITICAL = "critical"

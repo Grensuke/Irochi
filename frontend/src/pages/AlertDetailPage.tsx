@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAlerts } from '../hooks/useAlerts';
+import { useIncident } from '../hooks/useIncident';
+import { api } from '../services/api';
+import type { Alert } from '../types';
 import { STATUS_LABELS, DETECTOR_LABELS } from '../types';
 import {
   formatTimestamp,
@@ -14,6 +17,8 @@ import { generateRecommendations } from '../utils/recommendations';
 import { buildForensicTimeline } from '../utils/correlation';
 import { deriveAttackProgression } from '../utils/progression';
 import { NarrativePanel } from '../components/NarrativePanel';
+import { IncidentPanel } from '../components/IncidentPanel';
+import { EvidenceChain } from '../components/EvidenceChain';
 import './AlertDetail.css';
 
 export function AlertDetailPage() {
@@ -31,11 +36,38 @@ export function AlertDetailPage() {
   }, [id, activeAlertId, alerts]);
 
   const targetAlert = alerts.find((a) => a.alert_id === id);
-  const currentAlert = alerts.find((a) => a.alert_id === (activeAlertId || id));
 
-  const timelineEvents = targetAlert ? buildForensicTimeline(targetAlert, alerts) : [];
+  const { incident, loading: incidentLoading } = useIncident(targetAlert?.incident_id);
+
+  const [memberAlerts, setMemberAlerts] = useState<Alert[]>([]);
+  const [memberAlertsLoading, setMemberAlertsLoading] = useState(false);
+
+  useEffect(() => {
+    if (incident?.member_alert_ids) {
+      setMemberAlertsLoading(true);
+      Promise.all(incident.member_alert_ids.map(mid => api.getAlert(mid)))
+        .then(results => {
+          const sorted = results.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          setMemberAlerts(sorted);
+        })
+        .catch(err => console.error("Failed to load member alerts", err))
+        .finally(() => setMemberAlertsLoading(false));
+    }
+  }, [incident]);
+
+  // Use incident sequence if available, otherwise fallback to isolated timeline logic
+  const timelineEvents = incident && memberAlerts.length > 0
+    ? memberAlerts.map(a => ({ alert: a, reason: '' }))
+    : targetAlert ? buildForensicTimeline(targetAlert, alerts) : [];
+
   const progression = deriveAttackProgression(timelineEvents);
-  const currentIndex = currentAlert ? timelineEvents.findIndex(e => e.alert.alert_id === currentAlert.alert_id) : -1;
+  
+  // Find current index based on activeAlertId (or fallback to targetAlert id)
+  const currentAlertId = activeAlertId || id;
+  const currentIndex = timelineEvents.findIndex(e => e.alert.alert_id === currentAlertId);
+  const currentAlert = currentIndex !== -1 
+    ? timelineEvents[currentIndex].alert 
+    : (targetAlert || null);
 
   useEffect(() => {
     let interval: any;
@@ -138,6 +170,13 @@ export function AlertDetailPage() {
         {/* Left Column: Data & Evidence */}
         <div className="workspace-main">
           
+          {incident && (
+            <div className="mb-6 space-y-6">
+              <IncidentPanel incident={incident} />
+              <EvidenceChain incident={incident} />
+            </div>
+          )}
+
           <NarrativePanel 
             context={{
               alert_id: currentAlert.alert_id,

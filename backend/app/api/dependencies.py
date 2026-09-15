@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.postgres_alert_service import PostgresAlertService
+from app.services.postgres_incident_service import PostgresIncidentService
 from app.services.redis_pubsub import RedisPubSubService
 from app.services.alert_engine import AlertEngine
 from app.core.config import REDIS_URL
@@ -20,6 +21,9 @@ async def get_redis_pubsub() -> RedisPubSubService:
 
 def get_postgres_alert_service(db: AsyncSession = Depends(get_db)) -> PostgresAlertService:
     return PostgresAlertService(db)
+
+def get_postgres_incident_service(db: AsyncSession = Depends(get_db)) -> PostgresIncidentService:
+    return PostgresIncidentService(db)
 
 def get_alert_engine(
     postgres_service: PostgresAlertService = Depends(get_postgres_alert_service),

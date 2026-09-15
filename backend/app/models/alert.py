@@ -40,6 +40,7 @@ class Alert(Base):
     )
 
     alert_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    incident_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     detector_output_id: Mapped[str] = mapped_column(String, nullable=False)
 
     detector_id: Mapped[str] = mapped_column(String, nullable=False)

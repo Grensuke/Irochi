@@ -31,6 +31,7 @@ class ThreatType(str, enum.Enum):
     ENCRYPTED_MALWARE = "encrypted_malware"
     RECON_PORTSCAN = "recon_portscan"
     DATA_EXFILTRATION = "data_exfiltration"
+    NOVEL_ANOMALY = "novel_anomaly"
 
 
 class DetectorId(str, enum.Enum):
@@ -41,6 +42,7 @@ class DetectorId(str, enum.Enum):
     DNS_DGA_TUNNEL_DETECTOR = "dns_dga_tunnel_detector"
     TLS_C2_DETECTOR = "tls_c2_detector"
     EXFILTRATION_DETECTOR = "exfiltration_detector"
+    ANOMALY_DETECTOR = "anomaly_detector"
 
 
 class Severity(str, enum.Enum):
@@ -71,6 +73,7 @@ class AlertResponse(BaseModel):
     """Single alert for API responses."""
 
     alert_id: str
+    incident_id: str | None = None
     detector_output_id: str | None = None
     timestamp: datetime
     threat_type: ThreatType
@@ -130,6 +133,7 @@ class AlertResponse(BaseModel):
 
         return cls.model_construct(
             alert_id=str(obj.alert_id),
+            incident_id=str(obj.incident_id) if getattr(obj, "incident_id", None) else None,
             detector_output_id=getattr(obj, "detector_output_id", None),
             timestamp=obj.last_seen_at,
             threat_type=obj.threat_type,
