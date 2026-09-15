@@ -145,9 +145,11 @@ Established in runtime (`API_V1_PREFIX = "/api/v1"`). Path-based versioning — 
 | `GET` | `/api/v1/health` | Service liveness check |
 | `GET` | `/api/v1/alerts` | Alert list with optional filtering and pagination |
 | `GET` | `/api/v1/alerts/{alert_id}` | Single alert detail |
+| `GET` | `/api/v1/incidents` | Incident list with optional filtering and pagination |
+| `GET` | `/api/v1/incidents/{incident_id}` | Single incident detail |
 | `GET` | `/api/v1/dashboard/summary` | Aggregate dashboard metrics |
 | `WS` | `/api/v1/ws/alerts` | Live alert stream (backfill + live) |
-| `POST` | `/api/v1/narrative/generate` | Generate AI narrative for an alert context |
+| `POST` | `/api/v1/narrative/generate` | Generate AI narrative for an alert or incident context |
 
 No new endpoints are introduced in this pass, except for the new `narrative` AI capability.
 

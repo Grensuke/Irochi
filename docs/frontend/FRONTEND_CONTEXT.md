@@ -30,6 +30,9 @@ Active Infrastructure Integration (Alerts integrated with real backend)
 - Simplex Data-Diode Flow Dynamics visualizer (`DiodeFlowVisualizer`) implemented and integrated into Network page
 - Visual Polish Phase: Updated `ThreatTimeline`, `SeverityDistribution`, `TopSources`, `TopTargets`, and `SummaryBar` with SOC-grade aesthetics and data-sync capabilities.
 - Added `NarrativePanel` and AI progression/correlation utilities (`correlation.ts`, `explanation.ts`, `progression.ts`, `recommendations.ts`).
+- Added `AlertDetailPage` featuring `IncidentPanel`, `EvidenceChain` (Kill-Chain Progression), and Timeline Playback controls, natively styled using standard CSS framework (removed Tailwind dependencies).
+- Added `useIncidents` and `useIncident` hooks for fetching Incident entities from the new backend REST API endpoints.
+- Updated `Threats` page to map the new `novel_anomaly` and `anomaly_detector` metadata.
 
 ## Frontend Structure
 
@@ -55,7 +58,9 @@ frontend/
 │   ├── hooks/
 │   │   ├── useDashboard.ts
 │   │   ├── useAlerts.ts
-│   │   └── useLiveAlerts.ts
+│   │   ├── useLiveAlerts.ts
+│   │   ├── useIncidents.ts
+│   │   └── useIncident.ts
 │   ├── layouts/
 │   │   └── AppLayout.tsx / AppLayout.css
 │   ├── pages/
@@ -95,6 +100,8 @@ frontend/
 |---|---|
 | GET /api/v1/health | `api.ts` (available, not displayed in UI) |
 | GET /api/v1/alerts | `useAlerts` → AlertTable, Alerts page |
+| GET /api/v1/incidents | `useIncidents` → Overview, Investigation page |
+| GET /api/v1/incidents/{id} | `useIncident` → AlertDetailPage |
 | GET /api/v1/dashboard/summary | `useDashboard` → SummaryBar, ThreatBreakdown, Threats page, Analytics page |
 | WS /api/v1/ws/alerts | `useLiveAlerts` → LiveFeed |
 

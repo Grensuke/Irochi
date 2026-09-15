@@ -242,6 +242,7 @@ Only the current Alert row is persisted. No separate immutable history/revision 
 | Column | Conceptual Type | Nullable | Mutability | Purpose |
 |---|---|---|---|---|
 | `alert_id` | UUID | NOT NULL | Immutable | Primary key |
+| `incident_id` | UUID | NULLABLE | Mutable | Foreign key mapping to Incident table |
 | `detector_output_id` | UUID/text | NOT NULL | Mutable | Current/latest DetectorOutput |
 | `detector_id` | text (enum) | NOT NULL | Immutable | Detector classification; dedup component |
 | `threat_type` | text (enum) | NOT NULL | Immutable | Threat classification; dedup component |
@@ -280,6 +281,26 @@ Alert Schema uses int64 epoch microseconds. PostgreSQL's `timestamptz` provides 
 ### Status
 
 **LOCKED.** (Approval provenance: AR-03. Locks logical fields/nullability; does not lock exact SQL, indexes, or ORM details.)
+
+---
+
+## 5.5 Incident Table Structure (NEW)
+
+### Logical column definitions
+
+| Column | Conceptual Type | Nullable | Mutability | Purpose |
+|---|---|---|---|---|
+| `incident_id` | UUID | NOT NULL | Immutable | Primary key |
+| `title` | text | NOT NULL | Mutable | Analyst-facing auto-generated title |
+| `status` | text (enum) | NOT NULL | Mutable | Lifecycle: `new`, `investigating`, `closed`, `false_positive` |
+| `severity` | text (enum) | NOT NULL | Mutable | Highest severity of member alerts |
+| `created_at` | timestamptz | NOT NULL | Immutable | Incident record construction time |
+| `updated_at` | timestamptz | NOT NULL | Mutable | Time of last alert correlation/update |
+| `resolved_at` | timestamptz | NULLABLE | Mutable | Set on terminal status transition |
+
+### Status
+
+**PROPOSED.** (New feature.)
 
 ---
 

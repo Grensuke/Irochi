@@ -21,8 +21,10 @@ Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infras
 - WP-G ✅ Alert Engine
 - WP-H ✅ TLS/C2 Detector
 - WP-I ✅ Exfiltration Detector
+- WP-J ✅ Anomaly Detector (Baseline & Z-Score)
+- WP-K ✅ Incident Engine (Alert Correlation & Kill-Chain Tracking)
 - EVALUATION ✅ Baseline Evaluation & Threshold Sensitivity completed
-- M8 = IN PROGRESS — end-to-end MVP validation
+- M8 = ✅ end-to-end MVP validation complete
 
 ## Backend Structure
 
@@ -31,9 +33,10 @@ The backend is fully wired to actual infrastructure services:
 - **Entry Point:** `app/main.py` instantiates and starts the `DetectionPipeline` during the FastAPI lifespan.
 - **Streaming:** `KafkaConsumerService` handles real Redpanda messages.
 - **State/Caching:** `FeatureEngine` relies on `RedisStateService`.
-- **Detectors:** All 5 core detectors (`DdosDetector`, `ReconDetector`, `DnsDetector`, `C2Detector`, `ExfiltrationDetector`) are actively registered.
+- **Detectors:** All 6 core detectors (`DdosDetector`, `ReconDetector`, `DnsDetector`, `C2Detector`, `ExfiltrationDetector`, `AnomalyDetector`) are actively registered.
 - **Alert Persistence:** `AlertEngine` saves to PostgreSQL via `PostgresAlertService`.
-- **Live Updates:** Alerts are pushed through `RedisPubSubService`.
+- **Incident Correlation:** `IncidentEngine` tracks multi-stage attacks and persists them via `PostgresIncidentService`.
+- **Live Updates:** Alerts and Incidents are pushed through `RedisPubSubService`.
 - **AI Analytics:** `ai_narrative.py` provides grounded threat storytelling based on deterministic evidence.
 
 ## Endpoints
@@ -44,6 +47,8 @@ The backend is fully wired to actual infrastructure services:
 | GET | `/api/v1/alerts` | ✅ Working (Queries PostgreSQL) |
 | GET | `/api/v1/alerts/{alert_id}` | ✅ Working (Queries PostgreSQL) |
 | GET | `/api/v1/dashboard/summary` | ✅ Working (Queries PostgreSQL) |
+| GET | `/api/v1/incidents` | ✅ Working (Queries PostgreSQL) |
+| GET | `/api/v1/incidents/{incident_id}` | ✅ Working (Queries PostgreSQL) |
 | WS | `/api/v1/ws/alerts` | ✅ Working (Backfill via DB, Live via Redis Pub/Sub) |
 | POST | `/api/v1/narrative/generate` | ✅ Working (Generates AI explanation) |
 
