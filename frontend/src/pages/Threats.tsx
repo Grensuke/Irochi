@@ -35,6 +35,10 @@ const THREAT_DETAILS: Record<ThreatType, { description: string; indicators: stri
     description: 'Identification of unauthorized data transfers and anomalous outbound traffic patterns.',
     indicators: ['Unusual outbound volume', 'Off-hours data transfers', 'Asymmetric flow ratios', 'Rare destination IPs'],
   },
+  novel_anomaly: {
+    description: 'Detection of previously unseen or highly unusual behavior via statistical baseline deviation.',
+    indicators: ['High Z-score deviations', 'Unusual geographic destinations', 'Sudden protocol usage shifts', 'Volume spikes outside historical bounds'],
+  },
 };
 
 const DETECTOR_THREAT_MAP: Record<DetectorId, ThreatType[]> = {
@@ -43,6 +47,7 @@ const DETECTOR_THREAT_MAP: Record<DetectorId, ThreatType[]> = {
   dns_dga_tunnel_detector: ['dga_dns_tunnel'],
   tls_c2_detector: ['c2_beaconing', 'encrypted_malware'],
   exfiltration_detector: ['data_exfiltration'],
+  anomaly_detector: ['novel_anomaly'],
 };
 
 const SEVERITY_COLORS: Record<string, string> = {

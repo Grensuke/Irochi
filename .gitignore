@@ -71,3 +71,6 @@ htmlcov/
 # Reference Material
 # --------------------------------------------------
 /reference/IrochiCy-main/
+
+# Local development/test utilities
+/backend/scripts/insert_test_alert.py

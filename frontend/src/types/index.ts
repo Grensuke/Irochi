@@ -19,7 +19,8 @@ export type DetectorId =
   | 'recon_detector'
   | 'dns_dga_tunnel_detector'
   | 'tls_c2_detector'
-  | 'exfiltration_detector';
+  | 'exfiltration_detector'
+  | 'anomaly_detector';
 
 /** Six threat capabilities shown to users. */
 export type ThreatType =
@@ -28,7 +29,8 @@ export type ThreatType =
   | 'dga_dns_tunnel'
   | 'encrypted_malware'
   | 'recon_portscan'
-  | 'data_exfiltration';
+  | 'data_exfiltration'
+  | 'novel_anomaly';
 
 /** Alert severity levels. */
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
@@ -46,6 +48,7 @@ export type AlertStatus = 'new' | 'investigating' | 'closed' | 'false_positive';
 
 export interface Alert {
   alert_id: string;
+  incident_id?: string | null;
   detector_output_id?: string | null;
   timestamp: string;
   threat_type: ThreatType;
@@ -81,6 +84,34 @@ export interface Alert {
 
 export interface AlertListResponse {
   alerts: Alert[];
+  total: number;
+}
+
+// ------------------------------------------------------------------
+// Incident
+// ------------------------------------------------------------------
+
+export interface Incident {
+  incident_id: string;
+  entity_type: string;
+  entity_key: string;
+  status: 'open' | 'closed';
+  opened_at: string;
+  updated_at: string;
+  last_event_at: string;
+  member_alert_ids: string[];
+  distinct_threat_types: ThreatType[];
+  risk_score: number;
+  risk_breakdown: Record<string, number>;
+  stage_state: 'anomaly' | 'suspicious' | 'likely_attack' | 'confirmed_attack';
+  current_stage?: string | null;
+  forecast_next_stage?: string | null;
+  forecast_note?: string | null;
+  schema_version: string;
+}
+
+export interface IncidentListResponse {
+  incidents: Incident[];
   total: number;
 }
 
@@ -177,6 +208,7 @@ export const THREAT_TYPE_LABELS: Record<ThreatType, string> = {
   encrypted_malware: 'Encrypted Malware',
   recon_portscan: 'Recon / Port Scan',
   data_exfiltration: 'Data Exfiltration',
+  novel_anomaly: 'Novel Anomaly',
 };
 
 export const DETECTOR_LABELS: Record<DetectorId, string> = {
@@ -185,6 +217,7 @@ export const DETECTOR_LABELS: Record<DetectorId, string> = {
   dns_dga_tunnel_detector: 'DNS/DGA Detector',
   tls_c2_detector: 'TLS/C2 Detector',
   exfiltration_detector: 'Exfiltration Detector',
+  anomaly_detector: 'Anomaly Detector',
 };
 
 export const SEVERITY_ORDER: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];

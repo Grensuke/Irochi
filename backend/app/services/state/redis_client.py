@@ -62,6 +62,24 @@ class RedisStateService:
 
         return await self._client.hgetall(key)
 
+    async def set_state_hash(self, key: str, fields: dict[str, Any]):
+        """
+        Set multiple fields in a long-lived state hash (no TTL).
+        """
+        if self._client is None:
+            raise RuntimeError("Redis client is not started")
+
+        await self._client.hset(key, mapping=fields)
+
+    async def get_state_hash(self, key: str) -> dict[str, str]:
+        """
+        Get all fields from a long-lived state hash.
+        """
+        if self._client is None:
+            raise RuntimeError("Redis client is not started")
+
+        return await self._client.hgetall(key)
+
     async def add_distinct(self, key: str, value: str):
         """
         Add a value to a distinct-count structure (HyperLogLog).

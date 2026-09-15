@@ -140,7 +140,11 @@ async def test_end_to_end_traversal(
 
     # We patch AlertEngine to track calls instead of mocking the whole class,
     # since Pipeline constructs AlertEngine internally.
-    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process:
+    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process, \
+         patch("app.services.pipeline.IncidentEngine") as MockIncidentEngine:
+        mock_incident_engine = MockIncidentEngine.return_value
+        mock_incident_engine.on_alert = AsyncMock()
+
         # Run loop directly for testing (it will exit after consuming the single message)
         pipeline._running = True
         await pipeline._run_loop()
@@ -174,7 +178,11 @@ async def test_multiple_records_and_outputs(
     # Each record returns 2 outputs
     mock_router.route.return_value = [sample_detector_output, sample_detector_output]
 
-    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process:
+    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process, \
+         patch("app.services.pipeline.IncidentEngine") as MockIncidentEngine:
+        mock_incident_engine = MockIncidentEngine.return_value
+        mock_incident_engine.on_alert = AsyncMock()
+
         pipeline._running = True
         await pipeline._run_loop()
 
@@ -255,7 +263,11 @@ async def test_alert_engine_exception_caught(
     mock_feature_engine.process.return_value = [sample_feature_record]
     mock_router.route.return_value = [sample_detector_output]
 
-    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process:
+    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process, \
+         patch("app.services.pipeline.IncidentEngine") as MockIncidentEngine:
+        mock_incident_engine = MockIncidentEngine.return_value
+        mock_incident_engine.on_alert = AsyncMock()
+
         mock_alert_engine_process.side_effect = Exception("DB failure")
 
         pipeline._running = True
@@ -277,7 +289,11 @@ async def test_alert_engine_returns_none(
     mock_feature_engine.process.return_value = [sample_feature_record]
     mock_router.route.return_value = [sample_detector_output]
 
-    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process:
+    with patch("app.services.pipeline.AlertEngine.process_detector_output", new_callable=AsyncMock) as mock_alert_engine_process, \
+         patch("app.services.pipeline.IncidentEngine") as MockIncidentEngine:
+        mock_incident_engine = MockIncidentEngine.return_value
+        mock_incident_engine.on_alert = AsyncMock()
+
         mock_alert_engine_process.return_value = None
 
         pipeline._running = True

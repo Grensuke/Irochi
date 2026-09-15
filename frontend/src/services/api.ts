@@ -7,7 +7,7 @@
  * The Vite dev server proxies /api → http://localhost:8000.
  */
 
-import type { AlertListResponse, DashboardSummary, HealthResponse, Alert } from '../types';
+import type { AlertListResponse, DashboardSummary, HealthResponse, Alert, Incident, IncidentListResponse } from '../types';
 
 const API_BASE = '/api/v1';
 
@@ -52,6 +52,17 @@ export const api = {
   /** GET /api/v1/alerts/{alert_id} */
   getAlert(alertId: string): Promise<Alert> {
     return fetchJson<Alert>(`/alerts/${encodeURIComponent(alertId)}`);
+  },
+
+  /** GET /api/v1/incidents */
+  getIncidents(status?: string): Promise<IncidentListResponse> {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+    return fetchJson<IncidentListResponse>(`/incidents${qs}`);
+  },
+
+  /** GET /api/v1/incidents/{incident_id} */
+  getIncident(incidentId: string): Promise<Incident> {
+    return fetchJson<Incident>(`/incidents/${encodeURIComponent(incidentId)}`);
   },
 
   /** GET /api/v1/dashboard/summary */
