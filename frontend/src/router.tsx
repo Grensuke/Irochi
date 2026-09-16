@@ -18,7 +18,6 @@ import { Contact } from './pages/Contact';
 import { Login } from './pages/Login';
 import { Overview } from './pages/Overview';
 import { Alerts } from './pages/Alerts';
-import { Threats } from './pages/Threats';
 import { Network } from './pages/Network';
 import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
@@ -27,7 +26,7 @@ import { AccessDenied } from './pages/AccessDenied';
 import { AlertDetailPage } from './pages/AlertDetailPage';
 import { Traffic } from './pages/Traffic';
 import { Investigation } from './pages/Investigation';
-import { AIDetection } from './pages/AIDetection';
+
 import type { ReactNode } from 'react';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -64,13 +63,11 @@ export function AppRouter() {
           <Route index element={<Overview />} />
           <Route path="alerts" element={<Alerts />} />
           <Route path="alerts/:id" element={<AlertDetailPage />} />
-          <Route path="threats" element={<Threats />} />
           <Route path="network" element={<Network />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
           <Route path="traffic" element={<Traffic />} />
           <Route path="investigation" element={<Investigation />} />
-          <Route path="ai" element={<AIDetection />} />
           <Route path="*" element={<NotFound />} />
         </Route>
 

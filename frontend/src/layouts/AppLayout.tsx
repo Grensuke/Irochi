@@ -51,9 +51,7 @@ const NAV_GROUPS = [
   {
     group: 'Intelligence',
     items: [
-      { to: '/app/threats', label: 'Threat Intelligence', icon: 'shield' },
       { to: '/app/investigation', label: 'Investigation', icon: 'grid' },
-      { to: '/app/ai', label: 'AI Detection', icon: 'shield' },
     ]
   },
   {
@@ -69,9 +67,7 @@ const FLAT_NAV_ITEMS: VerticalNavItem[] = [
   { to: '/app', label: 'Overview', icon: ICONS.grid, end: true },
   { to: '/app/alerts', label: 'Alerts', icon: ICONS.bell },
   { to: '/app/traffic', label: 'Traffic Monitor', icon: ICONS.chart },
-  { to: '/app/threats', label: 'Threat Intelligence', icon: ICONS.shield },
   { to: '/app/investigation', label: 'Investigation', icon: ICONS.grid },
-  { to: '/app/ai', label: 'AI Detection', icon: ICONS.shield },
   { to: '/app/network', label: 'Network Telemetry', icon: ICONS.network },
   { to: '/app/settings', label: 'Settings', icon: ICONS.gear },
 ];

@@ -1,0 +1,610 @@
+/*
+ * UnidirectionalThreatStream — Horizontal Flow Visualization
+ *
+ * Left-to-right architecture integrating natively with light/dark themes.
+ */
+
+/* ── Design Tokens ── */
+/* Using global tokens from index.css to ensure architectural consistency */
+.uts-wrapper {
+  --uts-bg: var(--bg-secondary);
+  --uts-bg-solid: var(--bg-primary);
+  --uts-border: var(--border-subtle);
+  --uts-border-strong: var(--border-default);
+  --uts-border-active: var(--border-focus);
+  
+  --uts-text-primary: var(--text-primary);
+  --uts-text-secondary: var(--text-secondary);
+  --uts-text-muted: var(--text-muted);
+  
+  --uts-blue: var(--severity-info);
+  --uts-cyan: var(--severity-low);
+  --uts-warn: var(--severity-medium);
+  --uts-critical: var(--severity-critical);
+  
+  --uts-track: var(--bg-hover);
+  
+  --uts-engine-bg: var(--bg-tertiary);
+  --uts-card-bg: var(--bg-elevated);
+  --uts-tooltip-bg: var(--bg-input);
+}
+
+/* ── Container ── */
+.uts-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  padding: 24px;
+  background: var(--uts-bg);
+  border: 1px solid var(--uts-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-family: var(--font-sans);
+  overflow: visible;
+}
+
+.uts-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--uts-border-strong) 1px, transparent 1px);
+  background-size: 16px 16px;
+  opacity: 0.3;
+  pointer-events: none;
+  border-radius: inherit;
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+}
+
+/* ── Layout Stages ── */
+.uts-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.uts-telemetry-stage {
+  flex: 1.2;
+  min-width: 220px;
+  justify-content: center;
+}
+
+.uts-engine-stage {
+  flex: 0.8;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.uts-detection-stage {
+  flex: 1;
+  min-width: 180px;
+  justify-content: center;
+}
+
+/* Connectors */
+.uts-convergence {
+  position: relative;
+  width: 40px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.uts-conv-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+
+.uts-conv-path {
+  fill: none;
+  stroke: var(--uts-border);
+  stroke-width: 1px;
+  stroke-dasharray: 4 4;
+  transition: stroke 0.6s ease, stroke-width 0.3s ease;
+}
+
+.uts-conv-path.active {
+  stroke-width: 1.5px;
+  stroke-dasharray: none;
+  opacity: 0.8;
+}
+
+.uts-conv-path.active-solid {
+  stroke: var(--uts-border-active);
+  stroke-dasharray: none;
+  stroke-width: 1.5px;
+}
+
+.uts-hide-mobile { display: block; }
+.uts-show-mobile { display: none; }
+
+/* ── STAGE 1: Telemetry Streams ── */
+.uts-stage-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--uts-text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.uts-streams-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.uts-stream-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 24px;
+}
+
+.uts-stream-source {
+  width: 90px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.uts-ip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--uts-text-secondary);
+}
+
+.uts-stream-track {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  background: var(--uts-track);
+  display: flex;
+  align-items: center;
+}
+
+.uts-stream-row:hover .uts-stream-track {
+  background: var(--uts-border-strong);
+}
+
+.uts-stream-row:hover .uts-ip {
+  color: var(--uts-text-primary);
+}
+
+/* Flowing Particles */
+.uts-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--uts-text-muted);
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  opacity: 0;
+}
+
+.uts-stream-row:hover .uts-particle {
+  background: var(--uts-text-primary);
+}
+
+.uts-p1 { animation: uts-flow 4s linear infinite; animation-delay: 0s; }
+.uts-p2 { animation: uts-flow 4s linear infinite; animation-delay: 1.3s; }
+.uts-p3 { animation: uts-flow 4s linear infinite; animation-delay: 2.7s; }
+
+@keyframes uts-flow {
+  0% { left: 0; opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* Signal Tags */
+.uts-signal-tag {
+  position: absolute;
+  left: 45%;
+  top: 50%;
+  transform: translateY(-50%) scale(0.9);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--uts-bg-solid);
+  border: 1px solid var(--uts-border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67), border-color 0.2s;
+  cursor: default;
+  z-index: 10;
+}
+
+.uts-signal-tag.active {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+  pointer-events: auto;
+}
+
+.uts-stream-row:hover .uts-signal-tag.active {
+  border-color: var(--sig-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.uts-signal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.uts-signal-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--uts-text-primary);
+  white-space: nowrap;
+}
+
+/* Tooltips */
+.uts-signal-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--uts-tooltip-bg);
+  border: 1px solid var(--uts-border-strong);
+  border-radius: 6px;
+  padding: 8px 10px;
+  width: max-content;
+  max-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.uts-signal-tag:hover .uts-signal-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.uts-tt-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.uts-tt-desc {
+  font-size: 10px;
+  color: var(--uts-text-secondary);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  white-space: normal;
+}
+
+.uts-tt-obs {
+  font-size: 9px;
+  color: var(--uts-text-muted);
+  border-top: 1px solid var(--uts-border);
+  padding-top: 4px;
+}
+.uts-tt-obs span {
+  color: var(--uts-text-primary);
+}
+
+/* ── STAGE 3: Evidence Engine ── */
+.uts-engine-module {
+  background: var(--uts-engine-bg);
+  border: 1px solid var(--uts-border);
+  border-radius: 8px;
+  padding: 12px;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.uts-engine-module.correlated {
+  border-color: var(--uts-border-active);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .uts-engine-module.correlated {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.uts-engine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--uts-border);
+  padding-bottom: 6px;
+}
+
+.uts-engine-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--uts-text-primary);
+  letter-spacing: 0.05em;
+}
+
+.uts-engine-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--uts-border);
+  transition: background 0.3s;
+}
+
+.uts-engine-indicator.pulse {
+  background: var(--uts-cyan);
+  animation: uts-blink 1.5s infinite;
+}
+
+@keyframes uts-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.uts-engine-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.uts-engine-sig-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0.4;
+  transition: opacity 0.4s;
+}
+
+.uts-engine-sig-row.active {
+  opacity: 1;
+}
+
+.uts-esig-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--uts-text-secondary);
+}
+
+.uts-esig-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transition: background-color 0.4s;
+}
+
+.uts-engine-footer {
+  border-top: 1px dashed var(--uts-border);
+  padding-top: 8px;
+  text-align: center;
+}
+
+.uts-engine-status {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--uts-text-muted);
+  transition: color 0.4s;
+}
+
+.uts-engine-status.correlated {
+  color: var(--uts-text-primary);
+  font-weight: 600;
+}
+
+/* ── STAGE 4: Threat Card ── */
+.uts-threat-card {
+  background: var(--uts-card-bg);
+  border: 1px solid var(--uts-border);
+  border-radius: 8px;
+  padding: 16px;
+  opacity: 0.6;
+  transform: translateX(-4px);
+  transition: all 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.uts-threat-card.detected {
+  opacity: 1;
+  transform: translateX(0);
+  border-color: rgba(208, 28, 46, 0.3); /* Subtly red border */
+  box-shadow: 0 4px 16px rgba(208, 28, 46, 0.05);
+}
+
+.uts-tc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.uts-tc-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--uts-text-muted);
+  letter-spacing: 0.05em;
+}
+
+.uts-threat-card.detected .uts-tc-label {
+  color: var(--uts-critical);
+}
+
+.uts-tc-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.4s;
+}
+
+.uts-threat-card.detected .uts-tc-pulse {
+  background: var(--uts-critical);
+  box-shadow: 0 0 6px rgba(208, 28, 46, 0.4);
+}
+
+.uts-tc-threat-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--uts-text-primary);
+  margin-bottom: 12px;
+}
+
+.uts-tc-metrics {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--uts-border);
+  padding-bottom: 12px;
+}
+
+.uts-tc-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.uts-tcm-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--uts-text-muted);
+}
+
+.uts-tcm-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--uts-text-primary);
+  line-height: 1;
+}
+
+.uts-tcm-sub {
+  font-size: 10px;
+  color: var(--uts-text-muted);
+  font-weight: 400;
+}
+
+.uts-tc-summary {
+  font-size: 10px;
+  color: var(--uts-text-secondary);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.uts-tc-action-wrap {
+  margin-top: auto;
+}
+
+.uts-tc-action {
+  background: none;
+  border: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--uts-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.uts-threat-card.detected .uts-tc-action {
+  color: var(--uts-blue);
+}
+
+.uts-threat-card.detected .uts-tc-action:hover {
+  color: var(--uts-text-primary);
+  text-decoration: underline;
+}
+
+/* ── Responsive Behavior ── */
+
+@media (max-width: 900px) {
+  .uts-wrapper {
+    padding: 16px;
+  }
+  .uts-telemetry-stage {
+    min-width: 180px;
+  }
+  .uts-engine-stage {
+    min-width: 140px;
+  }
+  .uts-convergence {
+    width: 24px;
+  }
+  .uts-stream-source {
+    width: 70px;
+  }
+}
+
+@media (max-width: 768px) {
+  .uts-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .uts-stage {
+    width: 100%;
+  }
+
+  .uts-hide-mobile {
+    display: none;
+  }
+
+  .uts-show-mobile {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 4px 0;
+  }
+
+  .uts-down-arrow {
+    width: 1px;
+    height: 16px;
+    background: var(--uts-border);
+    position: relative;
+  }
+  .uts-down-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(50%) rotate(45deg);
+    width: 6px;
+    height: 6px;
+    border-right: 1px solid var(--uts-border);
+    border-bottom: 1px solid var(--uts-border);
+  }
+
+  .uts-bg-grid {
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  }
+
+  .uts-stage-label {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uts-particle, .uts-alert-particle, .uts-engine-indicator.pulse {
+    animation: none !important;
+  }
+  .uts-signal-tag, .uts-engine-module, .uts-threat-card, .uts-conv-path {
+    transition: none !important;
+  }
+}

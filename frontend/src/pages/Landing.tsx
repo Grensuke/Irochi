@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { UnidirectionalThreatStream } from '../components/UnidirectionalThreatStream';
 import './Landing.css';
 
 const CAPABILITIES = [
@@ -43,7 +45,82 @@ const PIPELINE_STAGES = [
   { step: '06', name: 'Security Dashboards', desc: 'Deliver evidence-backed alerts and contextual intelligence to SOC analysts.' }
 ];
 
+/* ── Deep-dive content moved from Threats & AI Detection dashboard pages ── */
+
+const THREAT_DEEP_DIVE = [
+  {
+    label: 'Volumetric DDoS',
+    description: 'Detection of distributed denial-of-service attacks through traffic volume and protocol anomaly analysis.',
+    indicators: ['SYN flood patterns', 'Abnormal packet rates', 'Source entropy elevation', 'Protocol ratio anomalies'],
+  },
+  {
+    label: 'C2 Beaconing',
+    description: 'Identification of command-and-control communication patterns from compromised hosts.',
+    indicators: ['Periodic connection patterns', 'Low-volume persistent flows', 'Unusual destination diversity', 'Timing regularity'],
+  },
+  {
+    label: 'DGA / DNS Tunnel',
+    description: 'Detection of algorithmically generated domains and covert DNS tunneling channels.',
+    indicators: ['High-entropy domain names', 'Abnormal DNS query volume', 'Large TXT record responses', 'NXDOMAIN ratios'],
+  },
+  {
+    label: 'Encrypted Malware',
+    description: 'Identification of malicious payloads hidden within encrypted TLS sessions using metadata analysis.',
+    indicators: ['JA3/JA4 fingerprint anomalies', 'Certificate irregularities', 'Unusual TLS version usage', 'Flow size patterns'],
+  },
+  {
+    label: 'Recon / Port Scan',
+    description: 'Detection of network reconnaissance activities and systematic port scanning.',
+    indicators: ['Sequential port access', 'High destination port diversity', 'Failed connection ratios', 'Sweep patterns'],
+  },
+  {
+    label: 'Data Exfiltration',
+    description: 'Identification of unauthorized data transfers and anomalous outbound traffic patterns.',
+    indicators: ['Unusual outbound volume', 'Off-hours data transfers', 'Asymmetric flow ratios', 'Rare destination IPs'],
+  },
+  {
+    label: 'Novel Anomaly',
+    description: 'Detection of previously unseen or highly unusual behavior via statistical baseline deviation.',
+    indicators: ['High Z-score deviations', 'Unusual geographic destinations', 'Sudden protocol usage shifts', 'Volume spikes outside historical bounds'],
+  },
+];
+
+const DETECTOR_DEEP_DIVE = [
+  {
+    label: 'DDoS Detector',
+    description: 'Detects volumetric Denial-of-Service patterns by observing passive traffic flow statistics. Classifies high-volume packet anomalies and SYN flood patterns.',
+    threats: ['Volumetric DDoS'],
+    method: 'Flow-feature analysis + River online learning',
+  },
+  {
+    label: 'Recon Detector',
+    description: 'Identifies reconnaissance and port-scanning behaviour from passive connection telemetry. Tracks sweep patterns across observed source/destination pairs.',
+    threats: ['Recon / Port Scan'],
+    method: 'Sliding-window sweep detection + XGBoost classifier',
+  },
+  {
+    label: 'DNS / DGA / Tunneling Detector',
+    description: 'Analyses passive DNS query patterns to detect domain generation algorithm (DGA) activity and DNS-based data tunneling. Operates solely on observed DNS telemetry.',
+    threats: ['DGA / DNS Tunnel'],
+    method: 'N-gram language model + entropy analysis',
+  },
+  {
+    label: 'TLS / C2 Detector',
+    description: 'Classifies encrypted session metadata to identify botnet Command-and-Control beaconing and malware communication within TLS flows without decrypting payloads.',
+    threats: ['C2 Beaconing', 'Encrypted Malware'],
+    method: 'TLS metadata features + scikit-learn ensemble',
+  },
+  {
+    label: 'Exfiltration Detector',
+    description: 'Detects anomalous outbound data volumes that are consistent with data exfiltration. Relies on passive flow-level byte and packet counters.',
+    threats: ['Data Exfiltration'],
+    method: 'Statistical baseline deviation + River adaptive model',
+  },
+];
+
 export function Landing() {
+  const [deepDiveOpen, setDeepDiveOpen] = useState(false);
+
   return (
     <div className="landing-page-wrap">
       {/* Hero Section */}
@@ -77,108 +154,9 @@ export function Landing() {
             </div>
           </div>
 
-          {/* Refined Globe Graphic Preview */}
-          <div className="hero-visual-frame">
-            <svg className="hero-globe-svg" width="460" height="460" viewBox="0 0 400 400" aria-hidden="true">
-              <defs>
-                <radialGradient id="globeGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                </radialGradient>
-                <filter id="scannerGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="6" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              {/* Background Glow */}
-              <circle cx="200" cy="200" r="180" fill="url(#globeGlow)" />
-              {/* Outer boundary */}
-              <circle cx="200" cy="200" r="170" stroke="var(--border-strong)" strokeWidth="1" fill="none" />
-              
-              {/* Longitude bands */}
-              <ellipse cx="200" cy="200" rx="140" ry="170" stroke="var(--border-subtle)" strokeWidth="0.8" fill="none" className="globe-ellipse" />
-              <ellipse cx="200" cy="200" rx="90" ry="170" stroke="var(--border-subtle)" strokeWidth="0.8" fill="none" className="globe-ellipse" />
-              <ellipse cx="200" cy="200" rx="40" ry="170" stroke="var(--border-subtle)" strokeWidth="0.8" fill="none" className="globe-ellipse" />
-              
-              {/* Latitude bands */}
-              <ellipse cx="200" cy="200" rx="170" ry="130" stroke="var(--border-subtle)" strokeWidth="0.8" fill="none" className="globe-ellipse" />
-              <ellipse cx="200" cy="200" rx="170" ry="80" stroke="var(--border-subtle)" strokeWidth="0.8" fill="none" className="globe-ellipse" />
-              <ellipse cx="200" cy="200" rx="170" ry="30" stroke="var(--border-subtle)" strokeWidth="0.8" fill="none" className="globe-ellipse" />
-              
-              {/* Dashboard targets and arcs (glowing connection links) */}
-              <path className="globe-arc arc-1" d="M 60 200 Q 200 80 340 200" stroke="var(--accent-primary)" strokeWidth="1.2" strokeDasharray="8 80" fill="none" />
-              <path className="globe-arc arc-2" d="M 90 120 Q 200 280 310 280" stroke="var(--accent-cyan)" strokeWidth="1.2" strokeDasharray="8 80" fill="none" />
-              <path className="globe-arc arc-3" d="M 110 110 Q 200 160 290 290" stroke="var(--accent-cyan)" strokeWidth="1" strokeDasharray="6 60" fill="none" opacity="0.6" />
-              <path className="globe-arc arc-4" d="M 60 200 Q 200 320 340 200" stroke="var(--severity-critical)" strokeWidth="1" strokeDasharray="10 100" fill="none" opacity="0.4" />
-              <path className="globe-arc arc-5" d="M 200 70 Q 150 200 200 330" stroke="var(--accent-primary)" strokeWidth="1.2" strokeDasharray="8 80" fill="none" />
-
-              {/* Pulse intersections (Highly Highlighted, Concentric, Glowing Nodes) */}
-              {/* Central Core Node */}
-              <g transform="translate(200, 200)">
-                <circle r="5" fill="var(--accent-primary)" />
-                <circle r="12" fill="var(--accent-primary)" fillOpacity="0.2" className="node-pulse" />
-                <circle r="22" fill="var(--accent-primary)" fillOpacity="0.08" className="node-pulse-slow" />
-                <text x="12" y="-12" textAnchor="start" fontSize="9" fill="var(--text-secondary)" fontFamily="var(--font-mono)" fontWeight="600" opacity="0.85">SENSING_CORE</text>
-              </g>
-
-              {/* Critical Threat Node */}
-              <g transform="translate(60, 200)">
-                <circle r="6" fill="var(--severity-critical)" />
-                <circle r="14" fill="var(--severity-critical)" fillOpacity="0.25" className="node-pulse" />
-                <circle r="26" fill="var(--severity-critical)" fillOpacity="0.1" className="node-pulse-slow" />
-                <text x="-12" y="4" textAnchor="end" fontSize="9" fill="var(--severity-critical)" fontFamily="var(--font-mono)" fontWeight="700">CRITICAL_ALERT</text>
-              </g>
-
-              {/* High Threat Node */}
-              <g transform="translate(340, 200)">
-                <circle r="5.5" fill="var(--severity-high)" />
-                <circle r="13" fill="var(--severity-high)" fillOpacity="0.2" className="node-pulse" />
-                <circle r="24" fill="var(--severity-high)" fillOpacity="0.08" className="node-pulse-slow" />
-                <text x="12" y="4" textAnchor="start" fontSize="9" fill="var(--severity-high)" fontFamily="var(--font-mono)" fontWeight="700">HIGH_RISK</text>
-              </g>
-
-              {/* Beaconing C2 Node */}
-              <g transform="translate(110, 110)">
-                <circle r="4" fill="var(--accent-cyan)" />
-                <circle r="10" fill="var(--accent-cyan)" fillOpacity="0.2" className="node-pulse-slow" />
-                <text x="0" y="-12" textAnchor="middle" fontSize="8" fill="var(--accent-cyan)" fontFamily="var(--font-mono)" fontWeight="600" opacity="0.8">C2_BEACON</text>
-              </g>
-
-              {/* Active Agent Node */}
-              <g transform="translate(290, 290)">
-                <circle r="4" fill="var(--accent-cyan)" />
-                <circle r="10" fill="var(--accent-cyan)" fillOpacity="0.2" className="node-pulse" />
-                <text x="0" y="20" textAnchor="middle" fontSize="8" fill="var(--accent-cyan)" fontFamily="var(--font-mono)" fontWeight="600" opacity="0.8">SENSING_NODE</text>
-              </g>
-
-              {/* Top Node */}
-              <g transform="translate(200, 70)">
-                <circle r="3" fill="var(--accent-primary)" />
-                <circle r="8" fill="var(--accent-primary)" fillOpacity="0.15" className="node-pulse" />
-              </g>
-
-              {/* Bottom Node */}
-              <g transform="translate(200, 330)">
-                <circle r="3" fill="var(--severity-low)" />
-                <circle r="8" fill="var(--severity-low)" fillOpacity="0.15" className="node-pulse-slow" />
-              </g>
-
-              <g transform="translate(110, 290)">
-                <circle r="3.5" fill="var(--severity-medium)" />
-                <circle r="9" fill="var(--severity-medium)" fillOpacity="0.18" className="node-pulse" />
-              </g>
-              <g transform="translate(290, 110)">
-                <circle r="3.5" fill="var(--severity-info)" />
-                <circle r="9" fill="var(--severity-info)" fillOpacity="0.18" className="node-pulse-slow" />
-              </g>
-            </svg>
-            <div className="hero-globe-overlay">
-              <span className="telemetry-log mono">10.0.3.42:53 &gt; DNS Tunnelling Alert</span>
-              <span className="telemetry-log mono">192.168.24.17 &gt; DDoS Volumetric SYN</span>
-            </div>
+          {/* Right: Visual */}
+          <div className="hero-visual-frame uts-hero-frame">
+            <UnidirectionalThreatStream />
           </div>
         </div>
       </section>
@@ -264,7 +242,7 @@ export function Landing() {
             <div className="section-eyebrow">DATA ARCHITECTURE</div>
             <h2 className="section-title">Telemetry & Alert Pipeline</h2>
             <p className="section-subtitle">
-              How network packets travel from passive sensors to the security analyst’s browser.
+              How network packets travel from passive sensors to the security analyst's browser.
             </p>
           </div>
 
@@ -332,6 +310,100 @@ export function Landing() {
                 <div className="preview-phase">
                   <span className="phase-badge live">Live Mode</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── More about Irochi — Deep Dive Section ── */}
+      <section className="landing-deep-dive scroll-reveal">
+        <div className="landing-section-container">
+          <div className="deep-dive-toggle-area">
+            <button
+              className={`deep-dive-trigger ${deepDiveOpen ? 'open' : ''}`}
+              onClick={() => setDeepDiveOpen(!deepDiveOpen)}
+              aria-expanded={deepDiveOpen}
+            >
+              <div className="deep-dive-trigger-content">
+                <div className="deep-dive-trigger-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4" />
+                    <path d="M12 8h.01" />
+                  </svg>
+                </div>
+                <div className="deep-dive-trigger-text">
+                  <span className="deep-dive-trigger-label">More about Irochi</span>
+                  <span className="deep-dive-trigger-sub">Detailed threat intelligence models & AI detection architecture</span>
+                </div>
+              </div>
+              <svg className="deep-dive-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+
+          <div className={`deep-dive-content ${deepDiveOpen ? 'expanded' : ''}`}>
+            {/* Threat Intelligence Deep Dive */}
+            <div className="deep-dive-block">
+              <div className="deep-dive-block-header">
+                <div className="section-eyebrow">THREAT INTELLIGENCE</div>
+                <h3 className="deep-dive-block-title">Seven Threat Classification Models</h3>
+                <p className="deep-dive-block-desc">
+                  Each threat type is detected using specialized classifiers trained on specific indicators. Below is a detailed breakdown of every threat category and its key detection signals.
+                </p>
+              </div>
+
+              <div className="deep-dive-threat-grid">
+                {THREAT_DEEP_DIVE.map((threat) => (
+                  <div key={threat.label} className="deep-dive-threat-card">
+                    <h4 className="deep-dive-card-title">{threat.label}</h4>
+                    <p className="deep-dive-card-desc">{threat.description}</p>
+                    <div className="deep-dive-indicators">
+                      <span className="deep-dive-indicators-label">Key Indicators</span>
+                      <ul className="deep-dive-indicator-list">
+                        {threat.indicators.map((ind) => (
+                          <li key={ind}>{ind}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* AI Detection Deep Dive */}
+            <div className="deep-dive-block">
+              <div className="deep-dive-block-header">
+                <div className="section-eyebrow">AI DETECTION MODULES</div>
+                <h3 className="deep-dive-block-title">Five Detector Modules</h3>
+                <p className="deep-dive-block-desc">
+                  Each module is a logical component of the AI pipeline, not a separate microservice. A single detector may classify multiple threat types. Below are the modules and the machine-learning methods they employ.
+                </p>
+              </div>
+
+              <div className="deep-dive-detector-grid">
+                {DETECTOR_DEEP_DIVE.map((det) => (
+                  <div key={det.label} className="deep-dive-detector-card">
+                    <h4 className="deep-dive-card-title">{det.label}</h4>
+                    <p className="deep-dive-card-desc">{det.description}</p>
+                    <div className="deep-dive-detector-meta">
+                      <div className="deep-dive-detector-field">
+                        <span className="deep-dive-field-label">Classified threats</span>
+                        <div className="deep-dive-tags">
+                          {det.threats.map((t) => (
+                            <span key={t} className="deep-dive-tag">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="deep-dive-detector-field">
+                        <span className="deep-dive-field-label">Detection method</span>
+                        <span className="mono deep-dive-method">{det.method}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
