@@ -80,7 +80,7 @@ export function RecentAlerts({ alerts, loading }: RecentAlertsProps) {
             onClick={() => navigate(`/app/alerts/${alert.alert_id}`)}
             aria-label={`Open alert ${alert.alert_id}`}
           >
-            <span className={`severity-badge ${alert.severity}`}>{alert.severity}</span>
+            <span className={`severity-badge ${alert.severity}`}>SEVERITY: {alert.severity.toUpperCase()}</span>
             <span className="recent-alert-meta">
               <span className="recent-alert-type">{threatLabel(alert.threat_type)}</span>
               <span className="recent-alert-id mono">{alert.alert_id}</span>

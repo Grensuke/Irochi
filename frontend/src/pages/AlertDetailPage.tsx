@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAlerts } from '../hooks/useAlerts';
 import { useIncident } from '../hooks/useIncident';
@@ -16,6 +16,7 @@ import { generateExplanation } from '../utils/explanation';
 import { generateRecommendations } from '../utils/recommendations';
 import { buildForensicTimeline } from '../utils/correlation';
 import { deriveAttackProgression } from '../utils/progression';
+import { exportAlertToPdf } from '../utils/exportPdf';
 import { NarrativePanel } from '../components/NarrativePanel';
 import { IncidentPanel } from '../components/IncidentPanel';
 import { EvidenceChain } from '../components/EvidenceChain';
@@ -28,6 +29,8 @@ export function AlertDetailPage() {
 
   const [activeAlertId, setActiveAlertId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [narrativeData, setNarrativeData] = useState<{ what_was_observed: string; why_it_matters: string; what_to_investigate: string } | null>(null);
 
   useEffect(() => {
     if (id && !activeAlertId && alerts.length > 0) {
@@ -132,25 +135,86 @@ export function AlertDetailPage() {
   const recs = generateRecommendations(currentAlert);
   const confPct = formatConfidence(currentAlert.confidence);
 
+  // Export to PDF handler
+  const handleExportPdf = async () => {
+    if (!currentAlert) return;
+    setIsExporting(true);
+    try {
+      // Fetch narrative data for the PDF (same payload as NarrativePanel)
+      let narrative = narrativeData;
+      if (!narrative) {
+        try {
+          narrative = await api.generateNarrative({
+            alert_id: currentAlert.alert_id,
+            detector_id: currentAlert.detector_id,
+            threat_type: currentAlert.threat_type,
+            severity: currentAlert.severity,
+            confidence: currentAlert.confidence,
+            src_ip: currentAlert.src_ip,
+            dst_ip: currentAlert.dst_ip,
+            evidence: currentAlert.evidence,
+            explanation,
+            progression_stages: progression.stages,
+            correlated_events: timelineEvents.map(e => e.alert)
+          });
+          setNarrativeData(narrative);
+        } catch {
+          // Narrative API might fail, proceed without it
+          narrative = null;
+        }
+      }
+
+      exportAlertToPdf({
+        alert: currentAlert,
+        incident: incident || null,
+        timelineEvents,
+        narrative,
+        explanation,
+        recommendations: recs,
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="detail-page">
-      <button
-        className="btn btn-ghost btn-sm detail-page-back"
-        onClick={() => navigate(-1)}
-        aria-label="Go back"
-      >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="10,3 5,8 10,13" />
-        </svg>
-        Back
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button
+          className="btn btn-ghost btn-sm detail-page-back"
+          onClick={() => navigate(-1)}
+          aria-label="Go back"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="10,3 5,8 10,13" />
+          </svg>
+          Back
+        </button>
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={handleExportPdf}
+          disabled={isExporting}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          {isExporting ? 'Generating...' : 'Export to PDF'}
+        </button>
+      </div>
 
       {/* Main Alert Header */}
       <div className="alert-workspace-header">
         <div className="alert-workspace-title">
           <h1 className="mono">INCIDENT OVERVIEW</h1>
           <div className="alert-workspace-tags">
-            <span className={`severity-badge ${currentAlert.severity}`}>{currentAlert.severity}</span>
+            <span className={`severity-badge ${currentAlert.severity}`}>SEVERITY: {currentAlert.severity.toUpperCase()}</span>
             <span className="threat-badge">{threatLabel(currentAlert.threat_type)}</span>
           </div>
         </div>
@@ -343,32 +407,73 @@ export function AlertDetailPage() {
               </div>
             )}
 
-            <div className="panel-body">
-              <div className="vertical-timeline">
+            <div className="panel-body" style={{ paddingTop: 'var(--space-4)' }}>
+              <div className="alert-timeline">
                 {timelineEvents.length > 0 ? (
-                  timelineEvents.map(ev => (
-                    <div 
-                      key={ev.alert.alert_id} 
-                      className={`timeline-step ${ev.alert.alert_id === currentAlert.alert_id ? 'active' : ''}`}
-                      onClick={() => setActiveAlertId(ev.alert.alert_id)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <span className="timeline-time mono">{formatTimestamp(ev.alert.timestamp)}</span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span className="timeline-text" style={{ fontWeight: 600 }}>{DETECTOR_LABELS[ev.alert.detector_id]}</span>
-                        <span className="timeline-text" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{threatLabel(ev.alert.threat_type)} detected</span>
-                        {ev.reason && (
-                          <span className="timeline-text mono" style={{ fontSize: '0.7rem', color: 'var(--status-info)', marginTop: '4px' }}>
-                            ↳ {ev.reason}
-                          </span>
-                        )}
+                  timelineEvents.map((ev, index) => {
+                    const isActive = ev.alert.alert_id === currentAlert.alert_id;
+                    const isPast = index < currentIndex;
+                    
+                    let dotClass = 'pending';
+                    if (isActive) dotClass = 'active';
+                    else if (isPast) dotClass = 'done';
+                    if (ev.alert.status === 'false_positive') dotClass = 'false-pos';
+
+                    return (
+                      <div 
+                        key={ev.alert.alert_id} 
+                        className={`timeline-step ${isActive ? 'active' : ''}`}
+                        onClick={() => setActiveAlertId(ev.alert.alert_id)}
+                        style={{ cursor: 'pointer', opacity: isPast || isActive ? 1 : 0.6, transition: 'all 200ms ease' }}
+                      >
+                        <div className={`timeline-dot ${dotClass}`}></div>
+                        <div className="timeline-content" style={{ width: '100%' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span className="timeline-label">{DETECTOR_LABELS[ev.alert.detector_id] || ev.alert.detector_id}</span>
+                            <span className="timeline-time">{formatTimestamp(ev.alert.timestamp)}</span>
+                          </div>
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <span className={`severity-badge ${ev.alert.severity}`} style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
+                              SEVERITY: {ev.alert.severity.toUpperCase()}
+                            </span>
+                            <span className="timeline-note" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                              {threatLabel(ev.alert.threat_type)}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px', padding: '8px', background: isActive ? 'var(--bg-active)' : 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>SRC:</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{ev.alert.src_ip || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>DST:</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{ev.alert.dst_ip || 'N/A'}{ev.alert.dst_port ? `:${ev.alert.dst_port}` : ''}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>CONFIDENCE:</span>
+                              <span style={{ color: confidenceColor(ev.alert.confidence), fontWeight: 600 }}>{formatConfidence(ev.alert.confidence)}</span>
+                            </div>
+                          </div>
+
+                          {ev.reason && (
+                            <span className="timeline-note mono" style={{ fontSize: '0.7rem', color: 'var(--status-info)', marginTop: '6px' }}>
+                              ↳ {ev.reason}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="timeline-step active">
-                    <span className="timeline-time mono">{formatTimestamp(currentAlert.timestamp)}</span>
-                    <span className="timeline-text">Alert generated</span>
+                    <div className="timeline-dot active"></div>
+                    <div className="timeline-content">
+                      <span className="timeline-time mono">{formatTimestamp(currentAlert.timestamp)}</span>
+                      <span className="timeline-label">Alert generated</span>
+                      <span className="timeline-note">No correlation data available</span>
+                    </div>
                   </div>
                 )}
               </div>

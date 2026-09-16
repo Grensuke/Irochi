@@ -79,7 +79,7 @@ const THREAT_DEEP_DIVE = [
     indicators: ['Unusual outbound volume', 'Off-hours data transfers', 'Asymmetric flow ratios', 'Rare destination IPs'],
   },
   {
-    label: 'Novel Anomaly',
+    label: 'Unknown Threat',
     description: 'Detection of previously unseen or highly unusual behavior via statistical baseline deviation.',
     indicators: ['High Z-score deviations', 'Unusual geographic destinations', 'Sudden protocol usage shifts', 'Volume spikes outside historical bounds'],
   },

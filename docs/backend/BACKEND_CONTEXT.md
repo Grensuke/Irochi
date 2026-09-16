@@ -38,6 +38,8 @@ The backend is fully wired to actual infrastructure services:
 - **Incident Correlation:** `IncidentEngine` tracks multi-stage attacks and persists them via `PostgresIncidentService`.
 - **Live Updates:** Alerts and Incidents are pushed through `RedisPubSubService`.
 - **AI Analytics:** `ai_narrative.py` provides grounded threat storytelling based on deterministic evidence.
+- **Schema Strictness:** Enforced explicit Enum typecasting in Alert API response schemas (`AlertResponse`).
+- **Demo Infrastructure:** `live_demo.py` upgraded to consume `REDPANDA_BROKER` environment variable for dynamic deployments.
 
 ## Endpoints
 

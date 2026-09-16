@@ -101,7 +101,7 @@ export function AlertTable({ alerts, loading, error, title = 'Recent Alerts' }: 
                   onKeyDown={(e) => e.key === 'Enter' && setSelectedAlert(alert)}
                 >
                   <td>
-                    <span className={`severity-badge ${alert.severity}`}>{alert.severity}</span>
+                    <span className={`severity-badge ${alert.severity}`}>SEVERITY: {alert.severity.toUpperCase()}</span>
                   </td>
                   <td className="mono">
                     <span className="alert-date">{formatDate(alert.timestamp)}</span>

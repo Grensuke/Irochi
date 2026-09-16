@@ -208,7 +208,7 @@ export const THREAT_TYPE_LABELS: Record<ThreatType, string> = {
   encrypted_malware: 'Encrypted Malware',
   recon_portscan: 'Recon / Port Scan',
   data_exfiltration: 'Data Exfiltration',
-  novel_anomaly: 'Novel Anomaly',
+  novel_anomaly: 'Unknown Threat',
 };
 
 export const DETECTOR_LABELS: Record<DetectorId, string> = {

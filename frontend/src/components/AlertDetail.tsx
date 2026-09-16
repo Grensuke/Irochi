@@ -14,7 +14,7 @@ export function AlertDetail({ alert, onClose }: AlertDetailProps) {
       <div className="alert-detail-panel animate-slide-in" onClick={(e) => e.stopPropagation()}>
         <div className="detail-header">
           <div className="detail-header-left">
-            <span className={`severity-badge ${alert.severity}`}>{alert.severity}</span>
+            <span className={`severity-badge ${alert.severity}`}>SEVERITY: {alert.severity.toUpperCase()}</span>
             <span className="mono detail-alert-id">{alert.alert_id}</span>
           </div>
           <button className="detail-close" onClick={onClose} aria-label="Close alert detail">

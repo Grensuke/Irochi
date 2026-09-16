@@ -56,7 +56,9 @@ async def send_dns(producer, src, query, ts):
 
 async def run_live_demo():
     print("Starting Live Demo Data Generator for 5 minutes...")
-    producer = AIOKafkaProducer(bootstrap_servers='localhost:19092')
+    import os
+    broker = os.environ.get("REDPANDA_BROKER", "localhost:19092")
+    producer = AIOKafkaProducer(bootstrap_servers=broker)
     await producer.start()
 
     try:
