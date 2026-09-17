@@ -143,7 +143,7 @@ export function Alerts() {
                         <span className="alert-time">{formatTimestamp(alert.timestamp)}</span>
                       </td>
                       <td className="mono alert-id-cell">{alert.alert_id}</td>
-                      <td><span className={`severity-badge ${alert.severity}`}>{alert.severity}</span></td>
+                      <td><span className={`severity-badge ${alert.severity}`}>SEVERITY: {alert.severity.toUpperCase()}</span></td>
                       <td>{threatLabel(alert.threat_type)}</td>
                       <td className="mono">{alert.src_ip ?? '—'}</td>
                       <td className="mono">{alert.dst_ip ?? '—'}{alert.dst_port ? `:${alert.dst_port}` : ''}</td>

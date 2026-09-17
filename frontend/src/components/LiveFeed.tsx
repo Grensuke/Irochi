@@ -66,7 +66,7 @@ export function LiveFeed({ liveAlerts, connectionState }: LiveFeedProps) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span className={`severity-badge ${entry.alert.severity}`} style={{ padding: '2px 6px', fontSize: '9px', borderRadius: '2px' }}>
-                    {entry.alert.severity.toUpperCase()}
+                    SEVERITY: {entry.alert.severity.toUpperCase()}
                   </span>
                   <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>{threatLabel(entry.alert.threat_type)}</span>
                 </div>

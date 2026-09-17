@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { EventType } from '../types';
 import { DiodeFlowVisualizer } from '../components/DiodeFlowVisualizer';
 import './Network.css';
@@ -19,10 +19,73 @@ function NetworkGraphEmptyState() {
   );
 }
 
+// Mock event generator for the demo
+function generateMockEvent(id: number) {
+  const types: EventType[] = ['connection', 'dns', 'tls'];
+  const type = types[Math.floor(Math.random() * types.length)];
+  const protocols = type === 'connection' ? ['TCP', 'UDP'] : type === 'dns' ? ['UDP'] : ['TCP'];
+  const protocol = protocols[Math.floor(Math.random() * protocols.length)];
+  
+  const srcIp = `10.0.${Math.floor(Math.random() * 5)}.${Math.floor(Math.random() * 254) + 1}`;
+  const dstIp = `198.51.100.${Math.floor(Math.random() * 254) + 1}`;
+  const srcPort = Math.floor(Math.random() * 50000) + 1024;
+  const dstPort = type === 'dns' ? 53 : type === 'tls' ? 443 : Math.floor(Math.random() * 1000);
+
+  return {
+    id: `evt_${Date.now()}_${id}`,
+    type,
+    time: new Date().toISOString(),
+    connection: `${srcIp}:${srcPort} ➔ ${dstIp}:${dstPort}`,
+    source: srcIp,
+    destination: dstIp,
+    protocol,
+    sent: Math.floor(Math.random() * 5000) + 64,
+    received: Math.floor(Math.random() * 50000) + 128,
+    state: type === 'connection' ? (Math.random() > 0.8 ? 'S0' : 'SF') : '-',
+    sensor: 'irochi-tap-01'
+  };
+}
+
 export function Network() {
   const [vizMode, setVizMode] = useState<'diode' | 'matrix'>('diode');
   const [typeFilter, setTypeFilter] = useState<EventType | ''>('');
   const [search, setSearch] = useState('');
+  
+  const [events, setEvents] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Initial batch
+    const initialEvents = Array.from({ length: 15 }, (_, i) => generateMockEvent(i)).reverse();
+    setEvents(initialEvents);
+
+    let counter = 100;
+    const interval = setInterval(() => {
+      const numNew = Math.floor(Math.random() * 3) + 1; // 1 to 3 new events
+      const newEvents = Array.from({ length: numNew }, (_, i) => generateMockEvent(counter + i));
+      counter += numNew;
+      
+      setEvents(prev => {
+        const next = [...newEvents.reverse(), ...prev];
+        return next.slice(0, 30); // Keep max 30 events
+      });
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredEvents = events.filter(ev => {
+    if (typeFilter && ev.type !== typeFilter) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      if (!ev.id.toLowerCase().includes(s) && 
+          !ev.source.includes(s) && 
+          !ev.destination.includes(s) && 
+          !ev.connection.includes(s)) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="network-page" style={{ maxWidth: '1600px', width: '100%', margin: '0 auto' }}>
@@ -30,7 +93,7 @@ export function Network() {
         <h1>Network Events</h1>
         <div className="page-header-actions">
           <span className="mono" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            0 events
+            {filteredEvents.length} events
           </span>
         </div>
       </div>
@@ -96,18 +159,30 @@ export function Network() {
                   <th>Source</th>
                   <th>Destination</th>
                   <th>Protocol</th>
-                  <th>Sent</th>
-                  <th>Received</th>
+                  <th>Sent (B)</th>
+                  <th>Received (B)</th>
                   <th>State</th>
                   <th>Sensor</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colSpan={11} style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--text-muted)' }}>
-                    Raw network event telemetry is not currently persisted by the backend.
-                  </td>
-                </tr>
+                {filteredEvents.map(ev => (
+                  <tr key={ev.id}>
+                    <td className="mono" style={{ fontSize: '0.7rem' }}>{ev.id.substring(0, 16)}...</td>
+                    <td>
+                      <span className={`event-type-badge ${ev.type}`}>{ev.type}</span>
+                    </td>
+                    <td className="mono">{new Date(ev.time).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                    <td className="mono">{ev.connection}</td>
+                    <td className="mono">{ev.source}</td>
+                    <td className="mono">{ev.destination}</td>
+                    <td className="mono">{ev.protocol}</td>
+                    <td className="mono" style={{ textAlign: 'right' }}>{ev.sent.toLocaleString()}</td>
+                    <td className="mono" style={{ textAlign: 'right' }}>{ev.received.toLocaleString()}</td>
+                    <td className="mono">{ev.state}</td>
+                    <td className="mono">{ev.sensor}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
