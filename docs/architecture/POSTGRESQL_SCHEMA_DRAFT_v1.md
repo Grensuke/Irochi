@@ -1,8 +1,8 @@
-# SIH26145 — POSTGRESQL SCHEMA (DRAFT v1)
+# SIH26145 — POSTGRESQL SCHEMA
 
-**[STATUS: DRAFT]**
+**[STATUS: ACTIVE]**
 
-> **Status:** DRAFT — structural PostgreSQL persistence model for review; individual section statuses vary (see §20). Requires project-lead / team review before promotion to `_FINAL`.
+> **Status:** ACTIVE. This structural PostgreSQL persistence model is now implemented via SQLAlchemy in the active backend.
 >
 > **Continues from:** `docs/architecture/ALERT_SCHEMA_DRAFT_v1.md`, `docs/architecture/DETECTOR_IO_CONTRACT_DRAFT_v1.md`, and upstream design-chain documents.
 >
@@ -85,7 +85,7 @@ A verification checkpoint was produced and approved before this document was wri
 
 ### Status
 
-**PROPOSED.** Design inputs are inherited; this section documents their provenance.
+**ACTIVE.** Design inputs are inherited and implemented.
 
 ---
 

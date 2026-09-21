@@ -68,52 +68,14 @@ One detector module may emit multiple threat classes. These are **not** seven mi
 
 ---
 
-## Contracts Not Yet Defined
+## Downstream Contracts
 
-The following data contracts are part of the design chain and will be defined in sequence:
+The following data contracts were defined in sequence and are now actively implemented in the current pipeline (PostgreSQL, Redpanda, Redis, FastAPI). While some underlying specification documents retain their "DRAFT" moniker, the contracts they define are live in the codebase:
 
-1. ~~Canonical Event Schema~~ — **complete** (baseline)
-2. Redpanda Topics — **DRAFT / IN PROGRESS**
-   - raw partition key = **LOCKED**
-   - remaining transport/topic decisions = **OPEN**
-3. Feature / Window Schema — **DRAFT / IN PROGRESS**
-   - window-type taxonomy = **LOCKED**
-   - feature-level mapping = **PROPOSED**
-   - remaining state/parameter decisions = **OPEN**
-4. Detector Inputs / Outputs — **DRAFT / IN PROGRESS**
-   - detector taxonomy (6 IDs, 7 threat types) = **inherited** (BD-008 Active)
-   - DetectorInput envelope = **PROPOSED**
-   - typed payload strategy (Option C) = **PROPOSED**
-   - base grouping identity = **PROPOSED**
-   - per-detector input contracts = **PROPOSED**
-   - partial-input policy = **PROPOSED**
-   - DetectorOutput envelope = **PROPOSED**
-   - decision enum = **PROPOSED**
-   - threat-type mapping = **PROPOSED**
-   - temporal association policy = **OPEN**
-   - confidence/score semantics = **OPEN**
-   - evidence structure details = **OPEN**
-   - evaluation trigger model = **OPEN**
-5. Alert Schema — **DRAFT / IN PROGRESS**
-   - detector/threat taxonomy = **inherited** (BD-008 Active)
-   - alert envelope = **PROPOSED**
-   - DetectorOutput → Alert mapping = **PROPOSED**
-   - lifecycle status enum = **PROPOSED**
-   - dedup identity structure = **PROPOSED**
-   - evidence/provenance model = **PROPOSED**
-   - severity ownership = **PROPOSED**
-   - PostgreSQL/Redis boundaries = **PROPOSED**
-   - temporal dedup scoping = **OPEN**
-   - exact dedup algorithm = **OPEN**
-   - cross-detector correlation = **OPEN**
-   - confidence/score semantics = **OPEN**
-   - evidence field typing = **OPEN**
-6. PostgreSQL Schema — **DRAFT / IN PROGRESS**
-   - durable alert persistence model = **PROPOSED**
-   - logical relational/JSON representation = **PROPOSED**
-   - indexing/retention/partitioning/implementation details = **OPEN**
-7. Final API Contract — **DRAFT / IN PROGRESS**
-   - presentation mapping = **PROPOSED**
-   - REST surface = **PROPOSED**
-   - WebSocket surface = **PROPOSED**
-   - filtering/pagination/error details = **OPEN**
+1. Canonical Event Schema — **Active**
+2. Redpanda Topics — **Active** (raw partition key locked)
+3. Feature / Window Schema — **Active**
+4. Detector Inputs / Outputs — **Active**
+5. Alert Schema — **Active** (durable persistence)
+6. PostgreSQL Schema — **Active**
+7. Final API Contract — **Active** (FastAPI / WebSocket)

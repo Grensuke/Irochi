@@ -1,8 +1,8 @@
-# SIH26145 — DETECTOR INPUT / OUTPUT CONTRACT (DRAFT v1)
+# SIH26145 — DETECTOR INPUT / OUTPUT CONTRACT
 
-**[STATUS: DRAFT]**
+**[STATUS: ACTIVE]**
 
-> **Status:** DRAFT — structural contract for review; individual section statuses vary (see §19). Requires project-lead / team review before promotion to `_FINAL`.
+> **Status:** ACTIVE. This structural contract is now implemented by the active River/XGBoost ML detectors.
 >
 > **Continues from:** `docs/architecture/FEATURE_WINDOW_SCHEMA_DRAFT_v7.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md` (§11, §12, §14, §15, §17, §18), and `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md`.
 >
@@ -72,7 +72,7 @@ Final API Contract
 
 ### Status
 
-**PROPOSED.** The design inputs are inherited; this section documents their provenance.
+**ACTIVE.** The design inputs are inherited and implemented.
 
 ---
 

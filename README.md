@@ -60,8 +60,8 @@ Irochi does **NOT**:
 | 1 | Volumetric / Protocol DDoS | DDoS Detector | **Active** (River ML signal) |
 | 2 | Reconnaissance / Port Scanning | Recon Detector | **Active** |
 | 3 | DGA / DNS Tunneling | DNS/DGA/Tunnel Detector | **Active** (requires Scikit `.joblib`) |
-| 4 | Botnet C2 Beaconing | TLS/C2 Detector | **Active** |
-| 5 | Malware inside encrypted sessions | TLS/C2 Detector | **Active** |
+| 4 | Botnet C2 Beaconing | TLS/C2 Detector | **Active** (behavioral heuristic) |
+| 5 | Malware inside encrypted sessions | TLS/C2 Detector | **Active** (behavioral heuristic) |
 | 6 | Data Exfiltration | Exfiltration Detector | **Active** (requires XGBoost `.joblib`) |
 | 7 | Novel Anomaly / Baseline Deviation | Anomaly Detector | **Active** |
 
@@ -178,9 +178,9 @@ Irochi/
 | Pub/Sub | Redis Pub/Sub (live alert fan-out) |
 | Persistent Storage | PostgreSQL |
 | Real-time | WebSockets |
-| Security | JWT + RBAC + Argon2 |
+| Security | Mock Auth Context (JWT + RBAC + Argon2 are Planned) |
 | Infrastructure | Docker + Docker Compose |
-| Observability | Structured JSON Logging + Prometheus + Grafana |
+| Observability | Structured JSON Logging (Prometheus + Grafana are Planned) |
 
 ---
 

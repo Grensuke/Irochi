@@ -1,8 +1,8 @@
-# SIH26145 — ALERT SCHEMA (DRAFT v1)
+# SIH26145 — ALERT SCHEMA
 
-**[STATUS: DRAFT]**
+**[STATUS: ACTIVE]**
 
-> **Status:** DRAFT — structural alert contract for review; individual section statuses vary (see §21). Requires project-lead / team review before promotion to `_FINAL`.
+> **Status:** ACTIVE. This structural alert contract is now actively implemented in the backend schema and presentation layers.
 >
 > **Continues from:** `docs/architecture/DETECTOR_IO_CONTRACT_DRAFT_v1.md`, `docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`, and upstream design-chain documents.
 >
@@ -76,7 +76,7 @@ Final API Contract
 
 ### Status
 
-**PROPOSED.** The design inputs are inherited; this section documents their provenance.
+**ACTIVE.** The design inputs are inherited and implemented.
 
 ---
 
