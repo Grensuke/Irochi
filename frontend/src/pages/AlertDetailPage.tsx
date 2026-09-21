@@ -40,9 +40,31 @@ export function AlertDetailPage() {
 
   const targetAlert = alerts.find((a) => a.alert_id === id);
 
-  const { incident } = useIncident(targetAlert?.incident_id);
+  const { incident, refresh: refreshIncident } = useIncident(targetAlert?.incident_id);
 
   const [memberAlerts, setMemberAlerts] = useState<Alert[]>([]);
+  const [isClosingIncident, setIsClosingIncident] = useState(false);
+
+  const handleCloseIncident = async () => {
+    if (!incident) return;
+    setIsClosingIncident(true);
+    try {
+      const promptNote = window.prompt("Enter a resolution note (optional):", "");
+      if (promptNote === null) return; // cancelled
+      await api.closeIncident(incident.incident_id, {
+        resolution_note: promptNote,
+        closed_by: "Analyst" // Dummy value since auth is pending
+      });
+      if (refreshIncident) {
+        refreshIncident();
+      }
+    } catch (err) {
+      console.error("Failed to close incident:", err);
+      alert("Failed to close incident. Check console for details.");
+    } finally {
+      setIsClosingIncident(false);
+    }
+  };
 
   useEffect(() => {
     if (incident?.member_alert_ids) {
@@ -233,7 +255,11 @@ export function AlertDetailPage() {
           
           {incident && (
             <div className="mb-6 space-y-6">
-              <IncidentPanel incident={incident} />
+              <IncidentPanel 
+                incident={incident} 
+                isClosing={isClosingIncident}
+                onClose={() => handleCloseIncident()}
+              />
               <EvidenceChain incident={incident} />
             </div>
           )}

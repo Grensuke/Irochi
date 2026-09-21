@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app.core import config as app_config
 from app.models.base import Base
 from app.models.alert import Alert
+from app.models.incident import Incident
 
 target_metadata = Base.metadata
 

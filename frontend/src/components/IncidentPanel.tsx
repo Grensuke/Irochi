@@ -6,9 +6,11 @@ import { KPIMetric } from './KPIMetric';
 
 interface IncidentPanelProps {
   incident: Incident;
+  onClose?: () => void;
+  isClosing?: boolean;
 }
 
-export function IncidentPanel({ incident }: IncidentPanelProps) {
+export function IncidentPanel({ incident, onClose, isClosing }: IncidentPanelProps) {
   const isAttack = incident.stage_state === 'likely_attack' || incident.stage_state === 'confirmed_attack';
 
   return (
@@ -18,9 +20,26 @@ export function IncidentPanel({ incident }: IncidentPanelProps) {
           <ShieldAlert size={16} style={{ color: 'var(--accent)' }} />
           Incident Context
         </span>
-        <span className={`severity-badge ${isAttack ? 'critical' : 'warning'}`} style={{ textTransform: 'uppercase' }}>
-          {incident.stage_state.replace('_', ' ')}
-        </span>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span className={`severity-badge ${isAttack ? 'critical' : 'warning'}`} style={{ textTransform: 'uppercase' }}>
+            {incident.stage_state.replace('_', ' ')}
+          </span>
+          {incident.status === 'open' && onClose && (
+            <button 
+              className="btn btn-sm btn-ghost" 
+              onClick={onClose} 
+              disabled={isClosing}
+              style={{ padding: '2px 8px', fontSize: '0.75rem', height: 'auto', border: '1px solid var(--border)' }}
+            >
+              {isClosing ? 'Closing...' : 'Close Incident'}
+            </button>
+          )}
+          {incident.status === 'closed' && (
+            <span className="severity-badge" style={{ background: 'var(--surface-3)', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              Closed
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="panel-body">

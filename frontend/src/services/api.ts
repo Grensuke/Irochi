@@ -74,4 +74,9 @@ export const api = {
   generateNarrative(context: any): Promise<{ what_was_observed: string, why_it_matters: string, what_to_investigate: string }> {
     return postJson('/narrative/generate', context);
   },
+
+  /** POST /api/v1/incidents/{incident_id}/close */
+  closeIncident(incidentId: string, payload: { resolution_note?: string; closed_by?: string }): Promise<Incident> {
+    return postJson<Incident>(`/incidents/${encodeURIComponent(incidentId)}/close`, payload);
+  },
 };

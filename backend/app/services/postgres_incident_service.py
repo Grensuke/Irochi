@@ -91,3 +91,22 @@ class PostgresIncidentService:
 
         await self.session.commit()
         return updated_incident
+
+    async def close_incident(
+        self,
+        incident_id: uuid.UUID,
+        resolution_note: str | None = None,
+        closed_by: str | None = None
+    ) -> Incident:
+        """Close an incident and record closure details."""
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        updates = {
+            "status": "closed",
+            "closed_at": now,
+            "updated_at": now,
+            "resolution_note": resolution_note,
+            "closed_by": closed_by
+        }
+        return await self.update_incident_fields(incident_id, updates)
+
