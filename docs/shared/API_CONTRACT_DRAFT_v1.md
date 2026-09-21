@@ -1,14 +1,10 @@
-# SIH26145 — FINAL API CONTRACT (DRAFT v1)
+# SIH26145 — FINAL API CONTRACT
 
-> **Status:** DRAFT — presentation contract for review; individual section statuses vary (see §23). Requires project-lead / team review before promotion to `_FINAL`.
+> **Status:** ACTIVE. This contract is now actively implemented by the FastAPI backend and consumed by the React frontend.
 >
 > **Continues from:** `docs/architecture/ALERT_SCHEMA_DRAFT_v1.md`, `docs/architecture/POSTGRESQL_SCHEMA_DRAFT_v1.md`, and upstream design-chain documents.
 >
-> **Scope:** This document defines the **Final API Contract** — the presentation layer that exposes canonical Alert, dashboard, and health data to the frontend and external consumers. It does **not** provide FastAPI implementation code, Pydantic models, authentication mechanisms, or deployment configuration.
->
-> **PHASE 0 verification checkpoint:** Produced and approved before this document was written (see conversation record).
->
-> **PHASE 1 implementation plan:** Produced and approved before this document was written (see conversation record).
+> **Scope:** This document defines the **Final API Contract** — the presentation layer that exposes canonical Alert, Incident, dashboard, and health data to the frontend and external consumers. It does **not** provide FastAPI implementation code, Pydantic models, authentication mechanisms, or deployment configuration.
 
 ---
 
@@ -27,7 +23,7 @@ Alert Schema (v1)
         ↓
 PostgreSQL Schema (v1)
         ↓
-API Contract (Draft v1)     ← THIS DOCUMENT
+API Contract (Active)     ← THIS DOCUMENT
 ```
 
 ### API contract role
@@ -42,7 +38,7 @@ All canonical definitions remain authoritative in their upstream documents. This
 
 ### Status
 
-**PROPOSED** (this document). Upstream documents carry their own statuses.
+**ACTIVE** (this document is implemented). Upstream documents carry their own statuses.
 
 ---
 
@@ -693,7 +689,7 @@ Established in the current API scaffold (`API_V1_PREFIX = "/api/v1"`).
 
 ### Status
 
-**PROPOSED.**
+**ACTIVE.**
 
 ---
 

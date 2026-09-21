@@ -669,7 +669,7 @@ Next design task.
 
 ## Logical structure
 
-**LOCKED ENOUGH TO IMPLEMENT AFTER FINAL SOURCE VALIDATION**
+**ACTIVE** (Implemented in Pydantic models `backend/app/schemas/events.py`)
 
 ## Locked in this schema baseline
 
@@ -695,24 +695,4 @@ The remaining questions are implementation/source-specific rather than a reason 
 
 # 19. Next Design Step
 
-After this Canonical Event Schema is reviewed and source validation is complete:
-
-```text
-Canonical Event Schema
-        ↓
-Redpanda Topics
-        ↓
-Feature / Window Schema
-        ↓
-Detector Inputs / Outputs
-        ↓
-Alert Schema
-        ↓
-PostgreSQL Schema
-        ↓
-FastAPI API Contract
-```
-
-The next design task is:
-
-> **Redpanda Topics — define exactly which topics exist, what event type each carries, who publishes, who consumes, partitioning/key strategy, retention, and error/dead-letter handling.**
+The downstream design chain (Redpanda Topics, Feature Schema, Detector I/O, Alert Schema, PostgreSQL Schema, API Contract) has been completed and is actively implemented in the current repository state.

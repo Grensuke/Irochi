@@ -49,15 +49,15 @@ Alert Engine → PostgreSQL INSERT → AWAIT COMMIT → success? → Redis Pub/S
 
 ## BD-006: Real Pipeline Not Implemented During Initialization
 
-**Status:** Active
+**Status:** Obsolete
 
-During the dummy/scaffold phase, no real Zeek parsing, Redpanda producers/consumers, Redis, PostgreSQL persistence, ML models, detectors, or production authentication are implemented. Clean interfaces and placeholders are created so these can be introduced later.
+This decision governed the initial scaffolding phase. The real pipeline (Zeek ingest, Redpanda, Redis, PostgreSQL persistence, active ML detectors) is now implemented and active. Production authentication remains planned.
 
 ## BD-007: Abstract Service Layer Pattern
 
 **Status:** Active
 
-Backend services use abstract base classes (`AlertService`, `DashboardService`) with mock implementations (`MockAlertService`, `MockDashboardService`). Future real implementations (e.g. PostgreSQL-backed) must implement the same interface. This allows swapping mock → real without changing routes or schemas.
+Backend services use abstract base classes (`AlertService`, `DashboardService`) with implementation-specific subclasses. This allowed swapping from initial mock implementations to the current real, active implementations (e.g. `PostgresAlertService`, `RedisPubSubService`) without changing routes or schemas.
 
 ## BD-008: Threat Taxonomy Enum Values
 
@@ -71,7 +71,7 @@ Mock alert data uses consistent enum values for threat types and detector IDs, m
 
 **Severities:** `critical`, `high`, `medium`, `low`, `info`
 
-These values are not yet formally locked in the final API contract but are used consistently across the dummy backend and should be carried forward unless the final contract changes them.
+These values are not yet formally locked in the final API contract but are used consistently across the active backend and should be carried forward unless the final contract changes them.
 
 ## BD-009: Raw Redpanda Topic Partition Key
 

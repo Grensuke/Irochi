@@ -432,21 +432,19 @@ Never report "complete" while knowingly leaving a documentation or contract mism
 
 ## Current Project Phase
 
-Checkpoints 1–4 are complete.
+Active Detection & Infrastructure phase is complete.
 
 Current state:
 
-- repository/workflow foundation complete;
-- dummy FastAPI backend complete;
-- complete frontend product shell complete;
-- dummy frontend ↔ backend integration complete;
-- source-of-truth architecture/data documents preserved.
+- core infrastructure active (PostgreSQL, Redis, Redpanda via Docker);
+- streaming pipeline (Zeek -> Ingest -> CanonicalEvent -> Redpanda) implemented;
+- stateful feature/window engine implemented;
+- 6 active detectors deployed (including Scikit-learn, XGBoost, River);
+- real frontend ↔ backend integration (REST + WebSocket) complete.
 
-The next major work phase is real system design/implementation.
+The next major work phase involves scaling, TimescaleDB conditional evaluation, and final model calibration.
 
-Do not assume the real production pipeline is already implemented.
-
-The current dummy system is a development baseline only.
+The active system is a fully functional detection pipeline, though authentication and network telemetry visualizers currently remain mock/demo-only.
 
 ---
 

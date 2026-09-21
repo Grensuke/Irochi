@@ -31,9 +31,9 @@ The browser must not directly access PostgreSQL, Redis, Redpanda, or any other i
 
 ## FD-005: Frontend Initially Uses Mock Services/Data
 
-**Status:** Active
+**Status:** Obsolete (For Core Data) / Active (For Auth/Telemetry)
 
-During the dummy/scaffold phase, the frontend uses mock services and data. A service layer (`frontend/src/services/`) will be used so mock services can later be replaced with real FastAPI calls.
+During the initial dummy/scaffold phase, the frontend used mock services and data. The frontend has now been updated to consume the real FastAPI REST and WebSocket endpoints for Alerts and Incidents. However, Authentication and certain Telemetry visualizations (Network, Analytics) still rely on mock data and contexts until their backend counterparts are finalized.
 
 ## FD-006: Service Layer Architecture
 
@@ -43,8 +43,9 @@ All backend communication is routed through `frontend/src/services/`. Components
 
 - `api.ts` — REST API client (fetch wrapper with proxy routing)
 - `websocket.ts` — WebSocket client (connection state + protocol handling)
+- `mockData.ts` — Mock services for incomplete backend features (e.g., telemetry)
 
-Future real implementations swap these service files without changing hooks or components.
+This allowed the seamless swap from initial mock implementations to the current real FastAPI integration for core alerts without changing hooks or components.
 
 ## FD-007: Design System — Dark SOC Operations Theme
 
