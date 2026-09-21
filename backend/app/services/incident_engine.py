@@ -150,8 +150,6 @@ class IncidentEngine:
                     stage_state = "likely_attack"
                 else:
                     stage_state = "suspicious"
-            elif has_anomaly:
-                stage_state = "anomaly"
             else:
                 stage_state = "anomaly"
 
