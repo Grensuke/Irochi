@@ -41,7 +41,7 @@ This separation is **locked**:
 
 ## Threat Taxonomy
 
-### Five Detector Modules
+### Six Detector Modules
 
 | ID | Module |
 |---|---|
@@ -50,8 +50,9 @@ This separation is **locked**:
 | `dns_dga_tunnel_detector` | DNS/DGA/DNS-Tunneling Detector |
 | `tls_c2_detector` | TLS/C2 Detector |
 | `exfiltration_detector` | Exfiltration Detector |
+| `unknown_detector` | Unknown Detector |
 
-### Six Threat Capabilities
+### Seven Threat Capabilities
 
 | ID | Capability |
 |---|---|
@@ -61,8 +62,9 @@ This separation is **locked**:
 | `encrypted_malware` | Malware inside encrypted sessions |
 | `recon_portscan` | Reconnaissance / Port Scanning |
 | `data_exfiltration` | Data Exfiltration |
+| `unknown_threat` | Unknown threat / baseline deviation |
 
-One detector module may emit multiple threat classes. These are **not** six microservices.
+One detector module may emit multiple threat classes. These are **not** seven microservices.
 
 ---
 
@@ -79,7 +81,7 @@ The following data contracts are part of the design chain and will be defined in
    - feature-level mapping = **PROPOSED**
    - remaining state/parameter decisions = **OPEN**
 4. Detector Inputs / Outputs — **DRAFT / IN PROGRESS**
-   - detector taxonomy (5 IDs, 6 threat types) = **inherited** (BD-008 Active)
+   - detector taxonomy (6 IDs, 7 threat types) = **inherited** (BD-008 Active)
    - DetectorInput envelope = **PROPOSED**
    - typed payload strategy (Option C) = **PROPOSED**
    - base grouping identity = **PROPOSED**

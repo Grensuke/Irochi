@@ -63,7 +63,7 @@ export function Investigation() {
                   {/* KPI Risk Score Cell */}
                   <div className="kpi-cell" style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', minWidth: '110px', alignItems: 'center' }}>
                     <div className="kpi-value" style={{ color: incident.risk_score > 70 ? 'var(--severity-critical)' : incident.risk_score > 40 ? 'var(--severity-high)' : 'var(--text-primary)' }}>
-                      {incident.risk_score}
+                      {Math.round(incident.risk_score)}
                     </div>
                     <div className="kpi-label uppercase">Risk Score</div>
                   </div>

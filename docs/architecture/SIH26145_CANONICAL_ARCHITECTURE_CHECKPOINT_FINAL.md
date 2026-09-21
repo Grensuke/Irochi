@@ -278,7 +278,7 @@ The React application remains the analyst-facing security dashboard.
        +----------+----------+----------+----------+----------+----------+
        |          |          |          |          |          |
        v          v          v          v          v          v
-      DDoS      Recon      DNS/DGA/    TLS/C2   Exfiltration Anomaly
+      DDoS      Recon      DNS/DGA/    TLS/C2   Exfiltration Unknown
      Detector  Detector   DNS-Tunnel   Detector    Detector  Detector
                            Detector
        |          |          |          |          |          |
@@ -695,7 +695,7 @@ There are **six logical detector modules**:
 3. DNS/DGA/DNS-Tunneling Detector
 4. TLS/C2 Detector
 5. Exfiltration Detector
-6. Anomaly Detector
+6. Unknown Detector
 ```
 
 These are logically distinct modules.
@@ -902,7 +902,7 @@ inter-packet timing
 sequence/statistical features
 ```
 
-for encrypted-traffic anomaly detection.
+for encrypted-traffic unknown threat detection.
 
 This is stretch work, not a core dependency.
 

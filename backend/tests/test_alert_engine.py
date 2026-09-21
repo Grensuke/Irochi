@@ -18,8 +18,8 @@ def mock_postgres():
     fake_alert = MagicMock()
     fake_alert.alert_id = "test-uuid"
     fake_alert.last_seen_at = datetime.now(timezone.utc)
-    fake_alert.threat_type = "test_threat"
-    fake_alert.detector_id = "test_detector"
+    fake_alert.threat_type = "volumetric_ddos"
+    fake_alert.detector_id = "ddos_detector"
     fake_alert.severity = "high"
     fake_alert.confidence = 0.9
     fake_alert.evidence_summary = {}

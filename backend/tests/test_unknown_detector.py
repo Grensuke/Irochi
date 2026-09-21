@@ -1,6 +1,6 @@
 import pytest
 import uuid
-from app.services.detectors.anomaly import AnomalyDetector
+from app.services.detectors.unknown import UnknownDetector
 from app.services.detectors.baseline_state import BaselineStateStore
 from app.schemas.detectors import (
     DetectorInput, 
@@ -46,7 +46,7 @@ class MockBaselineStore:
 @pytest.mark.asyncio
 async def test_baseline_not_updated_during_known_attack():
     store = MockBaselineStore()
-    detector = AnomalyDetector(store)
+    detector = UnknownDetector(store)
     
     # Pre-populate some baseline to simulate existing stats
     key = ("ddos", "source", "192.168.1.100", "packet_rate")
@@ -63,7 +63,7 @@ async def test_baseline_not_updated_during_known_attack():
         revision=1,
         payload=DdosFeaturePayload(packet_rate=5000) # massive spike
     )
-    inputs = [DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.ANOMALY, feature_record=record)]
+    inputs = [DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.UNKNOWN, feature_record=record)]
     
     primary_outputs = [
         DetectorOutput(
@@ -93,9 +93,9 @@ async def test_baseline_not_updated_during_known_attack():
     assert before_stats == after_stats, "Baseline should not be updated when primary detects attack"
 
 @pytest.mark.asyncio
-async def test_baseline_not_updated_during_active_anomaly():
+async def test_baseline_not_updated_during_active_unknown():
     store = MockBaselineStore()
-    detector = AnomalyDetector(store)
+    detector = UnknownDetector(store)
     
     # Pre-populate
     key1 = ("ddos", "source", "192.168.1.100", "packet_rate")
@@ -115,7 +115,7 @@ async def test_baseline_not_updated_during_active_anomaly():
         revision=1,
         payload=DdosFeaturePayload(packet_rate=9999, byte_rate=99999) # anomalies
     )
-    inputs = [DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.ANOMALY, feature_record=record)]
+    inputs = [DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.UNKNOWN, feature_record=record)]
     
     # Primary output says NO_THREAT
     primary_outputs = [
@@ -146,5 +146,5 @@ async def test_baseline_not_updated_during_active_anomaly():
     
     assert len(outputs) == 1
     assert outputs[0].decision == Decision.DETECTION
-    assert before_stats1 == after_stats1, "Baseline should not be updated when anomaly fires"
-    assert before_stats2 == after_stats2, "Baseline should not be updated when anomaly fires"
+    assert before_stats1 == after_stats1, "Baseline should not be updated when unknown fires"
+    assert before_stats2 == after_stats2, "Baseline should not be updated when unknown fires"

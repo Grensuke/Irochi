@@ -1,5 +1,5 @@
-import React from 'react';
-import type { Incident } from '../types';
+
+import type { Incident, ThreatType } from '../types';
 import { AlertTriangle, TrendingUp, ShieldAlert } from 'lucide-react';
 import { THREAT_TYPE_LABELS } from '../types';
 import { KPIMetric } from './KPIMetric';
@@ -28,7 +28,7 @@ export function IncidentPanel({ incident }: IncidentPanelProps) {
           <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <KPIMetric 
               label="Risk Score" 
-              value={`${incident.risk_score}/100`} 
+              value={`${Math.round(incident.risk_score)}/100`} 
             />
             <KPIMetric 
               label="Correlated Alerts" 
@@ -36,7 +36,7 @@ export function IncidentPanel({ incident }: IncidentPanelProps) {
             />
             <KPIMetric 
               label="Current Stage" 
-              value={incident.current_stage ? (THREAT_TYPE_LABELS[incident.current_stage as any] || incident.current_stage) : 'None'} 
+              value={incident.current_stage ? (THREAT_TYPE_LABELS[incident.current_stage as ThreatType] || incident.current_stage) : 'None'} 
             />
           </div>
         </div>
@@ -61,7 +61,7 @@ export function IncidentPanel({ incident }: IncidentPanelProps) {
               Risk Forecast (Next Stage)
             </div>
             <div style={{ color: 'var(--text)', fontWeight: 500, marginBottom: '8px' }}>
-              {THREAT_TYPE_LABELS[incident.forecast_next_stage as any] || incident.forecast_next_stage}
+              {THREAT_TYPE_LABELS[incident.forecast_next_stage as ThreatType] || incident.forecast_next_stage}
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', color: 'var(--status-critical)', opacity: 0.8, fontSize: '0.75rem', lineHeight: 1.4 }}>
               <AlertTriangle size={12} style={{ marginTop: '2px', flexShrink: 0 }} />

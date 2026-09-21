@@ -6,7 +6,7 @@
  */
 
 import { jsPDF } from 'jspdf';
-import type { Alert, Incident } from '../types';
+import type { Alert, Incident, ThreatType } from '../types';
 import { THREAT_TYPE_LABELS, DETECTOR_LABELS } from '../types';
 
 // ─── Color Palette (RGB tuples) ──────────────────────
@@ -246,7 +246,7 @@ class IrochiPdfReport {
     const kpis = [
       { label: 'RISK SCORE', value: `${incident.risk_score}/100` },
       { label: 'CORRELATED ALERTS', value: `${incident.member_alert_ids.length}` },
-      { label: 'CURRENT STAGE', value: THREAT_TYPE_LABELS[incident.current_stage as any] || incident.current_stage || 'None' },
+      { label: 'CURRENT STAGE', value: THREAT_TYPE_LABELS[incident.current_stage as ThreatType] || incident.current_stage || 'None' },
       { label: 'STAGE STATE', value: incident.stage_state.replace('_', ' ').toUpperCase() },
     ];
     const kpiWidth = (this.contentWidth - 12) / kpis.length;
@@ -286,7 +286,7 @@ class IrochiPdfReport {
       this.doc.setFont('helvetica', 'bold');
       this.doc.setFontSize(8);
       this.doc.setTextColor(...COLORS.critical);
-      this.doc.text(`⚠ RISK FORECAST: Next predicted stage → ${THREAT_TYPE_LABELS[incident.forecast_next_stage as any] ?? incident.forecast_next_stage}`, this.marginLeft + 8, this.y + 3);
+      this.doc.text(`⚠ RISK FORECAST: Next predicted stage → ${THREAT_TYPE_LABELS[incident.forecast_next_stage as ThreatType] ?? incident.forecast_next_stage}`, this.marginLeft + 8, this.y + 3);
       this.y += 12;
     }
 
@@ -332,7 +332,7 @@ class IrochiPdfReport {
       this.doc.setFont('helvetica', isActive ? 'bold' : 'normal');
       this.doc.setFontSize(6.5);
       this.doc.setTextColor(...(isActive ? COLORS.black : COLORS.medGray));
-      const label = THREAT_TYPE_LABELS[stage as any] ?? stage;
+      const label = THREAT_TYPE_LABELS[stage as ThreatType] ?? stage;
       const labelLines = this.doc.splitTextToSize(label, stageWidth - 4);
       this.doc.text(labelLines, cx, circleY + 10, { align: 'center' });
 
@@ -426,7 +426,6 @@ class IrochiPdfReport {
     // Subtle background box
     this.checkPageBreak(20);
     this.doc.setFillColor(248, 245, 255); // Light purple tint
-    const boxStartY = this.y - 2;
 
     this.drawSubHeading('What Was Observed');
     this.drawParagraph(narrative.what_was_observed);

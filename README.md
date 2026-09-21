@@ -1,4 +1,4 @@
-﻿# Irochi
+# Irochi
 
 **SIH 2026 — Problem Statement SIH26145**
 
@@ -21,6 +21,9 @@ Irochi is a passive, real-time network threat-detection and security-intelligenc
 > - Anomaly Detector runs Z-Score / Isolation Forest baseline analysis
 > - AI Narrative Engine generates human-readable summaries for analysts
 > - PCAP-based live demo pipeline is functional (`backend/scripts/live_demo.py`)
+> - **NEW:** Active telemetry hardware simulations for passive diodes using HTML5 Canvas (`DiodeFlowVisualizer`, `UnidirectionalThreatStream`)
+> - **NEW:** Advanced Incident Investigation Queue UI with risk scores and visual phase indicators
+> - **NEW:** Client-side "Export to PDF" reporting capability integrated with AI narratives
 >
 > **Known limitations:**
 > - DNS/DGA detector requires an external `.joblib` model artifact at startup
@@ -75,7 +78,7 @@ There are **six logical detector modules** — not six microservices. Each modul
 | 3 | DNS/DGA/Tunnel Detector | `dga_dns_tunnel` |
 | 4 | TLS/C2 Detector | `c2_beaconing`, `encrypted_malware` |
 | 5 | Exfiltration Detector | `data_exfiltration` |
-| 6 | Anomaly Detector | `novel_anomaly` |
+| 6 | Unknown Detector | `unknown_threat` |
 
 ---
 

@@ -32,7 +32,7 @@ Active Infrastructure Integration (Alerts integrated with real backend)
 - Added `NarrativePanel` and AI progression/correlation utilities (`correlation.ts`, `explanation.ts`, `progression.ts`, `recommendations.ts`).
 - Added `AlertDetailPage` featuring `IncidentPanel`, `EvidenceChain` (Kill-Chain Progression), and Timeline Playback controls, natively styled using standard CSS framework (removed Tailwind dependencies).
 - Added `useIncidents` and `useIncident` hooks for fetching Incident entities from the new backend REST API endpoints.
-- Updated `Threats` page to map the new `novel_anomaly` and `anomaly_detector` metadata.
+- Updated `Threats` page to map the new `unknown_threat` (now displayed as `Unknown Threat`) and `unknown_detector` metadata.
 - Upgraded telemetry screens (`Network`, `Traffic`, `DiodeFlowVisualizer`, `SummaryBar`) from idle mock states to active live-simulation modes with particle systems, mock event generators, and animated charts.
 - Redesigned `Investigation.tsx` into an advanced Incident Investigation Queue UI with risk scores and visual phase indicators.
 - Added "Export to PDF" capability using `jspdf` to `AlertDetailPage.tsx` integrating AI narrative data.
@@ -54,6 +54,7 @@ frontend/
 │   │   ├── Header.tsx / Header.css
 │   │   ├── SummaryBar.tsx / SummaryBar.css
 │   │   ├── ThreatBreakdown.tsx / ThreatBreakdown.css
+│   │   ├── UnidirectionalThreatStream.tsx / UnidirectionalThreatStream.css # Animated data stream overlay
 │   │   ├── AlertTable.tsx / AlertTable.css
 │   │   ├── AlertDetail.tsx / AlertDetail.css
 │   │   └── LiveFeed.tsx / LiveFeed.css

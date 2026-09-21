@@ -122,11 +122,11 @@ class DetectorRouter:
             outputs = await detector.evaluate(inputs_to_evaluate)
             
             # Anomaly check
-            anomaly_detector = self.registry.get_detector(DetectorId.ANOMALY)
-            if anomaly_detector:
-                anomaly_outputs = await anomaly_detector.evaluate_against_baseline(inputs_to_evaluate, outputs)
-                if anomaly_outputs:
-                    outputs.extend(anomaly_outputs)
+            unknown_detector = self.registry.get_detector(DetectorId.UNKNOWN)
+            if unknown_detector:
+                unknown_threat_outputs = await unknown_detector.evaluate_against_baseline(inputs_to_evaluate, outputs)
+                if unknown_threat_outputs:
+                    outputs.extend(unknown_threat_outputs)
 
             return outputs
         except Exception as e:

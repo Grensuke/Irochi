@@ -53,8 +53,8 @@ Final API Contract
 
 **Inherited / not to be altered in this pass (BD-008 status is Active, not Locked):**
 
-- 5 canonical detector IDs — `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`
-- 6 threat types — `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`
+- 6 canonical detector IDs — `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`, `unknown_detector`
+- 7 threat types — `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`, `unknown_threat`
 - detector_id ≠ threat_type (one detector may emit multiple threat classes)
 
 > BD-008 says these values are "not yet formally locked in the final API contract but are used consistently across the dummy backend." This document inherits and uses them but does not promote them to LOCKED.
@@ -102,6 +102,7 @@ Final API Contract
 | `encrypted_malware` | Malware inside encrypted sessions | `tls_c2_detector` |
 | `recon_portscan` | Reconnaissance / Port Scanning | `recon_detector` |
 | `data_exfiltration` | Data Exfiltration | `exfiltration_detector` |
+| `unknown_threat` | Unknown threat / baseline deviation | `unknown_detector` |
 
 ### Verified against
 
@@ -810,7 +811,7 @@ This is sufficient for detecting concurrent-modification conflicts at the applic
 | Commit-before-notify extended to UPDATE operations | **PROPOSED** (extends BD-005's principle) |
 | DetectorOutput is upstream decision contract | **LOCKED** |
 | Alert Schema is downstream from DetectorOutput | **LOCKED** |
-| Detector taxonomy (5 detectors, 6 threats) | **Inherited / not to be altered** (BD-008 Active) |
+| Detector taxonomy (6 detectors, 7 threats) | **Inherited / not to be altered** (BD-008 Active) |
 | detector_id ≠ threat_type | **Inherited** (BD-008 Active) |
 | DetectorOutput envelope | **Inherited PROPOSED baseline** (Detector I/O v1 §19) |
 | Decision enum | **Inherited PROPOSED baseline** (Detector I/O v1 §19) |

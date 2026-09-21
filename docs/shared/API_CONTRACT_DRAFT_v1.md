@@ -368,7 +368,48 @@ Additional ordering options (e.g. by severity, by `created_at`): **OPEN**.
 **LOCKED.** (Approval provenance: AR-03)
 ---
 
-## 12. Dashboard Contract
+## 12. Incident Endpoints
+
+### `GET /api/v1/incidents`
+
+**Purpose:** Return a filtered, paginated list of correlated incidents.
+
+**Response model:**
+```json
+{
+  "incidents": [ IncidentResponse, ... ],
+  "total": integer
+}
+```
+
+### `GET /api/v1/incidents/{incident_id}`
+
+**Purpose:** Return a single incident by its unique ID.
+
+**Response model — `IncidentResponse`:**
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `incident_id` | string | Yes | Unique identifier |
+| `entity_type` | string enum | Yes | Type of entity |
+| `entity_key` | string | Yes | The entity this incident groups |
+| `status` | string enum | Yes | `new\|investigating\|closed\|false_positive` |
+| `opened_at` | string (ISO 8601) | Yes | Time of creation |
+| `updated_at` | string (ISO 8601) | Yes | Time of last update |
+| `last_event_at` | string (ISO 8601) | Yes | Time of last alert |
+| `member_alert_ids` | string[] | Yes | List of correlated alert IDs |
+| `distinct_threat_types` | string[] | Yes | Array of ThreatTypes |
+| `risk_score` | float | Yes | Incident severity |
+| `risk_breakdown` | dict | Yes | Breakdown of score |
+| `stage_state` | string | Yes | Current state of kill-chain |
+| `current_stage` | string \| null | Yes | Current active stage |
+| `forecast_next_stage` | string \| null | Yes | Prediction for next stage |
+| `forecast_note` | string \| null | Yes | AI note on forecast |
+| `schema_version` | string | Yes | Schema identifier |
+
+---
+
+## 13. Dashboard Contract
 
 ### `GET /api/v1/dashboard/summary`
 
@@ -626,7 +667,8 @@ BD-008 taxonomy inherited as **Active** (not promoted to Locked):
 | `dns_dga_tunnel_detector` | `dga_dns_tunnel` |
 | `tls_c2_detector` | `encrypted_malware` |
 | `exfiltration_detector` | `recon_portscan` |
-| | `data_exfiltration` |
+| `unknown_detector` | `data_exfiltration` |
+| | `unknown_threat` |
 
 The API uses these values as-is. No API-specific detector IDs or threat names are created. `detector_id` and `threat_type` are **distinct fields** — one detector may emit multiple threat types.
 

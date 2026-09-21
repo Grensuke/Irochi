@@ -13,13 +13,13 @@ MIN_SAMPLES = 20
 MIN_DEVIATING_SIGNALS = 2
 Z_THRESHOLD = 3.0
 
-class AnomalyDetector(BaseDetector):
+class UnknownDetector(BaseDetector):
     def __init__(self, baseline_store: BaselineStateStore):
         self.baseline_store = baseline_store
 
     @property
     def detector_id(self) -> DetectorId:
-        return DetectorId.ANOMALY
+        return DetectorId.UNKNOWN
 
     @property
     def detector_version(self) -> str:
@@ -30,7 +30,7 @@ class AnomalyDetector(BaseDetector):
         return []
 
     async def evaluate_against_baseline(self, inputs: List[DetectorInput], primary_outputs: List[DetectorOutput]) -> List[DetectorOutput]:
-        anomaly_outputs = []
+        unknown_threat_outputs = []
         
         # Determine the primary decision.
         # Since outputs is 1 per group, we can just check if all are NO_THREAT.
@@ -98,7 +98,7 @@ class AnomalyDetector(BaseDetector):
                     }
                 }
                 
-                anomaly_outputs.append(
+                unknown_threat_outputs.append(
                     DetectorOutput(
                         output_id=str(uuid.uuid4()),
                         detector_id=self.detector_id,
@@ -108,7 +108,7 @@ class AnomalyDetector(BaseDetector):
                         evaluated_at=int(time.time() * 1000000),
                         detector_version="1.0.0",
                         decision=Decision.DETECTION,
-                        threat_type=ThreatType.NOVEL_ANOMALY,
+                        threat_type=ThreatType.UNKNOWN_THREAT,
                         confidence=confidence,
                         score=confidence * 100,
                         severity_candidate=Severity.MEDIUM,
@@ -132,4 +132,4 @@ class AnomalyDetector(BaseDetector):
                 # If there were signals with insufficient data, we could return INSUFFICIENT_DATA if we wanted, 
                 # but the primary NO_THREAT output is already present, so returning nothing is fine.
                 
-        return anomaly_outputs
+        return unknown_threat_outputs

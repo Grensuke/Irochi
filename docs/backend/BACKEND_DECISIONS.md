@@ -65,9 +65,9 @@ Backend services use abstract base classes (`AlertService`, `DashboardService`) 
 
 Mock alert data uses consistent enum values for threat types and detector IDs, matching the taxonomy from the architecture checkpoint:
 
-**Detector IDs (5):** `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`
+**Detector IDs (6):** `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`, `unknown_detector`
 
-**Threat Types (6):** `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`
+**Threat Types (7):** `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`, `unknown_threat`
 
 **Severities:** `critical`, `high`, `medium`, `low`, `info`
 
