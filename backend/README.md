@@ -23,11 +23,12 @@ The backend is instantiated within the FastAPI application lifespan. The primary
 
 ## Active Detectors
 
-- **DDoS Detector**: Volumetric threshold-based detector. (Active, default 1000 pps)
-- **Recon Detector**: Port-scan uniqueness threshold detector. (Active, default 50 ports)
-- **DNS/DGA Detector**: ML-based DGA classification using River/XGBoost. *(Requires external `.joblib` model artifact to function at runtime)*
-
-*Note: TLS/C2 and Exfiltration detectors are planned but not currently active.*
+- **DDoS Detector**: Volumetric multi-signal detector incorporating River online ML anomaly scoring. (Active)
+- **Recon Detector**: Port-scan and connection fan-out multi-signal detector. (Active)
+- **DNS/DGA Detector**: ML-based DGA classification using a Scikit-learn Random Forest model. *(Requires external `.joblib` model artifact)*
+- **TLS/C2 Detector**: Inter-arrival time and connection periodicity detector for beaconing. (Active)
+- **Exfiltration Detector**: Transfer asymmetry and byte-rate detector incorporating an XGBoost classifier. *(Requires external `.joblib` model artifact)*
+- **Unknown Detector**: Baseline deviation and Z-Score anomaly detector. (Active)
 
 ## Endpoints
 

@@ -57,3 +57,4 @@ REDPANDA_TOPICS = [t.strip() for t in os.getenv("REDPANDA_TOPICS", _default_topi
 
 # --- Models ---
 IROCHI_DGA_MODEL_PATH = os.getenv("IROCHI_DGA_MODEL_PATH", "/app/models/dns_dga_model_v1.joblib")
+IROCHI_EXFIL_MODEL_PATH = os.getenv("IROCHI_EXFIL_MODEL_PATH", "/app/models/exfil_model_v1.joblib")

@@ -48,9 +48,10 @@ The current evaluation methodology reconstructs tumbling feature windows from of
 
 The production defaults for the new multi-signal models are kept restrictive by design to ensure zero false positives, pending cross-dataset validation to find optimal production weights. Candidate thresholds from the evaluation are treated as evaluation insights.
 
-- **DDoS Detector**: Multi-signal model (requires combination of `packet_rate`, `byte_rate`, `syn_ratio`, and `source_entropy` meeting `confidence_cutoff > 0.6`).
+- **DDoS Detector**: Multi-signal model (blends rule-based features like `packet_rate`, `byte_rate`, `syn_ratio`, `source_entropy` with an online ML anomaly signal via `river.anomaly.HalfSpaceTrees`). State is preserved in Redis.
 - **Recon Detector**: Multi-signal model (requires combination of `unique_ports`, `unique_hosts`, `scan_rate`, and `connection_fan_out` meeting `confidence_cutoff > 0.6`).
-- **DNS/DGA Detector**: Uses a loaded `.joblib` model. *(Note: DGA is implemented in code but requires the external model artifact to function. Without it, it yields a `DETECTOR_ERROR` and is not fully runtime-ready.)*
+- **DNS/DGA Detector**: Uses a loaded `.joblib` Scikit-learn Random Forest model. *(Note: requires the external model artifact to function. Without it, it yields a `DETECTOR_ERROR`.)*
+- **Exfiltration Detector**: Multi-signal model (blends rule-based transfer features like `outbound_inbound_ratio` and `byte_rate` with an XGBoost classifier). Both ML detectors use graceful fallback if model artifacts are unavailable.
 
 ## Status Definitions
 - **Implemented**: The code exists in the repository.

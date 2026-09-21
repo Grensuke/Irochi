@@ -1,6 +1,16 @@
 import uuid
 import time
+import pickle
+import logging
 from typing import List, Optional, Dict, Any
+
+try:
+    from river import anomaly
+    HAS_RIVER = True
+except ImportError:
+    HAS_RIVER = False
+
+logger = logging.getLogger(__name__)
 
 from app.schemas.detectors import (
     DetectorId,
@@ -24,7 +34,8 @@ class DdosDetector(BaseDetector):
         thresholds: Optional[Dict[str, float]] = None,
         weights: Optional[Dict[str, float]] = None,
         min_triggers: int = 1,
-        confidence_cutoff: float = 0.60
+        confidence_cutoff: float = 0.60,
+        redis_service: Any = None
     ):
         # INITIAL / UNVALIDATED Defaults based on design baseline
         self.thresholds = thresholds or {
@@ -32,15 +43,18 @@ class DdosDetector(BaseDetector):
             "byte_rate": 50000.0,
             "syn_ratio": 0.70,
             "source_ip_entropy": 2.0,
+            "anomaly_score": 0.80,
         }
         self.weights = weights or {
-            "packet_rate": 0.40,
+            "packet_rate": 0.30,
             "syn_ratio": 0.10,
-            "source_ip_entropy": 0.40,
+            "source_ip_entropy": 0.30,
             "byte_rate": 0.10,
+            "anomaly_score": 0.20,
         }
         self.min_triggers = min_triggers
         self.confidence_cutoff = confidence_cutoff
+        self.redis_service = redis_service
         self._version = "2.0.0"
 
     @property
@@ -75,6 +89,43 @@ class DdosDetector(BaseDetector):
                     inp, Decision.INSUFFICIENT_DATA, evidence={"reason": "packet_rate is missing"}
                 ))
                 continue
+
+            anomaly_score = 0.0
+            if HAS_RIVER and self.redis_service and self.redis_service._client:
+                key = f"irochi:anomaly:river:ddos:{record.entity_key}"
+                model = None
+                try:
+                    data = await self.redis_service._client.get(key)
+                    if data:
+                        model = pickle.loads(bytes.fromhex(data))
+                except Exception as e:
+                    logger.warning(f"Failed to load river model from redis: {e}")
+
+                if model is None:
+                    model = anomaly.HalfSpaceTrees(
+                        n_trees=25,
+                        height=10,
+                        window_size=250,
+                        seed=42
+                    )
+
+                features = {
+                    "packet_rate": float(signals["packet_rate"] or 0),
+                    "byte_rate": float(signals["byte_rate"] or 0),
+                    "syn_ratio": float(signals["syn_ratio"] or 0),
+                    "source_ip_entropy": float(signals["source_ip_entropy"] or 0)
+                }
+
+                try:
+                    anomaly_score = model.score_one(features)
+                    model.learn_one(features)
+                    hex_data = pickle.dumps(model).hex()
+                    await self.redis_service._client.set(key, hex_data)
+                except Exception as e:
+                    logger.warning(f"Failed to score/save river model: {e}")
+                    anomaly_score = 0.0
+                    
+            signals["anomaly_score"] = anomaly_score
 
             scores = {}
             evidence_items = []
