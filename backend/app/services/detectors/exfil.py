@@ -1,7 +1,10 @@
+import os
+import json
 import uuid
 import time
 import logging
 from typing import List
+import numpy as np
 
 from app.schemas.detectors import (
     DetectorId,
@@ -24,12 +27,40 @@ class ExfiltrationDetector(BaseDetector):
         self.min_byte_rate_threshold = 50_000          # 50 KB/s
         
         self.weights = {
-            "ratio": 0.5,
-            "rate": 0.5
+            "ratio": 0.33,
+            "rate": 0.33,
+            "ml_anomaly": 0.34
         }
         
         self.confidence_cutoff = 0.60
         self.min_triggers = 2
+
+        self.model = None
+        self.metadata = None
+        self.ml_threshold = 0.5
+        self._load_model()
+
+    def _load_model(self):
+        from app.core.config import IROCHI_EXFIL_MODEL_PATH
+        model_path = IROCHI_EXFIL_MODEL_PATH
+        meta_path = model_path.replace(".joblib", ".meta.json")
+
+        try:
+            import joblib
+            import xgboost # Check if installed
+            if os.path.exists(model_path) and os.path.exists(meta_path):
+                self.model = joblib.load(model_path)
+                with open(meta_path, 'r', encoding='utf-8') as f:
+                    self.metadata = json.load(f)
+                
+                if "threshold" in self.metadata:
+                    self.ml_threshold = self.metadata["threshold"]
+                    
+                logger.info(f"Successfully loaded XGBoost Exfiltration model from {model_path}")
+            else:
+                logger.error(f"XGBoost Exfiltration model or metadata not found at {model_path}")
+        except Exception as e:
+            logger.error(f"Failed to load XGBoost Exfiltration model: {e}", exc_info=True)
 
     @property
     def detector_id(self) -> DetectorId:
@@ -115,8 +146,31 @@ class ExfiltrationDetector(BaseDetector):
                 "triggered": is_rate_triggered
             })
             score_total += rate_score * self.weights["rate"]
+
+            # 3. XGBoost Model (ML Anomaly)
+            ml_prob = 0.0
+            is_ml_triggered = False
+            if self.model:
+                try:
+                    features = [ratio_val, rate_val] # order matching train_exfil_model.py
+                    X = np.array([features])
+                    ml_prob = float(self.model.predict_proba(X)[0][1])
+                    if ml_prob >= self.ml_threshold:
+                        is_ml_triggered = True
+                        triggers += 1
+                except Exception as e:
+                    logger.error(f"Inference error in ExfiltrationDetector: {e}")
+
+            signals_evaluated.append({
+                "signal_name": "ml_anomaly",
+                "value": ml_prob,
+                "threshold": self.ml_threshold,
+                "normalized_score": ml_prob,
+                "triggered": is_ml_triggered
+            })
+            score_total += ml_prob * self.weights["ml_anomaly"]
             
-            # No volume in payload schema for MVP, use ratio and rate.
+            # No volume in payload schema for MVP, use ratio, rate, and ML model.
             
             confidence = min(score_total, 1.0)
             

@@ -26,7 +26,7 @@ Irochi is a passive, real-time network threat-detection and security-intelligenc
 > - **NEW:** Client-side "Export to PDF" reporting capability integrated with AI narratives
 >
 > **Known limitations:**
-> - DNS/DGA detector requires an external `.joblib` model artifact at startup
+> - ML detectors (DNS/DGA, Exfiltration) require external `.joblib` model artifacts to utilize their full capabilities (they gracefully fallback to rule-based/default detection if missing).
 > - Window duration and threshold tuning is ongoing (see evaluation docs)
 > - TimescaleDB is not yet enabled (conditional decision, not locked)
 
@@ -57,12 +57,12 @@ Irochi does **NOT**:
 
 | # | Threat Capability | Detector Module | Status |
 |---|---|---|---|
-| 1 | Volumetric / Protocol DDoS | DDoS Detector | **Active** |
+| 1 | Volumetric / Protocol DDoS | DDoS Detector | **Active** (River ML signal) |
 | 2 | Reconnaissance / Port Scanning | Recon Detector | **Active** |
-| 3 | DGA / DNS Tunneling | DNS/DGA/Tunnel Detector | **Active** (requires `.joblib`) |
+| 3 | DGA / DNS Tunneling | DNS/DGA/Tunnel Detector | **Active** (requires Scikit `.joblib`) |
 | 4 | Botnet C2 Beaconing | TLS/C2 Detector | **Active** |
 | 5 | Malware inside encrypted sessions | TLS/C2 Detector | **Active** |
-| 6 | Data Exfiltration | Exfiltration Detector | **Active** |
+| 6 | Data Exfiltration | Exfiltration Detector | **Active** (requires XGBoost `.joblib`) |
 | 7 | Novel Anomaly / Baseline Deviation | Anomaly Detector | **Active** |
 
 ---

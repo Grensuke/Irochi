@@ -90,3 +90,8 @@ See `docs/architecture/REDPANDA_TOPICS_DRAFT_v5.md` §4 and `docs/architecture/F
 
 This locks the partition key only. It does not lock raw-topic partition counts, retention values, downstream Feature/Window topics, or other remaining Redpanda design decisions.
 
+## BD-010: Graceful ML Fallback
+
+**Status:** Locked
+
+All ML-based detector signals (such as XGBoost models or River streaming algorithms) must implement graceful fallback mechanisms. If a required model artifact is missing or an ML dependency fails to load (e.g. Cython build issues on specific operating systems), the detector must catch the exception, log a warning/error, and fall back to purely rule-based evaluation rather than crashing the pipeline.

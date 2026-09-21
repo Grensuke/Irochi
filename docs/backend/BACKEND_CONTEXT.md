@@ -20,9 +20,10 @@ Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infras
 - WP-F ✅ PCAP, Recon, DDoS, DNS/DGA
 - WP-G ✅ Alert Engine
 - WP-H ✅ TLS/C2 Detector
-- WP-I ✅ Exfiltration Detector
+- WP-I ✅ Exfiltration Detector (Now with XGBoost ML signal)
 - WP-J ✅ Unknown Detector (Baseline & Z-Score)
 - WP-K ✅ Incident Engine (Alert Correlation & Kill-Chain Tracking)
+- WP-L ✅ ML Integration (River in DDoS, XGBoost in Exfil)
 - EVALUATION ✅ Baseline Evaluation & Threshold Sensitivity completed
 - M8 = ✅ end-to-end MVP validation complete
 

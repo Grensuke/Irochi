@@ -1,12 +1,7 @@
 # ==================================================
-# Irochi Backend — Python Dependencies (Dummy Phase)
+# Irochi Backend — Python Dependencies
 # ==================================================
 # Pinned versions for reproducibility.
-# Only dependencies needed for the dummy/scaffold
-# backend are included. Production dependencies
-# (redis, asyncpg, confluent-kafka, scikit-learn,
-# xgboost, river, etc.) will be added when the real
-# pipeline is implemented.
 # ==================================================
 
 # --- Core ---
@@ -36,3 +31,5 @@ scikit-learn==1.6.1
 pandas==2.2.3
 joblib==1.6.0
 openai==1.55.3
+river==0.21.2
+xgboost==2.1.3

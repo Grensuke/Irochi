@@ -61,11 +61,22 @@ def create_ddos_record(
 
 @pytest.fixture
 def detector() -> DdosDetector:
+    class MockRedisClient:
+        async def get(self, key):
+            return None
+        async def set(self, key, value):
+            pass
+            
+    class MockRedisService:
+        def __init__(self):
+            self._client = MockRedisClient()
+            
     return DdosDetector(
-        thresholds={"packet_rate": 100.0, "byte_rate": 1000.0, "syn_ratio": 0.5, "source_ip_entropy": 2.0},
-        weights={"packet_rate": 0.4, "byte_rate": 0.2, "syn_ratio": 0.2, "source_ip_entropy": 0.2},
+        thresholds={"packet_rate": 100.0, "byte_rate": 1000.0, "syn_ratio": 0.5, "source_ip_entropy": 2.0, "anomaly_score": 0.8},
+        weights={"packet_rate": 0.4, "byte_rate": 0.2, "syn_ratio": 0.2, "source_ip_entropy": 0.2, "anomaly_score": 0.0},
         min_triggers=2,
-        confidence_cutoff=0.3
+        confidence_cutoff=0.3,
+        redis_service=MockRedisService()
     )
 
 @pytest.mark.asyncio
@@ -161,7 +172,7 @@ async def test_evidence_and_references(detector):
     out = outputs[0]
 
     assert "signals" in out.evidence
-    assert len(out.evidence["signals"]) == 4
+    assert len(out.evidence["signals"]) == 5 # 4 rule-based + 1 anomaly_score
     packet_rate_evidence = next(s for s in out.evidence["signals"] if s["signal_name"] == "packet_rate")
     assert packet_rate_evidence.get("value") == 150.0
     assert packet_rate_evidence["threshold"] == 100.0
@@ -238,3 +249,59 @@ async def test_framework_dispatch():
     assert out.detector_id == DetectorId.DDOS
     assert out.decision == Decision.DETECTION
     assert out.threat_type == ThreatType.VOLUMETRIC_DDOS
+
+@pytest.mark.asyncio
+async def test_river_anomaly_score_contribution():
+    class MockRedisClient:
+        async def get(self, key):
+            return None
+        async def set(self, key, value):
+            pass
+            
+    class MockRedisService:
+        def __init__(self):
+            self._client = MockRedisClient()
+            
+    detector = DdosDetector(
+        thresholds={"packet_rate": 500.0, "anomaly_score": 0.5},
+        weights={"packet_rate": 0.0, "anomaly_score": 1.0}, # Rely fully on anomaly score
+        min_triggers=1,
+        confidence_cutoff=0.1,
+        redis_service=MockRedisService()
+    )
+    
+    # We send multiple records to make River score it as an anomaly or normal.
+    # Actually, we just want to ensure it doesn't crash and returns a score.
+    record = create_ddos_record(packet_rate=150.0)
+    inp = DetectorInput(input_id="inp-1", detector_id=DetectorId.DDOS, feature_record=record)
+
+    outputs = await detector.evaluate([inp])
+    out = outputs[0]
+    
+    # Check that anomaly_score is in evidence
+    anomaly_evidence = next((s for s in out.evidence["signals"] if s["signal_name"] == "anomaly_score"), None)
+    assert anomaly_evidence is not None
+    assert anomaly_evidence["value"] >= 0.0
+
+@pytest.mark.asyncio
+async def test_river_graceful_fallback(monkeypatch):
+    import app.services.detectors.ddos as ddos_module
+    monkeypatch.setattr(ddos_module, "HAS_RIVER", False)
+    
+    detector = DdosDetector(
+        thresholds={"packet_rate": 500.0, "anomaly_score": 0.5},
+        weights={"packet_rate": 1.0, "anomaly_score": 1.0},
+        min_triggers=1,
+        confidence_cutoff=0.1,
+        redis_service=None
+    )
+    
+    record = create_ddos_record(packet_rate=150.0)
+    inp = DetectorInput(input_id="inp-1", detector_id=DetectorId.DDOS, feature_record=record)
+
+    outputs = await detector.evaluate([inp])
+    out = outputs[0]
+    
+    anomaly_evidence = next((s for s in out.evidence["signals"] if s["signal_name"] == "anomaly_score"), None)
+    assert anomaly_evidence is not None
+    assert anomaly_evidence["value"] == 0.0 # Graceful fallback to 0.0

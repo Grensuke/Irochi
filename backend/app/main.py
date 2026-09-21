@@ -80,7 +80,7 @@ async def lifespan(app: FastAPI):
         feature_engine = FeatureEngine(state_adapter)
 
         registry = DetectorRegistry()
-        registry.register(DdosDetector())
+        registry.register(DdosDetector(redis_service=_state_service))
         registry.register(ReconDetector())
         registry.register(DnsDetector())
         
