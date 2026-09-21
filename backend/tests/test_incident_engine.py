@@ -113,3 +113,81 @@ async def test_ddos_does_not_enter_linear_kill_chain(monkeypatch):
     assert result["stage_state"] == "likely_attack", "Critical DDoS should trigger likely_attack"
     assert result["current_stage"] == "volumetric_ddos", "Current stage should be volumetric_ddos"
     assert result["forecast_next_stage"] is None, "DDoS should not forecast next linear stage"
+
+@pytest.mark.asyncio
+async def test_close_incident():
+    """Test the close_incident method of PostgresIncidentService."""
+    from app.services.postgres_incident_service import PostgresIncidentService
+    
+    class FakeSession:
+        async def execute(self, stmt):
+            class FakeResult:
+                def scalar_one_or_none(self):
+                    incident = Incident(
+                        incident_id=uuid.uuid4(),
+                        status="closed",
+                        closed_at=datetime.now(timezone.utc),
+                        resolution_note="False positive",
+                        closed_by="admin"
+                    )
+                    return incident
+            return FakeResult()
+            
+        async def commit(self):
+            pass
+
+    service = PostgresIncidentService(FakeSession())
+    updated = await service.close_incident(
+        incident_id=uuid.uuid4(),
+        resolution_note="False positive",
+        closed_by="admin"
+    )
+    
+    assert updated.status == "closed"
+    assert updated.resolution_note == "False positive"
+    assert updated.closed_by == "admin"
+    assert updated.closed_at is not None
+
+@pytest.mark.asyncio
+async def test_closed_incident_does_not_correlate(monkeypatch):
+    """Regression test: a closed incident should not accept new alerts."""
+    engine = IncidentEngine()
+    
+    # We mock get_open_incident_for_src_ip to return None, simulating that 
+    # the existing incident for this IP is 'closed' (and thus not returned).
+    class MockServiceThatReturnsNone:
+        async def get_open_incident_for_src_ip(self, src_ip, window_start):
+            return None # Simulates that no OPEN incident exists
+            
+        async def create_incident(self, incident):
+            incident.incident_id = uuid.uuid4()
+            return incident
+            
+        async def update_incident_fields(self, incident_id, updates):
+            return updates
+            
+    from app.services import incident_engine
+    monkeypatch.setattr(incident_engine, "PostgresIncidentService", lambda session: MockServiceThatReturnsNone())
+    
+    class FakeSession(MockSession):
+        async def execute(self, stmt):
+            class MockResult:
+                def scalar_one_or_none(self):
+                    return Alert(alert_id=uuid.uuid4(), threat_type="recon_portscan")
+                def scalars(self):
+                    class MockScalars:
+                        def all(self):
+                            return [Alert(alert_id=uuid.uuid4(), threat_type="recon_portscan")]
+                    return MockScalars()
+            return MockResult()
+
+    alert_payload = {
+        "alert_id": str(uuid.uuid4()),
+        "src_ip": "10.0.0.1",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    
+    result = await engine.on_alert(alert_payload, FakeSession())
+    
+    # It should have created a new incident instead of failing or updating a closed one
+    assert result["status"] == "open" # The newly created incident will have status open

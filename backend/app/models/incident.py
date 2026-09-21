@@ -56,4 +56,8 @@ class Incident(Base):
     forecast_next_stage: Mapped[str | None] = mapped_column(String, nullable=True)
     forecast_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    closed_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    resolution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     schema_version: Mapped[str] = mapped_column(String, nullable=False, default="1.0.0")

@@ -13,6 +13,11 @@ from pydantic import BaseModel, Field
 from app.schemas.alerts import ThreatType
 
 
+class IncidentCloseRequest(BaseModel):
+    resolution_note: str | None = None
+    closed_by: str | None = None
+
+
 class IncidentResponse(BaseModel):
     """Single incident for API responses."""
 
@@ -31,6 +36,9 @@ class IncidentResponse(BaseModel):
     current_stage: str | None = None
     forecast_next_stage: str | None = None
     forecast_note: str | None = None
+    closed_at: datetime | None = None
+    closed_by: str | None = None
+    resolution_note: str | None = None
     schema_version: str
 
     @classmethod
@@ -51,6 +59,9 @@ class IncidentResponse(BaseModel):
             current_stage=obj.current_stage,
             forecast_next_stage=obj.forecast_next_stage,
             forecast_note=obj.forecast_note,
+            closed_at=obj.closed_at,
+            closed_by=obj.closed_by,
+            resolution_note=obj.resolution_note,
             schema_version=obj.schema_version,
         )
 

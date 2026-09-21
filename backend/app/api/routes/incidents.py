@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
-from app.schemas.incidents import IncidentResponse, IncidentListResponse
+from app.schemas.incidents import IncidentResponse, IncidentListResponse, IncidentCloseRequest
 from app.services.postgres_incident_service import PostgresIncidentService
 from app.api.dependencies import get_postgres_incident_service
 
@@ -30,3 +30,22 @@ async def get_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
     return IncidentResponse.from_orm(incident)
+
+@router.post("/{incident_id}/close", response_model=IncidentResponse)
+async def close_incident(
+    incident_id: uuid.UUID,
+    payload: IncidentCloseRequest,
+    service: PostgresIncidentService = Depends(get_postgres_incident_service)
+):
+    incident = await service.get_incident(incident_id)
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    if incident.status == "closed":
+        raise HTTPException(status_code=400, detail="Incident is already closed")
+    
+    updated = await service.close_incident(
+        incident_id=incident_id,
+        resolution_note=payload.resolution_note,
+        closed_by=payload.closed_by
+    )
+    return IncidentResponse.from_orm(updated)
