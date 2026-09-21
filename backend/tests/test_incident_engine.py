@@ -164,7 +164,15 @@ async def test_closed_incident_does_not_correlate(monkeypatch):
             return incident
             
         async def update_incident_fields(self, incident_id, updates):
-            return updates
+            incident = Incident(
+                incident_id=incident_id,
+                status="open",
+                entity_type="source",
+                entity_key="10.0.0.1",
+                opened_at=datetime.now(timezone.utc),
+                **updates
+            )
+            return incident
             
     from app.services import incident_engine
     monkeypatch.setattr(incident_engine, "PostgresIncidentService", lambda session: MockServiceThatReturnsNone())
@@ -190,4 +198,4 @@ async def test_closed_incident_does_not_correlate(monkeypatch):
     result = await engine.on_alert(alert_payload, FakeSession())
     
     # It should have created a new incident instead of failing or updating a closed one
-    assert result["status"] == "open" # The newly created incident will have status open
+    assert result.status == "open" # The newly created incident will have status open
