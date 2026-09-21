@@ -425,7 +425,6 @@ class IrochiPdfReport {
 
     // Subtle background box
     this.checkPageBreak(20);
-    this.doc.setFillColor(248, 245, 255); // Light purple tint
 
     this.drawSubHeading('What Was Observed');
     this.drawParagraph(narrative.what_was_observed);
@@ -445,7 +444,6 @@ class IrochiPdfReport {
     this.drawKeyValue('Source IP', alert.src_ip ?? '—');
     this.drawKeyValue('Destination IP', alert.dst_ip ?? '—');
     this.drawKeyValue('Destination Port', alert.dst_port?.toString() ?? '—');
-    this.drawKeyValue('Protocol', 'N/A');
     this.drawKeyValue('First Observed', alert.first_seen_at ? new Date(alert.first_seen_at).toISOString() : '—');
     this.drawKeyValue('Last Observed', alert.last_seen_at ? new Date(alert.last_seen_at).toISOString() : '—');
     this.drawSpacer();
