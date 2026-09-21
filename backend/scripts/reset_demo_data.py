@@ -15,7 +15,7 @@ THREAT_TYPES = [
     ("data_exfiltration", "exfiltration_detector", "critical"),
     ("volumetric_ddos", "ddos_detector", "critical"),
     ("encrypted_malware", "tls_c2_detector", "high"),
-    ("novel_anomaly", "anomaly_detector", "medium"),
+    ("unknown_threat", "unknown_detector", "medium"),
 ]
 
 async def reset_data():

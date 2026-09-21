@@ -35,7 +35,7 @@ from app.services.detectors.recon import ReconDetector
 from app.services.detectors.dns import DnsDetector
 from app.services.detectors.grouping import PassThroughGrouping
 from app.services.detectors.router import DetectorRouter
-from app.services.detectors.anomaly import AnomalyDetector
+from app.services.detectors.unknown import UnknownDetector
 from app.services.detectors.baseline_state import BaselineStateStore
 from app.api.dependencies import get_redis_pubsub
 from app.services.pipeline import DetectionPipeline
@@ -90,7 +90,7 @@ async def lifespan(app: FastAPI):
         registry.register(ExfiltrationDetector())
 
         baseline_store = BaselineStateStore(_state_service)
-        registry.register(AnomalyDetector(baseline_store))
+        registry.register(UnknownDetector(baseline_store))
 
         grouping = PassThroughGrouping()
         router = DetectorRouter(registry, grouping)

@@ -21,7 +21,7 @@ Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infras
 - WP-G ✅ Alert Engine
 - WP-H ✅ TLS/C2 Detector
 - WP-I ✅ Exfiltration Detector
-- WP-J ✅ Anomaly Detector (Baseline & Z-Score)
+- WP-J ✅ Unknown Detector (Baseline & Z-Score)
 - WP-K ✅ Incident Engine (Alert Correlation & Kill-Chain Tracking)
 - EVALUATION ✅ Baseline Evaluation & Threshold Sensitivity completed
 - M8 = ✅ end-to-end MVP validation complete
@@ -33,7 +33,7 @@ The backend is fully wired to actual infrastructure services:
 - **Entry Point:** `app/main.py` instantiates and starts the `DetectionPipeline` during the FastAPI lifespan.
 - **Streaming:** `KafkaConsumerService` handles real Redpanda messages.
 - **State/Caching:** `FeatureEngine` relies on `RedisStateService`.
-- **Detectors:** All 6 core detectors (`DdosDetector`, `ReconDetector`, `DnsDetector`, `C2Detector`, `ExfiltrationDetector`, `AnomalyDetector`) are actively registered.
+- **Detectors:** All 6 core detectors (`DdosDetector`, `ReconDetector`, `DnsDetector`, `C2Detector`, `ExfiltrationDetector`, `UnknownDetector`) are actively registered.
 - **Alert Persistence:** `AlertEngine` saves to PostgreSQL via `PostgresAlertService`.
 - **Incident Correlation:** `IncidentEngine` tracks multi-stage attacks and persists them via `PostgresIncidentService`.
 - **Live Updates:** Alerts and Incidents are pushed through `RedisPubSubService`.

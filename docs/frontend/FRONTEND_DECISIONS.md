@@ -87,3 +87,15 @@ High-fidelity floating indicator navigation components (`VerticalMeniscusRail` a
   - **Light Mode:** Frosted white glass container (`rgba(255, 255, 255, 0.95)`), dark charcoal pill (`#0f172a`), slate text (`#64748b`), and crisp white active items (`#ffffff`).
 - **Smooth 120 FPS Transitions:** Hardware-accelerated GPU transitions with zero edge artifacts, zero harsh popups, and smooth color crossfading.
 - **Unified Navigation:** Full React Router integration and keyboard accessibility without any separate bottom floating dock.
+
+## FD-011: Client-Side PDF Generation
+
+**Status:** Locked
+
+Report generation (PDF) is performed entirely client-side using `jspdf` and canvas drawing methods. This avoids introducing heavy backend dependencies (e.g., WeasyPrint, wkhtmltopdf) and keeps the FastAPI backend purely focused on intelligence data delivery.
+
+## FD-012: Live Telemetry Simulation in UI
+
+**Status:** Active
+
+Prior to physical integration, telemetry visualizers (`DiodeFlowVisualizer`, `UnidirectionalThreatStream`, `Traffic`, `SummaryBar`) are implemented using live-simulated active states (e.g., particle systems, animated SVG graphs, simulated flow rates) rather than idle empty states. This ensures the SOC dashboard feels active and facilitates UX testing of data-dense environments.

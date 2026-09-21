@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useIncidents } from '../hooks/useIncidents';
 import type { DashboardSummary } from '../types';
 import { THREAT_TYPE_LABELS } from '../types';

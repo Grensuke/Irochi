@@ -65,9 +65,6 @@ export function NarrativePanel({ context }: NarrativePanelProps) {
     <div className="panel" style={{ background: 'var(--surface-2)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
       <div className="panel-header" style={{ borderBottom: '1px solid rgba(139, 92, 246, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span className="panel-title" style={{ color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
           AI Attack Story
         </span>
         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--surface-1)', padding: '2px 6px', borderRadius: '4px' }}>

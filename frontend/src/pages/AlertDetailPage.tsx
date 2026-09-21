@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAlerts } from '../hooks/useAlerts';
 import { useIncident } from '../hooks/useIncident';
@@ -40,21 +40,18 @@ export function AlertDetailPage() {
 
   const targetAlert = alerts.find((a) => a.alert_id === id);
 
-  const { incident, loading: incidentLoading } = useIncident(targetAlert?.incident_id);
+  const { incident } = useIncident(targetAlert?.incident_id);
 
   const [memberAlerts, setMemberAlerts] = useState<Alert[]>([]);
-  const [memberAlertsLoading, setMemberAlertsLoading] = useState(false);
 
   useEffect(() => {
     if (incident?.member_alert_ids) {
-      setMemberAlertsLoading(true);
       Promise.all(incident.member_alert_ids.map(mid => api.getAlert(mid)))
         .then(results => {
           const sorted = results.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
           setMemberAlerts(sorted);
         })
-        .catch(err => console.error("Failed to load member alerts", err))
-        .finally(() => setMemberAlertsLoading(false));
+        .catch(err => console.error("Failed to load member alerts", err));
     }
   }, [incident]);
 

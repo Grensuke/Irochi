@@ -46,8 +46,8 @@ Final API Contract
 
 **Inherited / not to be altered in this pass (BD-008 status is Active, not Locked):**
 
-- 5 canonical detector IDs — `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`
-- 6 threat types — `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`
+- 6 canonical detector IDs — `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`, `unknown_detector`
+- 7 threat types — `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`, `unknown_threat`
 - detector_id ≠ threat_type (one detector may emit multiple threat classes)
 
 > BD-008 says these values are "not yet formally locked in the final API contract but are used consistently across the dummy backend." This document inherits and uses them but does not promote them to LOCKED.
@@ -87,7 +87,7 @@ Final API Contract
 | `dns_dga_tunnel_detector` | DNS/DGA/DNS-Tunneling Detector | DGA detection, DNS tunneling detection | Source (windowed and enrichment) |
 | `tls_c2_detector` | TLS/C2 Detector | Encrypted-session malware, C2 beaconing | Connection (enrichment and correlation), Pair (beaconing) |
 | `exfiltration_detector` | Exfiltration Detector | Data exfiltration detection | Source |
-| `anomaly_detector` | Anomaly Detector | Baseline deviation / novel anomalies | Source / Destination |
+| `unknown_detector` | Unknown Detector | Baseline deviation / unknown threats | Source / Destination |
 
 These are logically distinct modules, **not** separate microservices (Architecture §11).
 
@@ -102,7 +102,7 @@ A detector may emit **one or more** threat types. `detector_id ≠ threat_type`.
 | `dns_dga_tunnel_detector` | `dga_dns_tunnel` |
 | `tls_c2_detector` | `c2_beaconing`, `encrypted_malware` |
 | `exfiltration_detector` | `data_exfiltration` |
-| `anomaly_detector` | `novel_anomaly` |
+| `unknown_detector` | `unknown_threat` |
 
 Note: `tls_c2_detector` emits two distinct threat types — `encrypted_malware` (JA3 blacklist match evidence) and `c2_beaconing` (periodic connection pattern evidence). These represent different threat interpretations from the same detector module.
 
@@ -115,7 +115,7 @@ Note: `tls_c2_detector` emits two distinct threat types — `encrypted_malware` 
 | `dns_dga_tunnel_detector` | `domain_entropy`, `query_length`, `n_gram_score`, label-length statistics, `query_frequency`, record-type distribution | Enrichment + Windowed (Sliding + Tumbling) |
 | `tls_c2_detector` | `ja3_blacklist_match`, connection↔tls correlation, `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Enrichment + Correlation + Windowed (Sliding) |
 | `exfiltration_detector` | `outbound_inbound_ratio`, `byte_rate` | Windowed (Sliding) |
-| `anomaly_detector` | Z-Score/Isolation Forest multivariate deviations | Windowed (Sliding) |
+| `unknown_detector` | Z-Score/Isolation Forest multivariate deviations | Windowed (Sliding) |
 
 **Heterogeneous feature mechanisms are explicitly permitted.** `dns_dga_tunnel_detector`, `tls_c2_detector`, and `recon_detector` all consume features from multiple mechanisms and/or differently-timed windows. The contract must support this without forcing a single mechanism/window shape onto all inputs.
 
@@ -432,7 +432,7 @@ This is a **base grouping identity**, not a complete evaluation identity. It ide
 | `dns_dga_tunnel_detector` | `src_ip` |
 | `tls_c2_detector` | varies — `connection_id` (enrichment and correlation), `src_ip\|dst_ip` (pair/beaconing) |
 | `exfiltration_detector` | `src_ip` |
-| `anomaly_detector` | `src_ip` or `dst_ip` |
+| `unknown_detector` | `src_ip` or `dst_ip` |
 
 ### Why `evaluation_window` is not part of the base grouping identity
 
@@ -613,7 +613,7 @@ The exact evidence structure remains **PROPOSED** — it will be refined during 
 | `encrypted_malware` | Malware inside encrypted sessions | `tls_c2_detector` |
 | `recon_portscan` | Reconnaissance / Port Scanning | `recon_detector` |
 | `data_exfiltration` | Data Exfiltration | `exfiltration_detector` |
-| `novel_anomaly` | Novel anomaly / baseline deviation | `anomaly_detector` |
+| `unknown_threat` | Unknown threat / baseline deviation | `unknown_detector` |
 
 ### Mapping rules
 
@@ -693,7 +693,7 @@ These items must **not** accidentally become required DetectorInput fields. If a
 |---|---|
 | **Feature/Window v7 §5** (FeatureRecord envelope) | **Compatible.** DetectorInput passes through FeatureRecord fields without modification. |
 | **Feature/Window v7 §4** (Detector-to-entity-and-mechanism mapping) | **Compatible.** §2 and §5–§10 of this document follow the same mapping. |
-| **DATA_CONTRACTS.md** (threat taxonomy) | **Compatible.** Same 5 detector IDs and 6 threat types. |
+| **DATA_CONTRACTS.md** (threat taxonomy) | **Compatible.** Same 6 detector IDs and 7 threat types. |
 | **`backend/app/schemas/alerts.py`** (AlertResponse) | **Compatible with noted differences.** AlertResponse is a *presentation* model for the dummy API. DetectorOutput is the *internal* detector contract. Differences: (1) AlertResponse has `evidence_summary` (string); DetectorOutput has structured `evidence` (object). (2) AlertResponse has `status` (analyst workflow); DetectorOutput has `decision` (detector outcome). (3) AlertResponse does not carry `source_feature_references` or `detector_version`. These differences are expected — AlertResponse will be updated during Alert Schema design. |
 | **`backend/app/mock/data.py`** (MOCK_ALERTS) | **Compatible.** Mock alerts use the same detector IDs and threat types. The mock data is presentation-layer and does not need to implement DetectorOutput. |
 | **API_CONTRACT.md** (dummy endpoints) | **Compatible.** The dummy API contract is explicitly temporary. DetectorOutput is an internal contract that does not affect the current dummy API. |
@@ -723,7 +723,7 @@ The Alert Schema design will bridge this gap explicitly.
 
 | Design Item | Status |
 |---|---|
-| Detector taxonomy (5 detectors, 6 threats) | **Inherited / not to be altered** (BD-008 Active) |
+| Detector taxonomy (6 detectors, 7 threats) | **Inherited / not to be altered** (BD-008 Active) |
 | detector_id ≠ threat_type | **Inherited** |
 | Heterogeneous feature mechanisms permitted | **Inherited** (Architecture §11, Feature/Window §4) |
 | FeatureRecord snapshot-not-delta invariant | **LOCKED** (Feature/Window §6) |
@@ -759,7 +759,7 @@ Items marked **LOCKED** have explicit project-lead approval. **Inherited** items
 
 Before promoting this document from DRAFT to FINAL, verify:
 
-- [x] All five detector IDs verified against BD-008 and existing `alerts.py` enums
+- [x] All six detector IDs verified against BD-008 and existing `alerts.py` enums
 - [x] Detector → threat-type mapping consistent with BD-008 and DATA_CONTRACTS.md
 - [x] FeatureRecord → DetectorInput relationship defined (§3)
 - [x] Heterogeneous feature mechanisms handled (§2, §8, §9, §11)

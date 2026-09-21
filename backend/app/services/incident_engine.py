@@ -17,7 +17,7 @@ BASE_WEIGHT = {
     "encrypted_malware": 20,
     "data_exfiltration": 25,
     "volumetric_ddos": 18,
-    "novel_anomaly": 12,
+    "unknown_threat": 12,
 }
 ESCALATION_CONSTANT = 0.15
 
@@ -128,7 +128,7 @@ class IncidentEngine:
         
         has_exfil = "data_exfiltration" in distinct_threat_types
         has_ddos = "volumetric_ddos" in distinct_threat_types
-        has_anomaly = "novel_anomaly" in distinct_threat_types
+        has_anomaly = "unknown_threat" in distinct_threat_types
 
         # Determine stage_state
         if kill_chain_count >= 3 or has_exfil:
@@ -167,7 +167,7 @@ class IncidentEngine:
             if has_ddos:
                 current_stage = "volumetric_ddos"
             elif has_anomaly:
-                current_stage = "novel_anomaly"
+                current_stage = "unknown_threat"
 
         # forecast_next_stage / forecast_note
         forecast_next_stage = None

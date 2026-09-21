@@ -58,8 +58,8 @@ Final API Contract
 
 **Inherited Active / not LOCKED (BD-008):**
 
-- 5 detector IDs: `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`
-- 6 threat types: `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`
+- 6 canonical detector IDs: `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`, `unknown_detector`
+- 7 threat types: `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`, `unknown_threat`
 - 5 severities: `critical`, `high`, `medium`, `low`, `info`
 - detector_id ≠ threat_type
 

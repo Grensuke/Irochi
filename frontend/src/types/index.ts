@@ -20,7 +20,7 @@ export type DetectorId =
   | 'dns_dga_tunnel_detector'
   | 'tls_c2_detector'
   | 'exfiltration_detector'
-  | 'anomaly_detector';
+  | 'unknown_detector';
 
 /** Six threat capabilities shown to users. */
 export type ThreatType =
@@ -30,7 +30,7 @@ export type ThreatType =
   | 'encrypted_malware'
   | 'recon_portscan'
   | 'data_exfiltration'
-  | 'novel_anomaly';
+  | 'unknown_threat';
 
 /** Alert severity levels. */
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
@@ -208,7 +208,7 @@ export const THREAT_TYPE_LABELS: Record<ThreatType, string> = {
   encrypted_malware: 'Encrypted Malware',
   recon_portscan: 'Recon / Port Scan',
   data_exfiltration: 'Data Exfiltration',
-  novel_anomaly: 'Unknown Threat',
+  unknown_threat: 'Unknown Threat',
 };
 
 export const DETECTOR_LABELS: Record<DetectorId, string> = {
@@ -217,7 +217,7 @@ export const DETECTOR_LABELS: Record<DetectorId, string> = {
   dns_dga_tunnel_detector: 'DNS/DGA Detector',
   tls_c2_detector: 'TLS/C2 Detector',
   exfiltration_detector: 'Exfiltration Detector',
-  anomaly_detector: 'Anomaly Detector',
+  unknown_detector: 'Unknown Detector',
 };
 
 export const SEVERITY_ORDER: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];

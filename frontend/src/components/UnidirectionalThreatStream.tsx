@@ -73,7 +73,7 @@ export function UnidirectionalThreatStream() {
       {/* STAGE 1 & 2: Telemetry & Extraction */}
       <div className="uts-stage uts-telemetry-stage">
         <div className="uts-streams-container">
-          {streams.map((stream, idx) => (
+          {streams.map((stream) => (
             <div key={stream.id} className="uts-stream-row">
               <div className="uts-stream-source">
                 <span className="uts-ip">{stream.ip}</span>
@@ -134,7 +134,7 @@ export function UnidirectionalThreatStream() {
           </div>
           
           <div className="uts-engine-signals">
-            {streams.map((stream, i) => (
+            {streams.map((stream) => (
               <div key={stream.id} className={`uts-engine-sig-row ${stream.isActive ? 'active' : ''}`}>
                 <span className="uts-esig-name">{stream.signal.toLowerCase()}</span>
                 <span className="uts-esig-dot" style={{ backgroundColor: stream.isActive ? stream.color : 'var(--uts-border)' }} />

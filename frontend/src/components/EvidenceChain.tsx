@@ -1,5 +1,5 @@
-import React from 'react';
-import type { Incident } from '../types';
+
+import type { Incident, ThreatType } from '../types';
 import { THREAT_TYPE_LABELS } from '../types';
 import { CheckCircle2, Circle } from 'lucide-react';
 
@@ -47,8 +47,8 @@ export function EvidenceChain({ incident }: EvidenceChainProps) {
         <div style={{ position: 'absolute', left: '10%', right: '10%', top: '56px', height: '2px', background: 'var(--border)', zIndex: 0 }} />
         
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative', zIndex: 10 }}>
-          {KILL_CHAIN.map((stage, idx) => {
-            const isActive = incident.distinct_threat_types.includes(stage as any);
+          {KILL_CHAIN.map((stage) => {
+            const isActive = incident.distinct_threat_types.includes(stage as ThreatType);
             const isCurrent = incident.current_stage === stage;
             const isForecast = incident.forecast_next_stage === stage;
             
@@ -78,7 +78,7 @@ export function EvidenceChain({ incident }: EvidenceChainProps) {
                     margin: '0 auto',
                     color: isActive ? 'var(--text)' : isForecast ? 'var(--status-critical)' : 'var(--text-muted)'
                   }}>
-                    {THREAT_TYPE_LABELS[stage as any] || stage}
+                    {THREAT_TYPE_LABELS[stage as ThreatType] || stage}
                   </div>
                   {isCurrent && (
                     <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent)', marginTop: '4px', fontWeight: 600 }}>

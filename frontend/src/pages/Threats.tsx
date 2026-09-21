@@ -18,7 +18,7 @@ const DETECTOR_THREAT_MAP: Record<DetectorId, ThreatType[]> = {
   dns_dga_tunnel_detector: ['dga_dns_tunnel'],
   tls_c2_detector: ['c2_beaconing', 'encrypted_malware'],
   exfiltration_detector: ['data_exfiltration'],
-  anomaly_detector: ['novel_anomaly'],
+  unknown_detector: ['unknown_threat'],
 };
 
 export function Threats() {
