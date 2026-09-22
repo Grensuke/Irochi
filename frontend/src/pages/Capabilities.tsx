@@ -47,7 +47,7 @@ export function Capabilities() {
           <div className="section-eyebrow">DETECTION CAPABILITIES</div>
           <h1 className="cap-title">Advanced threat detection.<br />No network write-back.</h1>
           <p className="cap-subtitle">
-            Irochi uses five specialized, logical detector modules running on normalized streaming telemetry to identify the six core cyber threat capabilities.
+            Vibhinetra uses five specialized, logical detector modules running on normalized streaming telemetry to identify the six core cyber threat capabilities.
           </p>
         </section>
 

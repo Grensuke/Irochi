@@ -32,6 +32,7 @@ class ThreatType(str, enum.Enum):
     RECON_PORTSCAN = "recon_portscan"
     DATA_EXFILTRATION = "data_exfiltration"
     UNKNOWN_THREAT = "unknown_threat"
+    NOVEL_ANOMALY = "novel_anomaly"
 
 
 class DetectorId(str, enum.Enum):
@@ -43,6 +44,7 @@ class DetectorId(str, enum.Enum):
     TLS_C2_DETECTOR = "tls_c2_detector"
     EXFILTRATION_DETECTOR = "exfiltration_detector"
     UNKNOWN_DETECTOR = "unknown_detector"
+    ANOMALY_DETECTOR = "anomaly_detector"
 
 
 class Severity(str, enum.Enum):

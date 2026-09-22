@@ -25,7 +25,7 @@ export function Contact() {
           <div>
             <h3 className="demo-notice-title">Demo Contact Interface</h3>
             <p className="demo-notice-text">
-              In accordance with Irochi's passive architecture and project scope, there is no active outbound mail service or contact API endpoint connected. Form submission is disabled.
+              In accordance with Vibhinetra's passive architecture and project scope, there is no active outbound mail service or contact API endpoint connected. Form submission is disabled.
             </p>
           </div>
         </div>

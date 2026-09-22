@@ -1,5 +1,5 @@
 /**
- * Irochi frontend router.
+ * Vibhinetra frontend router.
  *
  * Public routes: Landing, Login
  * Protected routes: App shell with all authenticated pages

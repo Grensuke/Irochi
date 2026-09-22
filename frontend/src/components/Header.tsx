@@ -27,7 +27,7 @@ export function Header({ connectionState }: HeaderProps) {
             <line x1="2" y1="10" x2="6" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
             <line x1="14" y1="10" x2="18" y2="10" stroke="var(--accent-primary)" strokeWidth="1.5" />
           </svg>
-          <span className="header-title">IROCHI</span>
+          <span className="header-title">VIBHINETRA</span>
           <span className="header-subtitle">THREAT INTELLIGENCE</span>
         </div>
       </div>

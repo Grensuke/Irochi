@@ -4,7 +4,7 @@
  * Shows the six threat capabilities and five detector modules
  * with alert counts from the dashboard API.
  * Detailed theory content is available on the landing page
- * under "More about Irochi".
+ * under "More about Vibhinetra".
  */
 
 import { useDashboard } from '../hooks/useDashboard';
@@ -18,7 +18,8 @@ const DETECTOR_THREAT_MAP: Record<DetectorId, ThreatType[]> = {
   dns_dga_tunnel_detector: ['dga_dns_tunnel'],
   tls_c2_detector: ['c2_beaconing', 'encrypted_malware'],
   exfiltration_detector: ['data_exfiltration'],
-  unknown_detector: ['unknown_threat'],
+  unknown_detector: ['unknown_threat', 'novel_anomaly'],
+  anomaly_detector: ['novel_anomaly'],
 };
 
 export function Threats() {

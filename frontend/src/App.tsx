@@ -1,5 +1,5 @@
 /**
- * Irochi — Root Application Component
+ * Vibhinetra — Root Application Component
  *
  * Wraps the router with the AuthProvider.
  */

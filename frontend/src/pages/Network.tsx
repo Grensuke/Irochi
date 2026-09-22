@@ -42,7 +42,7 @@ function generateMockEvent(id: number) {
     sent: Math.floor(Math.random() * 5000) + 64,
     received: Math.floor(Math.random() * 50000) + 128,
     state: type === 'connection' ? (Math.random() > 0.8 ? 'S0' : 'SF') : '-',
-    sensor: 'irochi-tap-01'
+    sensor: 'vibhinetra-tap-01'
   };
 }
 

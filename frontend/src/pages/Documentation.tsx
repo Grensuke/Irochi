@@ -7,7 +7,7 @@ const DOCS_SECTIONS = [
     title: 'Overview',
     content: (
       <div>
-        <p>Irochi is a real-time network threat-detection and security-intelligence system. It is designed to passively observe traffic segments, analyze behaviors, and deliver evidence-rich alerts to security analysts. Crucially, the platform operates in a read-only telemetry mode, guaranteeing that no write-back or inline packet modification is attempted.</p>
+        <p>Vibhinetra is a real-time network threat-detection and security-intelligence system. It is designed to passively observe traffic segments, analyze behaviors, and deliver evidence-rich alerts to security analysts. Crucially, the platform operates in a read-only telemetry mode, guaranteeing that no write-back or inline packet modification is attempted.</p>
         <div className="status-label-doc mock">DUMMY SCAFFOLD STAGE</div>
       </div>
     )
@@ -20,8 +20,8 @@ const DOCS_SECTIONS = [
         <p>To run the developer environment, check out the source code and use docker compose to spin up the local development stack:</p>
         <pre className="mono code-snippet">
 {`# Clone and start environment
-git clone https://github.com/Grensuke/Irochi.git
-cd Irochi
+git clone https://github.com/Grensuke/Vibhinetra.git
+cd Vibhinetra
 docker-compose up --build`}
         </pre>
         <p>The mock FastAPI server runs at <code className="mono">http://localhost:8000</code> and the React Vite server at <code className="mono">http://localhost:5173</code>.</p>
@@ -163,9 +163,9 @@ export const api = {
     title: 'FAQ',
     content: (
       <div>
-        <h4 style={{ marginBottom: 4 }}>Can Irochi automatically block an attacker?</h4>
-        <p style={{ marginBottom: 16 }}>No. Irochi is purely passive and read-only. It does not block IP addresses, alter routing paths, or write to any network interfaces.</p>
-        <h4 style={{ marginBottom: 4 }}>Does Irochi decrypt TLS traffic?</h4>
+        <h4 style={{ marginBottom: 4 }}>Can Vibhinetra automatically block an attacker?</h4>
+        <p style={{ marginBottom: 16 }}>No. Vibhinetra is purely passive and read-only. It does not block IP addresses, alter routing paths, or write to any network interfaces.</p>
+        <h4 style={{ marginBottom: 4 }}>Does Vibhinetra decrypt TLS traffic?</h4>
         <p>No. Threats inside SSL/TLS are identified using metadata parameters like client JA3/JA4 fingerprints, server certificate validity, SNI labels, and packet intervals.</p>
       </div>
     )

@@ -79,14 +79,14 @@ export function AppLayout() {
   const location = useLocation();
 
   const [collapsed, setCollapsed] = useState(() => {
-    return localStorage.getItem('irochi-sidebar-collapsed') === 'true';
+    return localStorage.getItem('vibhinetra-sidebar-collapsed') === 'true';
   });
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const toggleSidebar = () => {
     const next = !collapsed;
     setCollapsed(next);
-    localStorage.setItem('irochi-sidebar-collapsed', String(next));
+    localStorage.setItem('vibhinetra-sidebar-collapsed', String(next));
   };
 
   const handleSignOut = useCallback((e: React.MouseEvent) => {
@@ -135,7 +135,7 @@ export function AppLayout() {
             <IrochiLogo size={24} />
             {!collapsed && (
               <div className="sidebar-brand-meta">
-                <span className="sidebar-brand-text">IROCHI</span>
+                <span className="sidebar-brand-text">VIBHINETRA</span>
                 <span className="sidebar-brand-sub">Passive workspace</span>
               </div>
             )}

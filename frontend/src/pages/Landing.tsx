@@ -134,7 +134,7 @@ export function Landing() {
               Act with evidence.
             </h1>
             <p className="hero-description">
-              Irochi detects suspicious patterns in unidirectional IP traffic using passive telemetry, streaming analysis, and evidence-backed alerts. Designed for environments where traffic interruption is not an option.
+              Vibhinetra detects suspicious patterns in unidirectional IP traffic using passive telemetry, streaming analysis, and evidence-backed alerts. Designed for environments where traffic interruption is not an option.
             </p>
             <div className="hero-actions">
               <Link to="/login" className="btn btn-primary btn-lg">
@@ -149,7 +149,7 @@ export function Landing() {
             <div className="passive-warning-banner">
               <span className="warning-indicator" />
               <span className="warning-text">
-                <strong>Observational System:</strong> Irochi is purely passive/read-only. It does not block traffic, re-contact sources, or decrypt payloads.
+                <strong>Observational System:</strong> Vibhinetra is purely passive/read-only. It does not block traffic, re-contact sources, or decrypt payloads.
               </span>
             </div>
           </div>
@@ -195,10 +195,10 @@ export function Landing() {
               </p>
             </div>
             <div className="approach-panel">
-              <div className="section-eyebrow">THE IROCHI APPROACH</div>
+              <div className="section-eyebrow">THE VIBHINETRA APPROACH</div>
               <h2 className="section-title-sm">Intelligence without active interference</h2>
               <p className="section-body-text">
-                Irochi operates as a passive observer. By reading mirrored network traffic or NetFlow telemetry, the system feeds flow structures and protocol metadata through machine-learning detection engines. Analysts receive detailed confidence scoring and supporting evidence to triage alerts manually—guaranteeing operational safety.
+                Vibhinetra operates as a passive observer. By reading mirrored network traffic or NetFlow telemetry, the system feeds flow structures and protocol metadata through machine-learning detection engines. Analysts receive detailed confidence scoring and supporting evidence to triage alerts manually—guaranteeing operational safety.
               </p>
             </div>
           </div>
@@ -266,7 +266,7 @@ export function Landing() {
               <div className="section-eyebrow">CONTEXT-RICH EVIDENCE</div>
               <h2 className="section-title-sm">No alert without explanation</h2>
               <p className="section-body-text" style={{ marginBottom: 'var(--space-5)' }}>
-                Irochi avoids single-score black-box alerting. Every alert contains the precise source and destination metadata, the specific detector responsible, an observation window, and a detailed summary of the supporting parameters observed in the traffic.
+                Vibhinetra avoids single-score black-box alerting. Every alert contains the precise source and destination metadata, the specific detector responsible, an observation window, and a detailed summary of the supporting parameters observed in the traffic.
               </p>
               <Link to="/documentation" className="btn btn-ghost">
                 Read about the alert model
@@ -316,7 +316,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ── More about Irochi — Deep Dive Section ── */}
+      {/* ── More about Vibhinetra — Deep Dive Section ── */}
       <section className="landing-deep-dive scroll-reveal">
         <div className="landing-section-container">
           <div className="deep-dive-toggle-area">
@@ -334,7 +334,7 @@ export function Landing() {
                   </svg>
                 </div>
                 <div className="deep-dive-trigger-text">
-                  <span className="deep-dive-trigger-label">More about Irochi</span>
+                  <span className="deep-dive-trigger-label">More about Vibhinetra</span>
                   <span className="deep-dive-trigger-sub">Detailed threat intelligence models & AI detection architecture</span>
                 </div>
               </div>

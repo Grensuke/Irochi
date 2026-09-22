@@ -3,7 +3,7 @@
  *
  * Displays the five logical detector modules as operational status cards.
  * Detailed descriptions and methods are available on the landing page
- * under "More about Irochi".
+ * under "More about Vibhinetra".
  *
  * IMPORTANT: No precision/recall/F1 or any invented production metrics
  * are shown here. A banner explicitly states that production metrics

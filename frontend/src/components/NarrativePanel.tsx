@@ -56,7 +56,7 @@ export function NarrativePanel({ context }: NarrativePanelProps) {
 
   // Fallback to deterministic if error or malformed
   const displayNarrative = narrative || {
-    what_was_observed: error ? `Irochi detected activity. No narrative could be loaded due to error: ${error}` : "Irochi detected activity. No narrative could be loaded.",
+    what_was_observed: error ? `Vibhinetra detected activity. No narrative could be loaded due to error: ${error}` : "Vibhinetra detected activity. No narrative could be loaded.",
     why_it_matters: "Review the evidence panel.",
     what_to_investigate: "Review the correlated events."
   };
