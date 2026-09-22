@@ -54,7 +54,7 @@ export function Architecture() {
           <div className="section-eyebrow">SYSTEM ARCHITECTURE</div>
           <h1 className="arch-title">Unidirectional Data Pipeline</h1>
           <p className="arch-subtitle">
-            Irochi uses a decoupled, high-performance architecture to ingest, normalize, analyze, and present network threat intelligence without altering telemetry pathways.
+            Vibhinetra uses a decoupled, high-performance architecture to ingest, normalize, analyze, and present network threat intelligence without altering telemetry pathways.
           </p>
         </section>
 

@@ -1,5 +1,5 @@
 /**
- * IrochiLogo — Official Brand Logo & Cyber Shield Emblem
+ * VibhinetraLogo — Official Brand Logo & Cyber Shield Emblem
  * 
  * Features:
  * - High-tech cyber dragon emblem with circuit traces and optical sensor iris.
@@ -42,8 +42,8 @@ export function IrochiLogo({
         }}
       >
         <img 
-          src="/irochi-logo.jpg" 
-          alt="Irochi Cyber Shield Logo" 
+          src="/Vibhinetra-logo.png" 
+          alt="Vibhinetra Cyber Shield Logo" 
           className="irochi-logo-img"
           loading="eager"
         />
@@ -52,7 +52,7 @@ export function IrochiLogo({
 
       {showText && (
         <span className="irochi-brand-title">
-          IROCHI
+          VIBHINETRA
         </span>
       )}
     </div>

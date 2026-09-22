@@ -1,5 +1,5 @@
 /**
- * exportPdf.ts — Irochi Incident Report PDF Generator
+ * exportPdf.ts — Vibhinetra Incident Report PDF Generator
  *
  * Generates a professional, sequential PDF report from the alert detail page data.
  * Uses jsPDF for client-side PDF generation.
@@ -36,7 +36,7 @@ function getSeverityColor(severity: string): [number, number, number] {
 }
 
 // ─── PDF Builder Class ───────────────────────────────
-class IrochiPdfReport {
+class VibhinetraPdfReport {
   private doc: jsPDF;
   private y: number = 0;
   private pageWidth: number;
@@ -74,7 +74,7 @@ class IrochiPdfReport {
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(7);
     this.doc.setTextColor(...COLORS.medGray);
-    this.doc.text(`© 2026 Irochi — All Rights Reserved. Passive Network Intelligence.`, this.marginLeft, footerY);
+    this.doc.text(`© 2026 Vibhinetra — All Rights Reserved. Passive Network Intelligence.`, this.marginLeft, footerY);
     this.doc.text(`Page ${this.pageNumber}`, this.pageWidth - this.marginRight, footerY, { align: 'right' });
     this.doc.text(`CONFIDENTIAL — FOR AUTHORIZED PERSONNEL ONLY`, this.pageWidth / 2, footerY, { align: 'center' });
   }
@@ -173,7 +173,7 @@ class IrochiPdfReport {
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(22);
     this.doc.setTextColor(...COLORS.white);
-    this.doc.text('IROCHI', this.marginLeft, 16);
+    this.doc.text('VIBHINETRA', this.marginLeft, 16);
 
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(9);
@@ -537,7 +537,7 @@ class IrochiPdfReport {
     // Generate filename
     const dateStr = new Date().toISOString().split('T')[0];
     const shortId = alertId.substring(0, 8);
-    this.doc.save(`Irochi_Incident_Report_${shortId}_${dateStr}.pdf`);
+    this.doc.save(`Vibhinetra_Incident_Report_${shortId}_${dateStr}.pdf`);
   }
 }
 
@@ -553,7 +553,7 @@ export interface PdfExportData {
 }
 
 export function exportAlertToPdf(data: PdfExportData) {
-  const report = new IrochiPdfReport();
+  const report = new VibhinetraPdfReport();
 
   // 1. Cover Header
   report.buildCoverHeader(data.alert);

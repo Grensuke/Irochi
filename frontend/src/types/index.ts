@@ -1,5 +1,5 @@
 /**
- * Irochi frontend domain types.
+ * Vibhinetra frontend domain types.
  *
  * These types match the dummy backend API response structure
  * defined in docs/shared/API_CONTRACT.md.
@@ -20,7 +20,8 @@ export type DetectorId =
   | 'dns_dga_tunnel_detector'
   | 'tls_c2_detector'
   | 'exfiltration_detector'
-  | 'unknown_detector';
+  | 'unknown_detector'
+  | 'anomaly_detector';
 
 /** Six threat capabilities shown to users. */
 export type ThreatType =
@@ -30,15 +31,16 @@ export type ThreatType =
   | 'encrypted_malware'
   | 'recon_portscan'
   | 'data_exfiltration'
-  | 'unknown_threat';
+  | 'unknown_threat'
+  | 'novel_anomaly';
 
 /** Alert severity levels. */
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 
 /**
  * Alert lifecycle status — analyst workflow.
- * "Closed" does NOT imply Irochi mitigated the threat.
- * Irochi is a passive detection/intelligence system.
+ * "Closed" does NOT imply Vibhinetra mitigated the threat.
+ * Vibhinetra is a passive detection/intelligence system.
  */
 export type AlertStatus = 'new' | 'investigating' | 'closed' | 'false_positive';
 
@@ -209,6 +211,7 @@ export const THREAT_TYPE_LABELS: Record<ThreatType, string> = {
   recon_portscan: 'Recon / Port Scan',
   data_exfiltration: 'Data Exfiltration',
   unknown_threat: 'Unknown Threat',
+  novel_anomaly: 'Novel Anomaly',
 };
 
 export const DETECTOR_LABELS: Record<DetectorId, string> = {
@@ -218,6 +221,7 @@ export const DETECTOR_LABELS: Record<DetectorId, string> = {
   tls_c2_detector: 'TLS/C2 Detector',
   exfiltration_detector: 'Exfiltration Detector',
   unknown_detector: 'Unknown Detector',
+  anomaly_detector: 'Anomaly Detector',
 };
 
 export const SEVERITY_ORDER: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];

@@ -139,7 +139,7 @@ export function DiodeFlowVisualizer() {
       }
 
       // ----------------------------------------------------
-      // 2. Draw Irochi Passive Splitter Tap (Mirror to Zeek)
+      // 2. Draw Vibhinetra Passive Splitter Tap (Mirror to Zeek)
       // ----------------------------------------------------
       const tapTargetY = height - 25;
       ctx.strokeStyle = 'rgba(126, 168, 216, 0.3)';
@@ -172,7 +172,7 @@ export function DiodeFlowVisualizer() {
 
       ctx.fillStyle = '#7EA8D8';
       ctx.font = '10px "Fira Code", monospace';
-      ctx.fillText('⚡ IROCHI PASSIVE TAP', sensorBoxX + 10, sensorBoxY + 14);
+      ctx.fillText('⚡ VIBHINETRA PASSIVE TAP', sensorBoxX + 10, sensorBoxY + 14);
       ctx.fillStyle = '#A0AEC0';
       ctx.font = '8px "Fira Code", monospace';
       ctx.fillText('10% Split · 0 Inline Latency', sensorBoxX + 10, sensorBoxY + 23);

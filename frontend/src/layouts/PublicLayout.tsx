@@ -208,12 +208,12 @@ export function PublicLayout() {
       <footer className="public-footer">
         <div className="public-footer-container">
           <div className="public-footer-left">
-            <span className="public-footer-brand">IROCHI</span>
+            <span className="public-footer-brand">VIBHINETRA</span>
             <span className="public-footer-tagline">Passive by design. Evidence-driven intelligence.</span>
           </div>
           <div className="public-footer-right">
             <span>SIH26145 — Unidirectional network cyber threat detection</span>
-            <span className="public-footer-copy">© 2026 Irochi. Observational Security Operations.</span>
+            <span className="public-footer-copy">© 2026 Vibhinetra. Observational Security Operations.</span>
           </div>
         </div>
       </footer>

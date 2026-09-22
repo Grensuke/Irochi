@@ -12,7 +12,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('irochi-theme');
+    const saved = localStorage.getItem('vibhinetra-theme');
     if (saved === 'dark' || saved === 'light') return saved;
     // Fallback to system preference
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('irochi-theme', newTheme);
+    localStorage.setItem('vibhinetra-theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
   }, []);
 
