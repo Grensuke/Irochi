@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import './Capabilities.css';
 
 const DETECTOR_MAPPING = [
@@ -39,24 +40,29 @@ const DETECTOR_MAPPING = [
 ];
 
 export function Capabilities() {
+  const { t } = useTranslation();
+
   return (
     <div className="capabilities-page">
       <div className="capabilities-container">
         {/* Header */}
         <section className="cap-header scroll-reveal">
-          <div className="section-eyebrow">DETECTION CAPABILITIES</div>
-          <h1 className="cap-title">Advanced threat detection.<br />No network write-back.</h1>
+          <div className="section-eyebrow">{t('capabilities.eyebrow', 'DETECTION CAPABILITIES')}</div>
+          <h1 className="cap-title">
+            {t('capabilities.title1', 'Advanced threat detection.')}<br />
+            {t('capabilities.title2', 'No network write-back.')}
+          </h1>
           <p className="cap-subtitle">
-            Vibhinetra uses five specialized, logical detector modules running on normalized streaming telemetry to identify the six core cyber threat capabilities.
+            {t('capabilities.subtitle', 'Vibhinetra uses five specialized, logical detector modules running on normalized streaming telemetry to identify the six core cyber threat capabilities.')}
           </p>
         </section>
 
         {/* Detector Mappings */}
         <section className="detector-section scroll-reveal">
           <div className="detector-section-header">
-            <h2 className="section-title-sm">Logical Detector Architecture</h2>
+            <h2 className="section-title-sm">{t('capabilities.archTitle', 'Logical Detector Architecture')}</h2>
             <div className="detector-arch-note">
-              <strong>Architecture Note:</strong> Detectors are logical analysis modules residing in a single pipeline, NOT decoupled microservices. This guarantees low processing latency and prevents synchronization bottlenecks.
+              <strong>{t('capabilities.archNoteTitle', 'Architecture Note:')}</strong> {t('capabilities.archNoteText', 'Detectors are logical analysis modules residing in a single pipeline, NOT decoupled microservices. This guarantees low processing latency and prevents synchronization bottlenecks.')}
             </div>
           </div>
 
@@ -64,11 +70,11 @@ export function Capabilities() {
             {DETECTOR_MAPPING.map((item) => (
               <div key={item.detector} className="detector-card">
                 <div className="detector-card-header">
-                  <span className="detector-tag">DETECTOR MODULE</span>
+                  <span className="detector-tag">{t('capabilities.detectorModule', 'DETECTOR MODULE')}</span>
                   <h3 className="detector-name">{item.detector}</h3>
                   <div className="detector-threats">
-                    {item.threats.map(t => (
-                      <span key={t} className="detector-threat-badge">{t}</span>
+                    {item.threats.map(thr => (
+                      <span key={thr} className="detector-threat-badge">{thr}</span>
                     ))}
                   </div>
                 </div>
@@ -78,11 +84,11 @@ export function Capabilities() {
                   
                   <div className="detector-details-grid">
                     <div>
-                      <span className="detail-label">INPUT SIGNALS</span>
+                      <span className="detail-label">{t('capabilities.inputSignals', 'INPUT SIGNALS')}</span>
                       <p className="detail-val">{item.signals}</p>
                     </div>
                     <div>
-                      <span className="detail-label">EXAMPLE EVIDENCE MODEL</span>
+                      <span className="detail-label">{t('capabilities.exampleEvidence', 'EXAMPLE EVIDENCE MODEL')}</span>
                       <p className="detail-val mono text-technical">{item.evidence}</p>
                     </div>
                   </div>

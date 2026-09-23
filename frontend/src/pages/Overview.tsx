@@ -31,7 +31,7 @@ export function Overview() {
       refetchSummary();
       refetchAlerts();
     }
-  }, [liveAlerts[0]?.alert.id, refetchSummary, refetchAlerts]);
+  }, [liveAlerts[0]?.alert?.alert_id, refetchSummary, refetchAlerts]);
 
   return (
     <div className="overview-page">

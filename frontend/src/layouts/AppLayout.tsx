@@ -8,13 +8,15 @@
  */
 
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
 import { VerticalMeniscusRail } from '../components/VerticalMeniscusRail';
 import type { VerticalNavItem } from '../components/VerticalMeniscusRail';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import './AppLayout.css';
 
@@ -39,44 +41,45 @@ const ICONS: Record<string, ReactNode> = {
   ),
 };
 
-const NAV_GROUPS = [
-  {
-    group: 'Monitor',
-    items: [
-      { to: '/app', label: 'Overview', icon: 'grid', end: true },
-      { to: '/app/alerts', label: 'Alerts', icon: 'bell' },
-      { to: '/app/traffic', label: 'Traffic Monitor', icon: 'chart' },
-    ]
-  },
-  {
-    group: 'Intelligence',
-    items: [
-      { to: '/app/investigation', label: 'Investigation', icon: 'grid' },
-    ]
-  },
-  {
-    group: 'System',
-    items: [
-      { to: '/app/network', label: 'Network Telemetry', icon: 'network' },
-      { to: '/app/settings', label: 'Settings', icon: 'gear' },
-    ]
-  }
-];
-
-const FLAT_NAV_ITEMS: VerticalNavItem[] = [
-  { to: '/app', label: 'Overview', icon: ICONS.grid, end: true },
-  { to: '/app/alerts', label: 'Alerts', icon: ICONS.bell },
-  { to: '/app/traffic', label: 'Traffic Monitor', icon: ICONS.chart },
-  { to: '/app/investigation', label: 'Investigation', icon: ICONS.grid },
-  { to: '/app/network', label: 'Network Telemetry', icon: ICONS.network },
-  { to: '/app/settings', label: 'Settings', icon: ICONS.gear },
-];
-
 export function AppLayout() {
   const { user, organization, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
   const { connectionState } = useLiveAlerts();
   const location = useLocation();
+
+  const navGroups = useMemo(() => [
+    {
+      group: t('navGroups.monitor', 'Monitor'),
+      items: [
+        { to: '/app', label: t('nav.overview', 'Overview'), icon: 'grid', end: true },
+        { to: '/app/alerts', label: t('nav.alerts', 'Alerts'), icon: 'bell' },
+        { to: '/app/traffic', label: t('nav.trafficMonitor', 'Traffic Monitor'), icon: 'chart' },
+      ]
+    },
+    {
+      group: t('navGroups.intelligence', 'Intelligence'),
+      items: [
+        { to: '/app/investigation', label: t('nav.investigation', 'Investigation'), icon: 'grid' },
+      ]
+    },
+    {
+      group: t('navGroups.system', 'System'),
+      items: [
+        { to: '/app/network', label: t('nav.networkTelemetry', 'Network Telemetry'), icon: 'network' },
+        { to: '/app/settings', label: t('nav.settings', 'Settings'), icon: 'gear' },
+      ]
+    }
+  ], [t]);
+
+  const flatNavItems: VerticalNavItem[] = useMemo(() => [
+    { to: '/app', label: t('nav.overview', 'Overview'), icon: ICONS.grid, end: true },
+    { to: '/app/alerts', label: t('nav.alerts', 'Alerts'), icon: ICONS.bell },
+    { to: '/app/traffic', label: t('nav.trafficMonitor', 'Traffic Monitor'), icon: ICONS.chart },
+    { to: '/app/investigation', label: t('nav.investigation', 'Investigation'), icon: ICONS.grid },
+    { to: '/app/network', label: t('nav.networkTelemetry', 'Network Telemetry'), icon: ICONS.network },
+    { to: '/app/settings', label: t('nav.settings', 'Settings'), icon: ICONS.gear },
+  ], [t]);
 
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('vibhinetra-sidebar-collapsed') === 'true';
@@ -109,11 +112,11 @@ export function AppLayout() {
   }, [location.pathname]);
 
   const activePageLabel = (() => {
-    for (const group of NAV_GROUPS) {
+    for (const group of navGroups) {
       const match = group.items.find(item => location.pathname.startsWith(item.to) && item.to !== '/app');
       if (match) return match.label;
     }
-    return location.pathname === '/app' ? 'Overview' : '';
+    return location.pathname === '/app' ? t('nav.overview', 'Overview') : '';
   })();
 
   return (
@@ -145,7 +148,7 @@ export function AppLayout() {
             onClick={toggleSidebar} 
             aria-label="Toggle sidebar panel"
             aria-expanded={!collapsed}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? t('header.expandSidebar', 'Expand sidebar') : t('header.collapseSidebar', 'Collapse sidebar')}
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
               {collapsed ? <path d="M6 3l5 5-5 5" /> : <path d="M10 3L5 8l5 5" />}
@@ -156,12 +159,12 @@ export function AppLayout() {
         {/* Collapsed Mode: Vertical Meniscus Liquid Navigation Rail */}
         {collapsed ? (
           <div className="sidebar-collapsed-rail-container">
-            <VerticalMeniscusRail items={FLAT_NAV_ITEMS} />
+            <VerticalMeniscusRail items={flatNavItems} />
           </div>
         ) : (
           /* Expanded Mode: Full Grouped Nav */
           <nav className="sidebar-nav">
-            {NAV_GROUPS.map((group) => (
+            {navGroups.map((group) => (
               <div key={group.group} className="nav-group">
                 <span className="nav-group-label">{group.group}</span>
                 {group.items.map(({ to, label, icon, end }) => (
@@ -184,7 +187,7 @@ export function AppLayout() {
           {/* Connection status */}
           <div className="sidebar-footer-connection" title={`WS telemetry: ${connectionState}`}>
             <span className={`connection-dot ${connectionState}`} />
-            {!collapsed && <span className="connection-text">{connectionState === 'live' ? 'Telemetry Live' : connectionState}</span>}
+            {!collapsed && <span className="connection-text">{connectionState === 'live' ? t('header.telemetryLive', 'Telemetry Live') : t(`connection.${connectionState}`, connectionState)}</span>}
           </div>
 
           {/* Theme switcher / details */}
@@ -203,7 +206,7 @@ export function AppLayout() {
               className="theme-switcher-btn"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label="Switch visual theme"
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              title={theme === 'dark' ? t('common.switchToLight', 'Switch to Light mode') : t('common.switchToDark', 'Switch to Dark mode')}
             >
               {theme === 'dark' ? (
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5v1.5M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M12.95 3.05l-1.06 1.06M4.11 11.89l-1.06 1.06"/></svg>
@@ -215,7 +218,7 @@ export function AppLayout() {
 
           {!collapsed && (
             <button className="btn btn-ghost btn-sm btn-logout" onClick={handleSignOut}>
-              Sign out
+              {t('common.signOut')}
             </button>
           )}
         </div>
@@ -241,17 +244,18 @@ export function AppLayout() {
                 <circle cx="7" cy="7" r="5" />
                 <line x1="11" y1="11" x2="15" y2="15" />
               </svg>
-              <input type="text" placeholder="Search alerts, IP addresses, connection IDs..." />
+              <input type="text" placeholder={t('common.search', 'Search alerts, IP addresses, connection IDs...')} />
             </div>
           </div>
           <div className="top-header-right">
             <div className="header-theme-switcher">
+              <LanguageSwitcher compact />
               <button 
                 className="theme-switcher-btn"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 aria-label="Toggle theme"
               >
-                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
               </button>
             </div>
             <div className="header-divider" />
@@ -263,7 +267,7 @@ export function AppLayout() {
               </div>
             </div>
             <button className="btn btn-ghost btn-sm header-logout-btn" onClick={handleSignOut}>
-              Sign out
+              {t('common.signOut')}
             </button>
           </div>
         </header>
