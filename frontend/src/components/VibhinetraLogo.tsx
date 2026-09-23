@@ -7,9 +7,9 @@
  * - Theme-adaptive styling with cybernetic glow in dark mode and clean titanium contrast in light mode.
  */
 
-import './IrochiLogo.css';
+import './VibhinetraLogo.css';
 
-export interface IrochiLogoProps {
+export interface VibhinetraLogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
   showText?: boolean;
   className?: string;
@@ -17,13 +17,13 @@ export interface IrochiLogoProps {
   glow?: boolean;
 }
 
-export function IrochiLogo({
+export function VibhinetraLogo({
   size = 'md',
   showText = false,
   className = '',
   variant = 'emblem',
   glow = true
-}: IrochiLogoProps) {
+}: VibhinetraLogoProps) {
   const pixelSize = typeof size === 'number' ? size : {
     xs: 20,
     sm: 26,
@@ -33,9 +33,9 @@ export function IrochiLogo({
   }[size] || 34;
 
   return (
-    <div className={`irochi-brand-container irochi-size-${typeof size === 'string' ? size : 'custom'} ${className}`}>
+    <div className={`vibhinetra-brand-container vibhinetra-size-${typeof size === 'string' ? size : 'custom'} ${className}`}>
       <div 
-        className={`irochi-logo-badge ${glow ? 'has-glow' : ''} irochi-variant-${variant}`}
+        className={`vibhinetra-logo-badge ${glow ? 'has-glow' : ''} vibhinetra-variant-${variant}`}
         style={{
           width: `${pixelSize}px`,
           height: `${pixelSize}px`
@@ -44,14 +44,14 @@ export function IrochiLogo({
         <img 
           src="/Vibhinetra-logo.png" 
           alt="Vibhinetra Cyber Shield Logo" 
-          className="irochi-logo-img"
+          className="vibhinetra-logo-img"
           loading="eager"
         />
-        <div className="irochi-logo-border" />
+        <div className="vibhinetra-logo-border" />
       </div>
 
       {showText && (
-        <span className="irochi-brand-title">
+        <span className="vibhinetra-brand-title">
           VIBHINETRA
         </span>
       )}

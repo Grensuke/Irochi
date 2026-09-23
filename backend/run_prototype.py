@@ -10,7 +10,7 @@ from app.services.ingest.zeek import ZeekIngestPipeline
 logging.basicConfig(level=logging.INFO)
 
 async def main():
-    parser = argparse.ArgumentParser(description="Irochi Prototype Ingest Runner")
+    parser = argparse.ArgumentParser(description="Vibhinetra Prototype Ingest Runner")
     parser.add_argument(
         "--pcap",
         type=str,

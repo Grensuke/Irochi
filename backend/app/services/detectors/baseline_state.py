@@ -9,7 +9,7 @@ class BaselineStateStore:
         Retrieves the Welford baseline statistics for a specific signal.
         Returns a dictionary with 'count', 'mean', and 'm2' as floats.
         """
-        key = f"irochi:anomaly:baseline:{detector_domain}:{entity_type}:{entity_key}:{signal_name}"
+        key = f"vibhinetra:anomaly:baseline:{detector_domain}:{entity_type}:{entity_key}:{signal_name}"
         data = await self.redis.get_state_hash(key)
         
         if not data:
@@ -26,7 +26,7 @@ class BaselineStateStore:
         Updates the Welford baseline statistics for a specific signal.
         No TTL is set, as this is long-lived state.
         """
-        key = f"irochi:anomaly:baseline:{detector_domain}:{entity_type}:{entity_key}:{signal_name}"
+        key = f"vibhinetra:anomaly:baseline:{detector_domain}:{entity_type}:{entity_key}:{signal_name}"
         stats = await self.get_stats(detector_domain, entity_type, entity_key, signal_name)
         
         count = stats["count"]

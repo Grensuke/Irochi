@@ -15,23 +15,15 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
     const bins: Record<string, number>[] = Array.from({ length: 24 }, () => ({}));
     const threatSet = new Set<string>();
 
-    // For demo purposes, we want the graph to look fully populated and active.
-    // Since seed data might be days old compared to live data (causing a massive flatline),
-    // we organically distribute the alerts across the 24 bins to simulate a busy 24h window.
-    alerts.forEach((alert, index) => {
-      // Create a smooth dual-peak pattern using sine and cosine
-      const normalizedPos = (index / Math.max(1, alerts.length)) * Math.PI * 2;
-      const wave = Math.sin(normalizedPos) + 0.5 * Math.cos(normalizedPos * 3); 
-      
-      // wave is roughly between -1.5 and 1.5. Map to 0..23
-      let binIndex = Math.floor(((wave + 1.5) / 3) * 23);
-      
-      // Add a tiny bit of deterministic jitter to make it look organic
-      const jitter = (alert.alert_id.charCodeAt(0) % 3) - 1; 
-      binIndex += jitter;
+    alerts.forEach((alert) => {
+      const detectedTime = alert.detected_at ? new Date(alert.detected_at).getTime() : Date.now();
+      const now = Date.now();
+      const ageHours = (now - detectedTime) / (1000 * 60 * 60);
 
-      // Clamp to bounds
-      if (binIndex < 0) binIndex = 0;
+      let binIndex = 23 - Math.floor(ageHours);
+
+      // Clamp to bounds. If older than 24h, we drop it from this chart
+      if (binIndex < 0) return;
       if (binIndex > 23) binIndex = 23;
       
       const type = alert.threat_type;

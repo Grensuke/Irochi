@@ -1,5 +1,5 @@
 # ==================================================
-# Irochi — Docker Compose
+# Vibhinetra — Docker Compose
 # ==================================================
 # STATUS: CORE INFRASTRUCTURE ACTIVE
 #
@@ -29,7 +29,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: irochi-backend
+    container_name: vibhinetra-backend
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     env_file:
@@ -42,7 +42,7 @@ services:
       - ./backend:/app
       - ./models:/app/models:ro
     networks:
-      - irochi-net
+      - vibhinetra-net
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # ------------------------------------------------
@@ -54,7 +54,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: irochi-frontend
+    container_name: vibhinetra-frontend
     ports:
       - "5173:5173"
     env_file:
@@ -65,7 +65,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     networks:
-      - irochi-net
+      - vibhinetra-net
     command: npm run dev -- --host 0.0.0.0
 
 # ==================================================
@@ -75,7 +75,7 @@ services:
 #
   postgres:
     image: postgres:16-alpine
-    container_name: irochi-postgres
+    container_name: vibhinetra-postgres
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     env_file:
@@ -83,22 +83,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - irochi-net
+      - vibhinetra-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U irochi -d irochi"]
+      test: ["CMD-SHELL", "pg_isready -U vibhinetra -d vibhinetra"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: irochi-redis
+    container_name: vibhinetra-redis
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
-      - irochi-net
+      - vibhinetra-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -107,7 +107,7 @@ services:
 
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
-    container_name: irochi-redpanda
+    container_name: vibhinetra-redpanda
     command:
       - redpanda
       - start
@@ -124,7 +124,7 @@ services:
     volumes:
       - redpanda_data:/var/lib/redpanda/data
     networks:
-      - irochi-net
+      - vibhinetra-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9644/v1/status/ready"]
       interval: 5s
@@ -151,7 +151,7 @@ services:
 # ==================================================
 
 networks:
-  irochi-net:
+  vibhinetra-net:
     driver: bridge
 
 volumes:

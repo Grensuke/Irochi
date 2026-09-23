@@ -1,5 +1,5 @@
 """
-Irochi backend — application configuration.
+Vibhinetra backend — application configuration.
 
 DUMMY PHASE: Configuration is minimal. Production configuration
 (database URLs, Redis, Redpanda, JWT secrets, etc.) will be
@@ -12,7 +12,7 @@ import os
 
 # --- Application metadata ---
 
-APP_TITLE = "Irochi"
+APP_TITLE = "Vibhinetra"
 APP_DESCRIPTION = (
     "Passive, real-time network threat-detection and "
     "security-intelligence system — SIH26145"
@@ -35,11 +35,11 @@ WS_LIVE_MAX_ALERTS = 50
 """Maximum number of live alerts to emit before stopping (prevents runaway loops)."""
 
 # --- PostgreSQL ---
-POSTGRES_USER = os.getenv("POSTGRES_USER", "irochi")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "vibhinetra")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "change-me")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "irochi")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "vibhinetra")
 
 POSTGRES_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
@@ -50,11 +50,11 @@ REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
 # --- Redpanda ---
 REDPANDA_BROKER = os.getenv("REDPANDA_BROKER", "localhost:19092")
-REDPANDA_CONSUMER_GROUP = os.getenv("REDPANDA_CONSUMER_GROUP", "irochi-pipeline-group")
+REDPANDA_CONSUMER_GROUP = os.getenv("REDPANDA_CONSUMER_GROUP", "vibhinetra-pipeline-group")
 # Note: In a real environment, this might come from a robust config. For MVP we use comma-separated env var.
-_default_topics = "irochi.events.connection.v1,irochi.events.dns.v1,irochi.events.tls.v1"
+_default_topics = "vibhinetra.events.connection.v1,vibhinetra.events.dns.v1,vibhinetra.events.tls.v1"
 REDPANDA_TOPICS = [t.strip() for t in os.getenv("REDPANDA_TOPICS", _default_topics).split(",") if t.strip()]
 
 # --- Models ---
-IROCHI_DGA_MODEL_PATH = os.getenv("IROCHI_DGA_MODEL_PATH", "/app/models/dns_dga_model_v1.joblib")
-IROCHI_EXFIL_MODEL_PATH = os.getenv("IROCHI_EXFIL_MODEL_PATH", "/app/models/exfil_model_v1.joblib")
+VIBHINETRA_DGA_MODEL_PATH = os.getenv("VIBHINETRA_DGA_MODEL_PATH", "/app/models/dns_dga_model_v1.joblib")
+VIBHINETRA_EXFIL_MODEL_PATH = os.getenv("VIBHINETRA_EXFIL_MODEL_PATH", "/app/models/exfil_model_v1.joblib")

@@ -1,1 +1,1 @@
-"""Irochi API package."""
+"""Vibhinetra API package."""

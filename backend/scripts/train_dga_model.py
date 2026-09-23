@@ -26,8 +26,8 @@ except ImportError:
 # Import exact feature extraction from runtime
 from app.services.features.mechanisms import extract_dns_lexical_features
 
-UMUDGA_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\UMUDGA-DATA\UMUDGA - University of Murcia Domain Generation Algorithm Dataset\Fully Qualified Domain Names"
-MODEL_SAVE_DIR = r"C:\Users\STARK\Documents\Irochi-Data\models"
+UMUDGA_ROOT = r"C:\Users\STARK\Documents\Vibhinetra-Data\UMUDGA-DATA\UMUDGA - University of Murcia Domain Generation Algorithm Dataset\Fully Qualified Domain Names"
+MODEL_SAVE_DIR = r"C:\Users\STARK\Documents\Vibhinetra-Data\models"
 
 def load_umudga_data():
     """Load domains from UMUDGA .list files."""

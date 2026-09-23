@@ -19,13 +19,14 @@ from app.schemas.detectors import (
     Decision,
     ThreatType,
     SourceFeatureReference,
+    Severity,
 )
 from app.schemas.features import DdosFeatureRecord
 from app.services.detectors.base import BaseDetector
 
 class DdosDetector(BaseDetector):
     """
-    Context-Aware DDoS Detector for Irochi.
+    Context-Aware DDoS Detector for Vibhinetra.
     Evaluates packet_rate, byte_rate, syn_ratio, and source diversity
     using a multi-signal weighted scoring model.
     """
@@ -39,11 +40,11 @@ class DdosDetector(BaseDetector):
     ):
         # INITIAL / UNVALIDATED Defaults based on design baseline
         self.thresholds = thresholds or {
-            "packet_rate": 500.0,
-            "byte_rate": 50000.0,
-            "syn_ratio": 0.70,
-            "source_ip_entropy": 2.0,
-            "anomaly_score": 0.80,
+            "packet_rate": 50.0,      # lowered for demo
+            "byte_rate": 5000.0,      # lowered for demo
+            "syn_ratio": 0.30,        # lowered for demo
+            "source_ip_entropy": 0.5, # lowered for demo
+            "anomaly_score": 0.30,    # lowered for demo
         }
         self.weights = weights or {
             "packet_rate": 0.30,
@@ -92,7 +93,7 @@ class DdosDetector(BaseDetector):
 
             anomaly_score = 0.0
             if HAS_RIVER and self.redis_service and self.redis_service._client:
-                key = f"irochi:anomaly:river:ddos:{record.entity_key}"
+                key = f"vibhinetra:anomaly:river:ddos:{record.entity_key}"
                 model = None
                 try:
                     data = await self.redis_service._client.get(key)
@@ -149,8 +150,15 @@ class DdosDetector(BaseDetector):
 
             triggered_count = sum(1 for v in scores.values() if v >= 0.5)
 
+            severity_candidate = None
             if triggered_count >= self.min_triggers and confidence > self.confidence_cutoff:
                 decision = Decision.DETECTION
+                if confidence > 0.90 and triggered_count >= 3:
+                    severity_candidate = Severity.CRITICAL
+                elif confidence > 0.75:
+                    severity_candidate = Severity.HIGH
+                else:
+                    severity_candidate = Severity.MEDIUM
             else:
                 decision = Decision.NO_THREAT
 
@@ -162,7 +170,7 @@ class DdosDetector(BaseDetector):
             }
 
             outputs.append(self._create_output(
-                inp, decision, score=float(confidence), confidence=float(confidence), evidence=evidence
+                inp, decision, score=float(confidence), confidence=float(confidence), severity_candidate=severity_candidate, evidence=evidence
             ))
 
         return outputs
@@ -173,6 +181,7 @@ class DdosDetector(BaseDetector):
         decision: Decision,
         score: Optional[float] = None,
         confidence: Optional[float] = None,
+        severity_candidate: Optional[Severity] = None,
         evidence: Optional[dict] = None
     ) -> DetectorOutput:
         record = inp.feature_record
@@ -188,7 +197,7 @@ class DdosDetector(BaseDetector):
             threat_type=ThreatType.VOLUMETRIC_DDOS,
             score=score,
             confidence=confidence,
-            severity_candidate=None,
+            severity_candidate=severity_candidate,
             evidence=evidence,
             source_feature_references=[
                 SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)

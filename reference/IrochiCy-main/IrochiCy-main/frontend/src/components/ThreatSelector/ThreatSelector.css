@@ -1,0 +1,14 @@
+.threat-selector { width: 250px; background: var(--glass-bg-strong); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); border-right: 1px solid var(--glass-border); position: sticky; top: 0; height: fit-content; flex-shrink: 0; }
+.threat-selector__title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); padding: var(--space-6) var(--space-5) var(--space-4); }
+.threat-selector__item {
+  height: 68px; display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-5);
+  cursor: pointer; transition: background var(--transition-fast); position: relative;
+}
+.threat-selector__item:hover { background: rgba(255,255,255,0.03); }
+.threat-selector__item--active { background: rgba(255,255,255,0.04); }
+.threat-selector__bar { width: 4px; height: 100%; border-radius: 0 2px 2px 0; flex-shrink: 0; transition: box-shadow 300ms ease; }
+.threat-selector__item--active .threat-selector__bar { box-shadow: 0 0 16px currentColor; }
+.threat-selector__info { flex: 1; min-width: 0; }
+.threat-selector__name { font-family: var(--font-heading); font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.threat-selector__sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.threat-selector__count { font-family: var(--font-mono); font-size: 16px; font-weight: 600; flex-shrink: 0; }

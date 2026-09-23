@@ -1,0 +1,31 @@
+.analyst-notes {
+  background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: var(--space-6);
+  position: relative; overflow: hidden; transition: border-color var(--transition-normal);
+}
+.analyst-notes::before { content: ''; position: absolute; inset: 0; background: var(--glass-shimmer); pointer-events: none; border-radius: inherit; }
+.analyst-notes:hover { border-color: var(--glass-border-hover); }
+
+.analyst-notes__textarea {
+  width: 100%; min-height: 120px; resize: vertical; background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  padding: var(--space-3); font-family: var(--font-mono); font-size: var(--text-sm);
+  color: var(--text-primary); transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+.analyst-notes__textarea::placeholder { color: var(--text-tertiary); }
+.analyst-notes__textarea:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-glow); }
+.analyst-notes__save {
+  margin-top: var(--space-3); font-family: var(--font-mono); font-size: var(--text-sm);
+  padding: 8px 20px; border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.03); color: var(--text-primary); cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.analyst-notes__save:hover { border-color: var(--accent-primary); color: var(--accent-primary); box-shadow: var(--glow-accent); }
+.analyst-notes__history { margin-top: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.analyst-notes__note {
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm); padding: var(--space-3); transition: background var(--transition-fast);
+}
+.analyst-notes__note:hover { background: rgba(255,255,255,0.03); }
+.analyst-notes__note-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; }
+.analyst-notes__note-content { font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-primary); }

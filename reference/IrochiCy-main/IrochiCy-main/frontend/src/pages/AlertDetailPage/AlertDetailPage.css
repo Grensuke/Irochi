@@ -1,0 +1,22 @@
+.alert-detail { display: flex; flex-direction: column; gap: var(--space-4); animation: stagger-in 0.4s ease backwards; }
+
+.alert-detail__topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) 0; border-bottom: 1px solid var(--border-subtle);
+}
+.alert-detail__back {
+  font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-secondary);
+  cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+.alert-detail__back:hover { color: var(--accent-primary); transform: translateX(-3px); }
+.alert-detail__id { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-tertiary); }
+.alert-detail__badges { display: flex; align-items: center; gap: var(--space-3); }
+
+.alert-detail__body { display: grid; grid-template-columns: 1fr 360px; gap: var(--space-4); }
+.alert-detail__main { display: flex; flex-direction: column; gap: var(--space-4); }
+.alert-detail__aside { /* triage panel sticky container */ }
+
+@media (max-width: 1100px) {
+  .alert-detail__body { grid-template-columns: 1fr; }
+}

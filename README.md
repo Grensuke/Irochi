@@ -1,10 +1,10 @@
-# Irochi
+# Vibhinetra
 
 **SIH 2026 — Problem Statement SIH26145**
 
 **Problem Statement Title:** AI-Based Detection of Cyber Threats in Unidirectional IP Traffic
 
-Irochi is a passive, real-time network threat-detection and security-intelligence system for unidirectional IP traffic.
+Vibhinetra is a passive, real-time network threat-detection and security-intelligence system for unidirectional IP traffic.
 
 ---
 
@@ -24,6 +24,8 @@ Irochi is a passive, real-time network threat-detection and security-intelligenc
 > - **NEW:** Active telemetry hardware simulations for passive diodes using HTML5 Canvas (`DiodeFlowVisualizer`, `UnidirectionalThreatStream`)
 > - **NEW:** Advanced Incident Investigation Queue UI with risk scores and visual phase indicators
 > - **NEW:** Client-side "Export to PDF" reporting capability integrated with AI narratives
+> - **NEW:** Dynamic severity distribution (LOW, MEDIUM, HIGH, CRITICAL) intelligently assigned across all detectors
+> - **NEW:** Silent background refetching for real-time dashboard reactivity without visual loading flashes
 >
 > **Known limitations:**
 > - ML detectors (DNS/DGA, Exfiltration) require external `.joblib` model artifacts to utilize their full capabilities (they gracefully fallback to rule-based/default detection if missing).
@@ -32,9 +34,9 @@ Irochi is a passive, real-time network threat-detection and security-intelligenc
 
 ---
 
-## What Irochi Is (and Is Not)
+## What Vibhinetra Is (and Is Not)
 
-Irochi is a **passive intelligence system**. It strictly:
+Vibhinetra is a **passive intelligence system**. It strictly:
 
 - Observes unidirectional IP traffic passively
 - Normalises traffic from multiple sources (Zeek logs, NetFlow/IPFIX)
@@ -43,13 +45,13 @@ Irochi is a **passive intelligence system**. It strictly:
 - Clusters related alerts into incidents for analyst workflow
 - Delivers alerts live to a React security dashboard via WebSockets
 
-Irochi does **NOT**:
+Vibhinetra does **NOT**:
 - Probe or contact traffic sources/destinations
 - Decrypt TLS/QUIC payloads
 - Send mitigation or blocking commands
 - Act inline on production network traffic
 
-> **"Closed" is an analyst workflow status.** It does not mean Irochi blocked or mitigated the threat.
+> **"Closed" is an analyst workflow status.** It does not mean Vibhinetra blocked or mitigated the threat.
 
 ---
 
@@ -125,7 +127,7 @@ See [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](do
 ## Repository Structure
 
 ```
-Irochi/
+Vibhinetra/
 ├── .agents/              # Antigravity agent skills
 ├── docs/
 │   ├── architecture/     # Architecture checkpoint + schema drafts (source of truth)
@@ -231,27 +233,32 @@ docker compose up --build
 
 ---
 
-## Running the Live Demo (PCAP)
+## Running the Live Demo
 
-To drive detections using a PCAP file while the Docker stack is running:
+You have two options to drive detections into the live backend depending on your setup. Both options target the host-side Redpanda broker at `localhost:19092`.
+
+### Option A: Pre-Processed Playback Tape (Recommended for UI Testing)
+
+This script plays back a high-density, pre-processed `jsonl` tape (`real_demo_traffic.jsonl`) that is guaranteed to trigger a rich distribution of severities and multi-stage incidents on the dashboard.
 
 ```bash
-# 1. Set up a Python environment with requirements installed
 cd backend
-python -m venv .venv
 
-# Windows
-.\.venv\Scripts\activate
-# Linux / macOS
-source .venv/bin/activate
-
-pip install -r requirements.txt
-
-# 2. Run the live demo script (targets host-side Redpanda at localhost:19092)
-python scripts/live_demo.py --pcap /path/to/traffic.pcap
+# 1. Run the playback tape
+# --clear wipes the database first, --speed 0.5 slows playback down for visual presentation
+.venv\Scripts\python.exe scripts\playback_demo.py --clear --speed 0.5
 ```
 
-The script replays the PCAP through the Ingest Normalizer → Redpanda pipeline, triggering the full detection flow in real time.
+### Option B: Raw PCAP Ingestion (Requires Zeek / Full Infrastructure)
+
+To run a raw PCAP through the ingest pipeline in real time:
+
+```bash
+cd backend
+.venv\Scripts\python.exe scripts\live_demo.py --pcap /path/to/traffic.pcap
+```
+
+Both scripts replay telemetry through the Ingest Normalizer → Redpanda pipeline, triggering the full detection flow in real time.
 
 ---
 

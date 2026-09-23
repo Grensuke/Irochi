@@ -89,7 +89,10 @@ class UnknownDetector(BaseDetector):
 
             # If enough signals deviate
             if len(deviating_signals) >= MIN_DEVIATING_SIGNALS:
-                confidence = min(1.0, (avg_z / len(deviating_signals)) / 10.0) # Scale arbitrarily to 0-1
+                avg_deviation = avg_z / len(deviating_signals)
+                confidence = min(1.0, avg_deviation / 10.0) # Scale arbitrarily to 0-1
+                severity_candidate = Severity.HIGH if avg_deviation > 5.0 else Severity.MEDIUM
+
                 evidence = {
                     "message": "Significant deviation from historical baseline",
                     "signals": deviating_signals,
@@ -111,7 +114,7 @@ class UnknownDetector(BaseDetector):
                         threat_type=ThreatType.UNKNOWN_THREAT,
                         confidence=confidence,
                         score=confidence * 100,
-                        severity_candidate=Severity.MEDIUM,
+                        severity_candidate=severity_candidate,
                         evidence=evidence,
                         source_feature_references=[
                             SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)

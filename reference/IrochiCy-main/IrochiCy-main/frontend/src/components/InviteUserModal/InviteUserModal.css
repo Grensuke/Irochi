@@ -1,0 +1,22 @@
+.invite-modal { width: 420px; }
+.invite-modal__field { margin-bottom: var(--space-4); }
+.invite-modal__label { font-family: var(--font-mono); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: var(--space-2); display: block; }
+.invite-modal__input {
+  width: 100%; height: 44px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); padding: 0 var(--space-3); font-family: var(--font-mono);
+  font-size: var(--text-sm); color: var(--text-primary); transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+.invite-modal__input:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-glow); }
+.invite-modal__select {
+  width: 100%; height: 44px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); padding: 0 var(--space-3); font-family: var(--font-mono);
+  font-size: var(--text-sm); color: var(--text-primary); transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+.invite-modal__select:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-glow); }
+.invite-modal__btn {
+  width: 100%; height: 46px; margin-top: var(--space-5); background: var(--gradient-accent); background-size: 200% 100%;
+  border: none; border-radius: var(--radius-md); font-family: var(--font-heading);
+  font-size: var(--text-sm); font-weight: 600; color: var(--text-inverse); cursor: pointer; text-transform: uppercase;
+  transition: all var(--transition-fast); box-shadow: 0 4px 16px rgba(0,212,184,0.2);
+}
+.invite-modal__btn:hover { background-position: 100% 50%; box-shadow: 0 6px 24px rgba(0,212,184,0.35); transform: translateY(-1px); }

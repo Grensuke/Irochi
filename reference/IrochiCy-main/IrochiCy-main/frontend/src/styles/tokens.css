@@ -1,0 +1,182 @@
+/* ═══════════════════════════════════════════════════════════════
+   SIH-26145 Design Tokens  v2.0
+   "Cyber Command Center" — Premium glassmorphism + ambient glow
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── Surfaces (blue-tinted blacks for premium depth) ─── */
+  --bg-primary:     #060810;
+  --bg-secondary:   #0C0F18;
+  --bg-tertiary:    #111624;
+  --bg-elevated:    #171D2E;
+
+  /* ─── Glass (frosted surfaces) ─── */
+  --glass-bg:         rgba(12, 15, 24, 0.72);
+  --glass-bg-strong:  rgba(12, 15, 24, 0.88);
+  --glass-blur:       16px;
+  --glass-blur-heavy: 24px;
+  --glass-border:     rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  --glass-shimmer:    linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.02) 100%);
+
+  /* ─── Borders ─── */
+  --border-subtle:  rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong:  rgba(255, 255, 255, 0.14);
+
+  /* ─── Text ─── */
+  --text-primary:   #E8EDF5;
+  --text-secondary: #8B97AD;
+  --text-tertiary:  #4A5572;
+  --text-inverse:   #060810;
+
+  /* ─── Accent — Teal-Cyan Signature ─── */
+  --accent-primary:   #00D4B8;
+  --accent-secondary: #00A896;
+  --accent-glow:      rgba(0, 212, 184, 0.12);
+  --accent-glow-strong: rgba(0, 212, 184, 0.25);
+
+  /* ─── Gradients ─── */
+  --gradient-accent:    linear-gradient(135deg, #00D4B8 0%, #00B4D8 50%, #5B8CFF 100%);
+  --gradient-accent-h:  linear-gradient(90deg, #00D4B8 0%, #00B4D8 50%, #5B8CFF 100%);
+  --gradient-warm:      linear-gradient(135deg, #FF3B5C 0%, #FF7A2F 100%);
+  --gradient-surface:   linear-gradient(180deg, rgba(0, 212, 184, 0.04) 0%, transparent 100%);
+  --gradient-sidebar:   linear-gradient(180deg, #0C0F18 0%, #0A0D15 100%);
+
+  /* ─── Glow ─── */
+  --glow-accent:   0 0 20px rgba(0, 212, 184, 0.15), 0 0 40px rgba(0, 212, 184, 0.05);
+  --glow-accent-s: 0 0 30px rgba(0, 212, 184, 0.25), 0 0 60px rgba(0, 212, 184, 0.08);
+  --glow-critical: 0 0 20px rgba(255, 59, 92, 0.2);
+  --glow-warning:  0 0 20px rgba(245, 197, 24, 0.15);
+
+  /* ─── Severity ─── */
+  --severity-critical: #FF3B5C;
+  --severity-high:     #FF7A2F;
+  --severity-medium:   #F5C518;
+  --severity-low:      #4CDFB0;
+  --severity-info:     #5B8CFF;
+
+  /* ─── Threat / Detector Types ─── */
+  --threat-ddos:   #FF3B5C;
+  --threat-recon:  #FF7A2F;
+  --threat-dns:    #A78BFA;
+  --threat-tls:    #5B8CFF;
+  --threat-exfil:  #F5C518;
+
+  /* ─── Typography ─── */
+  --font-mono:    'IBM Plex Mono', 'Consolas', 'Monaco', monospace;
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Outfit', 'Inter', -apple-system, sans-serif;
+
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   16px;
+  --text-lg:   20px;
+  --text-xl:   28px;
+  --text-2xl:  40px;
+  --text-3xl:  56px;
+
+  --leading-xs:   1.4;
+  --leading-sm:   1.5;
+  --leading-base: 1.6;
+  --leading-md:   1.5;
+  --leading-lg:   1.4;
+  --leading-xl:   1.2;
+  --leading-2xl:  1.1;
+
+  /* ─── Spacing (4px base) ─── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── Radii ─── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  /* ─── Shadows (blue-tinted for depth) ─── */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 20, 60, 0.2);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 20, 60, 0.15);
+  --shadow-lg:  0 8px 40px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 20, 60, 0.2);
+  --shadow-xl:  0 16px 64px rgba(0, 0, 0, 0.7), 0 8px 32px rgba(0, 20, 60, 0.25);
+
+  /* ─── Transitions ─── */
+  --transition-fast:   120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow:   300ms ease;
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─── Layout ─── */
+  --sidebar-width: 230px;
+  --sidebar-collapsed: 68px;
+  --header-height: 60px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Light Theme Override
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] {
+  --bg-primary:     #F0F2F7;
+  --bg-secondary:   #FFFFFF;
+  --bg-tertiary:    #F7F9FC;
+  --bg-elevated:    #FFFFFF;
+
+  --glass-bg:         rgba(255, 255, 255, 0.72);
+  --glass-bg-strong:  rgba(255, 255, 255, 0.88);
+  --glass-border:     rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.12);
+  --glass-shimmer:    linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.3) 100%);
+
+  --border-subtle:  rgba(0, 0, 0, 0.04);
+  --border-default: rgba(0, 0, 0, 0.08);
+  --border-strong:  rgba(0, 0, 0, 0.16);
+
+  --text-primary:   #0F1419;
+  --text-secondary: #4A5568;
+  --text-tertiary:  #9AA3B0;
+  --text-inverse:   #FFFFFF;
+
+  --accent-primary:   #009B87;
+  --accent-secondary: #00B49E;
+  --accent-glow:      rgba(0, 155, 135, 0.10);
+  --accent-glow-strong: rgba(0, 155, 135, 0.20);
+
+  --gradient-accent:    linear-gradient(135deg, #009B87 0%, #0098B4 50%, #3A6EE0 100%);
+  --gradient-accent-h:  linear-gradient(90deg, #009B87 0%, #0098B4 50%, #3A6EE0 100%);
+  --gradient-warm:      linear-gradient(135deg, #D42B47 0%, #C85F1F 100%);
+  --gradient-surface:   linear-gradient(180deg, rgba(0, 155, 135, 0.04) 0%, transparent 100%);
+  --gradient-sidebar:   linear-gradient(180deg, #FFFFFF 0%, #F7F9FC 100%);
+
+  --glow-accent:   0 0 16px rgba(0, 155, 135, 0.12), 0 0 32px rgba(0, 155, 135, 0.04);
+  --glow-accent-s: 0 0 24px rgba(0, 155, 135, 0.18), 0 0 48px rgba(0, 155, 135, 0.06);
+  --glow-critical: 0 0 16px rgba(212, 43, 71, 0.15);
+  --glow-warning:  0 0 16px rgba(192, 154, 0, 0.12);
+
+  --severity-critical: #D42B47;
+  --severity-high:     #C85F1F;
+  --severity-medium:   #C09A00;
+  --severity-low:      #2E8B68;
+  --severity-info:     #3A6EE0;
+
+  --threat-ddos:   #D42B47;
+  --threat-recon:  #C85F1F;
+  --threat-dns:    #7C5CC4;
+  --threat-tls:    #3A6EE0;
+  --threat-exfil:  #C09A00;
+
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg:  0 8px 40px rgba(0, 0, 0, 0.10), 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-xl:  0 16px 64px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.06);
+}

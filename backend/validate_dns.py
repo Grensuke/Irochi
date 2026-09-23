@@ -53,7 +53,7 @@ async def main():
 
     # 4. Setup Redpanda Consumer
     consumer = AIOKafkaConsumer(
-        "irochi.events.dns.v1",
+        "vibhinetra.events.dns.v1",
         bootstrap_servers='localhost:19092',
         group_id="validate-dns-group",
         auto_offset_reset="earliest"

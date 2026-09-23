@@ -20,8 +20,8 @@ export function useAlerts(): UseAlertsResult {
   const [error, setError] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (isRefetch = false) => {
+    if (!isRefetch) setLoading(true);
     setError(null);
     try {
       const data = await api.getAlerts();
@@ -32,7 +32,7 @@ export function useAlerts(): UseAlertsResult {
       setError(e instanceof Error ? e.message : 'Failed to fetch alerts');
       setIsMock(false);
     } finally {
-      setLoading(false);
+      if (!isRefetch) setLoading(false);
     }
   }, []);
 
@@ -40,5 +40,7 @@ export function useAlerts(): UseAlertsResult {
     fetchData();
   }, [fetchData]);
 
-  return { alerts, loading, error, isMock, refetch: fetchData };
+  const refetch = useCallback(() => fetchData(true), [fetchData]);
+
+  return { alerts, loading, error, isMock, refetch };
 }

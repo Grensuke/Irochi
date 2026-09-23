@@ -1,0 +1,13 @@
+.not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-primary); }
+.not-found__code {
+  font-family: var(--font-heading); font-size: 140px; font-weight: 800; line-height: 1;
+  background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 40px rgba(0,212,184,0.2));
+}
+.not-found__text { font-family: var(--font-sans); font-size: 18px; color: var(--text-secondary); margin: var(--space-4) 0 var(--space-6); }
+.not-found__link {
+  font-family: var(--font-sans); font-size: 14px; color: var(--accent-primary); text-decoration: none;
+  padding: var(--space-3) var(--space-6); border: 1px solid var(--accent-primary); border-radius: var(--radius-md);
+  transition: all var(--transition-fast); animation: float 3s ease-in-out infinite;
+}
+.not-found__link:hover { background: var(--accent-glow); box-shadow: var(--glow-accent); transform: translateY(-2px); }

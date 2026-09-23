@@ -1,0 +1,8 @@
+.conn-lost {
+  height: 44px; display: flex; align-items: center; justify-content: center; gap: var(--space-3);
+  background: linear-gradient(90deg, rgba(245,197,24,0.08), rgba(245,197,24,0.15), rgba(245,197,24,0.08));
+  border-bottom: 1px solid rgba(245,197,24,0.3);
+  font-family: var(--font-mono); font-size: 12px; color: var(--severity-medium);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+.conn-lost__counter { margin-left: auto; padding-right: var(--space-6); opacity: 0.7; }

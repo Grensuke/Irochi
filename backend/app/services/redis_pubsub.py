@@ -11,7 +11,7 @@ class RedisPubSubService:
     def __init__(self, redis_url: str):
         self.redis_url = redis_url
         self._client: Redis | None = None
-        self._channel = "irochi.alerts.live"
+        self._channel = "vibhinetra.alerts.live"
 
     async def start(self):
         if self._client is None:

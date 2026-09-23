@@ -27,7 +27,7 @@ class NarrativeContext(BaseModel):
     progression_stages: list[ProgressionStage] = Field(default_factory=list)
     correlated_events: list[dict] = Field(default_factory=list)
 
-SYSTEM_PROMPT = """You are a strict cybersecurity analyst for the Irochi threat detection system.
+SYSTEM_PROMPT = """You are a strict cybersecurity analyst for the Vibhinetra threat detection system.
 Your job is to generate a concise, factual incident narrative based ONLY on the provided structured alert data.
 
 Rules:
@@ -58,7 +58,7 @@ def _deterministic_fallback(context: NarrativeContext) -> dict:
     related_text = f" There are {event_count} total correlated events in this timeline." if event_count > 1 else ""
 
     return {
-        "what_was_observed": f"Irochi detected {context.threat_type} activity originating from {context.src_ip or 'unknown source'}. {stages_text}{missing_text}{related_text}",
+        "what_was_observed": f"Vibhinetra detected {context.threat_type} activity originating from {context.src_ip or 'unknown source'}. {stages_text}{missing_text}{related_text}",
         "why_it_matters": context.explanation or "The observed evidence crossed configured detection thresholds.",
         "what_to_investigate": f"Review the correlated timeline events and check recent activity for {context.src_ip or 'the source'}. Verify if the destination is known or authorized."
     }

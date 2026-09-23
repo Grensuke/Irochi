@@ -1,0 +1,148 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Alerts/min by Threat Type",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (threat_type) (rate(alerts_created_total[1m]) * 60)",
+          "legendFormat": "{{threat_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "alerts/min",
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 15 }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Pipeline Latency P95",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "pipeline_latency_p95_ms",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 500 },
+              { "color": "red", "value": 2000 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Alert Severity Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (severity) (alerts_created_total)",
+          "legendFormat": "{{severity}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "#FF4444", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "high" }, "properties": [{ "id": "color", "value": { "fixedColor": "#FF8800", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "#FFCC00", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "low" }, "properties": [{ "id": "color", "value": { "fixedColor": "#44BB44", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Detector Status — DDoS",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 8 },
+      "targets": [{ "expr": "pipeline_detector_status{threat_type=\"ddos\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "1": { "text": "RUNNING", "color": "green" }, "0": { "text": "IDLE", "color": "yellow" } } }] } }
+    },
+    {
+      "id": 5,
+      "title": "Detector Status — Recon",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 8 },
+      "targets": [{ "expr": "pipeline_detector_status{threat_type=\"recon\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "1": { "text": "RUNNING", "color": "green" }, "0": { "text": "IDLE", "color": "yellow" } } }] } }
+    },
+    {
+      "id": 6,
+      "title": "Detector Status — DNS/DGA",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 8 },
+      "targets": [{ "expr": "pipeline_detector_status{threat_type=\"dns_dga\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "1": { "text": "RUNNING", "color": "green" }, "0": { "text": "IDLE", "color": "yellow" } } }] } }
+    },
+    {
+      "id": 7,
+      "title": "Detector Status — TLS/C2",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 8 },
+      "targets": [{ "expr": "pipeline_detector_status{threat_type=\"tls_c2\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "1": { "text": "RUNNING", "color": "green" }, "0": { "text": "IDLE", "color": "yellow" } } }] } }
+    },
+    {
+      "id": 8,
+      "title": "Detector Status — Exfil",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 8 },
+      "targets": [{ "expr": "pipeline_detector_status{threat_type=\"exfiltration\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "1": { "text": "RUNNING", "color": "green" }, "0": { "text": "IDLE", "color": "yellow" } } }] } }
+    },
+    {
+      "id": 9,
+      "title": "Total Detections Today",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum by (threat_type) (increase(alerts_created_total[24h]))",
+          "legendFormat": "{{threat_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } }
+      },
+      "options": { "orientation": "horizontal", "textMode": "value_and_name" }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["sih26145", "detection"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "SIH26145 \u2014 Detection Performance",
+  "uid": "sih26145-detection-performance",
+  "version": 1
+}

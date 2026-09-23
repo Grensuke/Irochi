@@ -1,4 +1,4 @@
-# Frontend Decisions — Irochi
+# Frontend Decisions — Vibhinetra
 
 > **This file records stable frontend-area decisions.**
 > It is NOT a chat history. Add entries when decisions are made.
@@ -74,7 +74,7 @@ Frontend types in `src/types/index.ts` are PRESENTATION types matching the API r
 - **Router:** React Router v7 is used for client-side routing.
 - **Auth Context:** A mock authentication context separates public routes (Landing, Login) from protected routes (App Shell).
 - **Layout:** Authenticated pages are wrapped in `AppLayout` providing the sidebar navigation and top header.
-- **Status Semantics:** Alert statuses use analyst workflow terminology (`new`, `investigating`, `closed`, `false_positive`), strictly avoiding "resolved" to reinforce Irochi's passive nature.
+- **Status Semantics:** Alert statuses use analyst workflow terminology (`new`, `investigating`, `closed`, `false_positive`), strictly avoiding "resolved" to reinforce Vibhinetra's passive nature.
 
 ## FD-010: Floating Pill Navigation Dock & Collapsed Rail Component
 
@@ -100,3 +100,9 @@ Report generation (PDF) is performed entirely client-side using `jspdf` and canv
 **Status:** Active
 
 Prior to physical integration, telemetry visualizers (`DiodeFlowVisualizer`, `UnidirectionalThreatStream`, `Traffic`, `SummaryBar`) are implemented using live-simulated active states (e.g., particle systems, animated SVG graphs, simulated flow rates) rather than idle empty states. This ensures the SOC dashboard feels active and facilitates UX testing of data-dense environments.
+
+## FD-013: Silent Background Refetching for UI Reactivity
+
+**Status:** Locked
+
+Dashboard components relying on rapid state changes (like metric bars and dynamic telemetry) must employ silent background refetching (e.g., bypassing global loading indicators during polling) to ensure visual continuity. Using standard polling that triggers full-component loading flashes or resets the UI is strictly prohibited in real-time operational views.

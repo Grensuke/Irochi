@@ -24,7 +24,7 @@ from app.services.detectors.ddos import DdosDetector
 from app.services.detectors.recon import ReconDetector
 from tools.evaluate_detectors import clean_columns, EvaluatorMetrics
 
-DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
+DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Vibhinetra-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
 DDOS_FILES = [
     "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",

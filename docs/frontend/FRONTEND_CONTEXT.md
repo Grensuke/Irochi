@@ -1,4 +1,4 @@
-# Frontend Context — Irochi
+# Frontend Context — Vibhinetra
 
 > **This file describes the CURRENT state of the frontend.**
 > It is NOT a conversation transcript. Update it after each approved checkpoint.
@@ -7,7 +7,7 @@
 
 ## Phase
 
-Active Infrastructure Integration (Alerts integrated with real backend)
+E2E Real PCAP Validation Complete. (Integration verified with actual telemetry.)
 
 ## Completed
 
@@ -37,18 +37,20 @@ Active Infrastructure Integration (Alerts integrated with real backend)
 - Redesigned `Investigation.tsx` into an advanced Incident Investigation Queue UI with risk scores and visual phase indicators.
 - Added "Export to PDF" capability using `jspdf` to `AlertDetailPage.tsx` integrating AI narrative data.
 - Refined UI across alert tables and feeds to display structured severity tags (`SEVERITY: CRITICAL`).
+- Implemented **silent background refetching** in `useDashboard` and `useAlerts` to allow real-time reactivity to backend updates without visual flashing or constant loading states.
+- **End-to-End Validation**: Passed all visual and data-sync E2E validations using real PCAP data (Friday-WorkingHours). Incident queues, AI narratives, PDF exports, and telemetry views were verified via an automated UI subagent.
 
 ## Frontend Structure
 
 ```text
 frontend/
 ├── public/
-│   ├── irochi-logo.jpg # Official Brand Logo Emblem
+│   ├── vibhinetra-logo.jpg # Official Brand Logo Emblem
 │   └── vite.svg
 ├── src/
 │   ├── components/
 │   │   ├── DiodeFlowVisualizer.tsx / DiodeFlowVisualizer.css   # Simplex Data-Diode flow dynamics visualizer
-│   │   ├── IrochiLogo.tsx / IrochiLogo.css                     # Brand logo & cyber shield emblem
+│   │   ├── VibhinetraLogo.tsx / VibhinetraLogo.css                     # Brand logo & cyber shield emblem
 │   │   ├── VerticalMeniscusRail.tsx / VerticalMeniscusRail.css # Collapsed sidebar liquid rail
 │   │   ├── MeniscusNavbar.tsx / MeniscusNavbar.css             # Fluid liquid dock navigation
 │   │   ├── Header.tsx / Header.css

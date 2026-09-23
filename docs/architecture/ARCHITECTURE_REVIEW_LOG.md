@@ -13,7 +13,7 @@
   - Feature/Window Task 16a four-lock provenance review
 - **Project-lead decision:** APPROVED
 - **Decisions promoted/confirmed as LOCKED:**
-  1. BD-009: All raw canonical-event Redpanda topics use `hash(src_ip)` as the partition key (`irochi.events.connection.v1`, `irochi.events.dns.v1`, `irochi.events.tls.v1`).
+  1. BD-009: All raw canonical-event Redpanda topics use `hash(src_ip)` as the partition key (`vibhinetra.events.connection.v1`, `vibhinetra.events.dns.v1`, `vibhinetra.events.tls.v1`).
   2. Feature/Window Task 16a: Snapshot-not-delta processing invariant.
   3. Feature/Window Task 16a: DDoS atomic counter baseline using INCR/HINCRBY.
   4. Feature/Window Task 16a: Directional pair identity `(src_ip, dst_ip)`.

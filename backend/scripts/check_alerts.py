@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import text
 
 async def main():
-    engine = create_async_engine("postgresql+asyncpg://irochi:change-me@localhost:5432/irochi")
+    engine = create_async_engine("postgresql+asyncpg://vibhinetra:change-me@localhost:5432/vibhinetra")
     async with engine.connect() as conn:
         result = await conn.execute(text("SELECT * FROM alerts ORDER BY created_at DESC LIMIT 10"))
         rows = result.mappings().all()

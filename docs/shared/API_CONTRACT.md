@@ -1,4 +1,4 @@
-# API Contract — Irochi (Historical / Temporary Dummy)
+# API Contract — Vibhinetra (Historical / Temporary Dummy)
 
 > **⚠️ HISTORICAL / TEMPORARY DUMMY CONTRACT — preserved for reference**
 >
@@ -215,4 +215,4 @@ critical | high | medium | low | info
 new | investigating | closed | false_positive
 ```
 
-> "Closed" is an analyst workflow status. It does NOT imply that Irochi mitigated or stopped the threat.
+> "Closed" is an analyst workflow status. It does NOT imply that Vibhinetra mitigated or stopped the threat.

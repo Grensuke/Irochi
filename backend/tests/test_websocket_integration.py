@@ -62,7 +62,7 @@ async def test_websocket_releases_db_connection(monkeypatch):
     Ensure the WebSocket endpoint releases its database transaction/connection
     after finishing the backfill and before entering the infinite loop.
     """
-    test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/irochi_test"
+    test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/vibhinetra_test"
     engine = create_async_engine(test_url, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
     monkeypatch.setattr("app.api.websocket.alerts.AsyncSessionLocal", SessionLocal)
@@ -78,7 +78,7 @@ async def test_websocket_releases_db_connection(monkeypatch):
         def try_truncate():
             import asyncio
             async def run_truncate():
-                test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/irochi_test"
+                test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/vibhinetra_test"
                 engine = create_async_engine(test_url, pool_pre_ping=True)
                 async with engine.begin() as conn:
                     await conn.execute(text("SET lock_timeout = '2s';"))

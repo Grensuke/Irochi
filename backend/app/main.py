@@ -1,5 +1,5 @@
 """
-Irochi backend — FastAPI application entry point.
+Vibhinetra backend — FastAPI application entry point.
 
 DUMMY PHASE: Serves mock data through REST and WebSocket endpoints.
 No real infrastructure (PostgreSQL, Redis, Redpanda) is connected.

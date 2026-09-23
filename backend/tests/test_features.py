@@ -34,7 +34,7 @@ def engine(state_adapter):
 @pytest.mark.asyncio
 async def test_canonical_normalization_connection(engine):
     msg = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=1,
         key=None,
@@ -65,7 +65,7 @@ async def test_canonical_normalization_connection(engine):
 @pytest.mark.asyncio
 async def test_canonical_normalization_dns(engine):
     msg = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=1,
         key=None,
@@ -97,7 +97,7 @@ async def test_canonical_normalization_dns(engine):
 @pytest.mark.asyncio
 async def test_canonical_normalization_tls(engine):
     msg = ConsumerMessage(
-        topic="irochi.events.tls.v1",
+        topic="vibhinetra.events.tls.v1",
         partition=0,
         offset=1,
         key=None,
@@ -127,7 +127,7 @@ async def test_canonical_normalization_tls(engine):
 @pytest.mark.asyncio
 async def test_invalid_canonical_event(engine):
     msg = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=1,
         key=None,
@@ -166,15 +166,15 @@ async def test_key_abstraction():
     assert dst == "2.2.2.2"
 
     # Verify keys are correctly formed
-    assert build_sliding_bucket_key(EntityType.SOURCE, "1.1.1.1", 100) == "irochi:feature:source:1.1.1.1:bucket:100"
-    assert build_tumbling_distinct_key(EntityType.PAIR, pair_key, 200, "port") == f"irochi:feature:pair:{pair_key}:hll:200:port"
-    assert build_correlation_key("conn_1") == "irochi:feature:connection:conn_1:correlation"
-    assert build_revision_key(EntityType.SOURCE, "1.1.1.1") == "irochi:revision:source:1.1.1.1"
+    assert build_sliding_bucket_key(EntityType.SOURCE, "1.1.1.1", 100) == "vibhinetra:feature:source:1.1.1.1:bucket:100"
+    assert build_tumbling_distinct_key(EntityType.PAIR, pair_key, 200, "port") == f"vibhinetra:feature:pair:{pair_key}:hll:200:port"
+    assert build_correlation_key("conn_1") == "vibhinetra:feature:connection:conn_1:correlation"
+    assert build_revision_key(EntityType.SOURCE, "1.1.1.1") == "vibhinetra:revision:source:1.1.1.1"
 
 @pytest.mark.asyncio
 async def test_enrichment_mechanism_dns(engine):
     msg = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=1,
         key=None,
@@ -220,7 +220,7 @@ async def test_sliding_mechanism_dns(engine, redis_service):
     await redis_service._client.flushdb()
 
     msg = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=1,
         key=None,
@@ -258,7 +258,7 @@ async def test_tumbling_mechanism_recon(engine, redis_service):
     await redis_service._client.flushdb()
 
     msg1 = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=1,
         key=None,
@@ -280,7 +280,7 @@ async def test_tumbling_mechanism_recon(engine, redis_service):
         }
     )
     msg2 = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=2,
         key=None,
@@ -319,7 +319,7 @@ async def test_tumbling_mechanism_ddos(engine, redis_service):
     await redis_service._client.flushdb()
 
     msg1 = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=1,
         key=None,
@@ -347,7 +347,7 @@ async def test_tumbling_mechanism_ddos(engine, redis_service):
         }
     )
     msg2 = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=2,
         key=None,
@@ -394,7 +394,7 @@ async def test_correlation_mechanism(engine, redis_service):
     conn_id = "corr_test_1"
 
     msg_conn = ConsumerMessage(
-        topic="irochi.events.connection.v1",
+        topic="vibhinetra.events.connection.v1",
         partition=0,
         offset=1,
         key=None,
@@ -419,7 +419,7 @@ async def test_correlation_mechanism(engine, redis_service):
     assert corr_records1[0].payload.correlation_status == CorrelationStatus.PARTIAL
 
     msg_tls = ConsumerMessage(
-        topic="irochi.events.tls.v1",
+        topic="vibhinetra.events.tls.v1",
         partition=0,
         offset=2,
         key=None,
@@ -448,7 +448,7 @@ async def test_revision_monotonicity(engine, redis_service):
     await redis_service._client.flushdb()
 
     msg1 = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=1,
         key=None,
@@ -474,7 +474,7 @@ async def test_revision_monotonicity(engine, redis_service):
     enrich1 = [r for r in records1 if r.mechanism == FeatureMechanism.ENRICHMENT][0]
 
     msg2 = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=2,
         key=None,
@@ -507,7 +507,7 @@ async def test_independent_revision_identities(engine, redis_service):
 
     # Process event for 10.0.0.6
     msg1 = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=1,
         key=None,
@@ -531,7 +531,7 @@ async def test_independent_revision_identities(engine, redis_service):
 
     # Process event for 10.0.0.7
     msg2 = ConsumerMessage(
-        topic="irochi.events.dns.v1",
+        topic="vibhinetra.events.dns.v1",
         partition=0,
         offset=2,
         key=None,

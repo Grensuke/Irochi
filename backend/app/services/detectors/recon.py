@@ -9,13 +9,14 @@ from app.schemas.detectors import (
     Decision,
     ThreatType,
     SourceFeatureReference,
+    Severity,
 )
 from app.schemas.features import ReconFeatureRecord
 from app.services.detectors.base import BaseDetector
 
 class ReconDetector(BaseDetector):
     """
-    Context-Aware Recon Detector for Irochi.
+    Context-Aware Recon Detector for Vibhinetra.
     Evaluates unique_destination_ports, unique_destination_hosts,
     scan_rate, and connection_fan_out using a multi-signal weighted scoring model.
     """
@@ -98,8 +99,13 @@ class ReconDetector(BaseDetector):
 
             triggered_count = sum(1 for v in scores.values() if v >= 0.5)
 
+            severity_candidate = None
             if triggered_count >= self.min_triggers and confidence > self.confidence_cutoff:
                 decision = Decision.DETECTION
+                if confidence > 0.85:
+                    severity_candidate = Severity.MEDIUM
+                else:
+                    severity_candidate = Severity.LOW
             else:
                 decision = Decision.NO_THREAT
 
@@ -111,7 +117,7 @@ class ReconDetector(BaseDetector):
             }
 
             outputs.append(self._create_output(
-                inp, decision, score=float(confidence), confidence=float(confidence), evidence=evidence
+                inp, decision, score=float(confidence), confidence=float(confidence), severity_candidate=severity_candidate, evidence=evidence
             ))
 
         return outputs
@@ -122,6 +128,7 @@ class ReconDetector(BaseDetector):
         decision: Decision,
         score: Optional[float] = None,
         confidence: Optional[float] = None,
+        severity_candidate: Optional[Severity] = None,
         evidence: Optional[dict] = None
     ) -> DetectorOutput:
         record = inp.feature_record
@@ -137,7 +144,7 @@ class ReconDetector(BaseDetector):
             threat_type=ThreatType.RECON_PORTSCAN,
             score=score,
             confidence=confidence,
-            severity_candidate=None,
+            severity_candidate=severity_candidate,
             evidence=evidence,
             source_feature_references=[
                 SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)
