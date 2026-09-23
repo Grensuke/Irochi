@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import './Architecture.css';
 
 const FLOW_STEPS = [
@@ -46,32 +47,34 @@ const FLOW_STEPS = [
 ];
 
 export function Architecture() {
+  const { t } = useTranslation();
+
   return (
     <div className="architecture-page">
       <div className="architecture-container">
         {/* Header */}
         <section className="arch-header scroll-reveal">
-          <div className="section-eyebrow">SYSTEM ARCHITECTURE</div>
-          <h1 className="arch-title">Unidirectional Data Pipeline</h1>
+          <div className="section-eyebrow">{t('architecture.eyebrow', 'SYSTEM ARCHITECTURE')}</div>
+          <h1 className="arch-title">{t('architecture.title', 'Unidirectional Data Pipeline')}</h1>
           <p className="arch-subtitle">
-            Vibhinetra uses a decoupled, high-performance architecture to ingest, normalize, analyze, and present network threat intelligence without altering telemetry pathways.
+            {t('architecture.subtitle', 'Vibhinetra uses a decoupled, high-performance architecture to ingest, normalize, analyze, and present network threat intelligence without altering telemetry pathways.')}
           </p>
         </section>
 
         {/* Browser Boundary Invariant Card */}
         <section className="boundary-card scroll-reveal">
           <div className="boundary-card-glow" />
-          <h2 className="boundary-title">The Secure Gateway Invariant</h2>
+          <h2 className="boundary-title">{t('architecture.gatewayInvariant', 'The Secure Gateway Invariant')}</h2>
           <p className="boundary-text">
-            For operational security and architectural integrity, the browser never communicates directly with Redpanda streams, Redis Pub/Sub, or the PostgreSQL database. All query transactions, session authentication, and WebSocket live feeds are brokered exclusively by the <strong>FastAPI Backend Gateway</strong>.
+            {t('architecture.gatewayText', 'For operational security and architectural integrity, the browser never communicates directly with Redpanda streams, Redis Pub/Sub, or the PostgreSQL database. All query transactions, session authentication, and WebSocket live feeds are brokered exclusively by the FastAPI Backend Gateway.')}
           </p>
         </section>
 
         {/* Decoupled Stages Walkthrough */}
         <section className="pipeline-walkthrough scroll-reveal">
-          <h2 className="section-title-sm">Step-by-Step Data Flow</h2>
+          <h2 className="section-title-sm">{t('architecture.flowTitle', 'Step-by-Step Data Flow')}</h2>
           <p className="section-body-text" style={{ marginBottom: 'var(--space-6)' }}>
-            Telemetry travels strictly one-way from the network mirrors to the analyst dashboard.
+            {t('architecture.flowSubtitle', 'Telemetry travels strictly one-way from the network mirrors to the analyst dashboard.')}
           </p>
 
           <div className="flow-timeline">

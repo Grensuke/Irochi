@@ -1,104 +1,107 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { MeniscusNavbar } from '../components/MeniscusNavbar';
 import type { MeniscusItem } from '../components/MeniscusNavbar';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import './PublicLayout.css';
-
-const PUBLIC_NAV_ITEMS: MeniscusItem[] = [
-  {
-    id: 'product',
-    to: '/',
-    label: 'Product',
-    accentColor: '#f8fafc',
-    ambientColor: 'rgba(255, 255, 255, 0.14)',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
-      </svg>
-    )
-  },
-  {
-    id: 'capabilities',
-    to: '/capabilities',
-    label: 'Capabilities',
-    accentColor: '#e2e8f0',
-    ambientColor: 'rgba(255, 255, 255, 0.12)',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <path d="m9 12 2 2 4-4" />
-      </svg>
-    )
-  },
-  {
-    id: 'architecture',
-    to: '/architecture',
-    label: 'Architecture',
-    accentColor: '#cbd5e1',
-    ambientColor: 'rgba(255, 255, 255, 0.12)',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="4" width="16" height="16" rx="2" />
-        <rect x="9" y="9" width="6" height="6" />
-        <line x1="9" y1="1" x2="9" y2="4" />
-        <line x1="15" y1="1" x2="15" y2="4" />
-        <line x1="9" y1="20" x2="9" y2="23" />
-        <line x1="15" y1="20" x2="15" y2="23" />
-        <line x1="20" y1="9" x2="23" y2="9" />
-        <line x1="20" y1="14" x2="23" y2="14" />
-        <line x1="1" y1="9" x2="4" y2="9" />
-        <line x1="1" y1="14" x2="4" y2="14" />
-      </svg>
-    )
-  },
-  {
-    id: 'documentation',
-    to: '/documentation',
-    label: 'Docs',
-    accentColor: '#94a3b8',
-    ambientColor: 'rgba(255, 255, 255, 0.10)',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-      </svg>
-    )
-  },
-  {
-    id: 'about',
-    to: '/about',
-    label: 'About',
-    accentColor: '#cbd5e1',
-    ambientColor: 'rgba(255, 255, 255, 0.10)',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 16v-4" />
-        <path d="M12 8h.01" />
-      </svg>
-    )
-  },
-  {
-    id: 'contact',
-    to: '/contact',
-    label: 'Messages',
-    accentColor: '#f8fafc',
-    ambientColor: 'rgba(255, 255, 255, 0.15)',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-    )
-  }
-];
 
 export function PublicLayout() {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const publicNavItems: MeniscusItem[] = useMemo(() => [
+    {
+      id: 'product',
+      to: '/',
+      label: t('nav.product', 'Product'),
+      accentColor: '#f8fafc',
+      ambientColor: 'rgba(255, 255, 255, 0.14)',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      )
+    },
+    {
+      id: 'capabilities',
+      to: '/capabilities',
+      label: t('nav.capabilities', 'Capabilities'),
+      accentColor: '#e2e8f0',
+      ambientColor: 'rgba(255, 255, 255, 0.12)',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      )
+    },
+    {
+      id: 'architecture',
+      to: '/architecture',
+      label: t('nav.architecture', 'Architecture'),
+      accentColor: '#cbd5e1',
+      ambientColor: 'rgba(255, 255, 255, 0.12)',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <line x1="9" y1="1" x2="9" y2="4" />
+          <line x1="15" y1="1" x2="15" y2="4" />
+          <line x1="9" y1="20" x2="9" y2="23" />
+          <line x1="15" y1="20" x2="15" y2="23" />
+          <line x1="20" y1="9" x2="23" y2="9" />
+          <line x1="20" y1="14" x2="23" y2="14" />
+          <line x1="1" y1="9" x2="4" y2="9" />
+          <line x1="1" y1="14" x2="4" y2="14" />
+        </svg>
+      )
+    },
+    {
+      id: 'documentation',
+      to: '/documentation',
+      label: t('nav.docs', 'Docs'),
+      accentColor: '#94a3b8',
+      ambientColor: 'rgba(255, 255, 255, 0.10)',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      )
+    },
+    {
+      id: 'about',
+      to: '/about',
+      label: t('nav.about', 'About'),
+      accentColor: '#cbd5e1',
+      ambientColor: 'rgba(255, 255, 255, 0.10)',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      )
+    },
+    {
+      id: 'contact',
+      to: '/contact',
+      label: t('nav.messages', 'Messages'),
+      accentColor: '#f8fafc',
+      ambientColor: 'rgba(255, 255, 255, 0.15)',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      )
+    }
+  ], [t]);
 
   useEffect(() => {
     let elements: NodeListOf<Element> = document.querySelectorAll('.scroll-reveal');
@@ -143,20 +146,21 @@ export function PublicLayout() {
 
           {/* Desktop Meniscus Nav */}
           <div className="public-meniscus-nav-container">
-            <MeniscusNavbar items={PUBLIC_NAV_ITEMS} variant="header" />
+            <MeniscusNavbar items={publicNavItems} variant="header" />
           </div>
 
           <div className="public-header-actions">
+            <LanguageSwitcher />
             <button 
               className="theme-switcher-btn public-theme-btn"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label="Toggle visual theme"
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              title={theme === 'dark' ? t('common.switchToLight') : t('common.switchToDark')}
             >
-              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
             </button>
             <Link to="/login" className="btn btn-primary btn-sm">
-              Open dashboard
+              {t('common.openDashboard')}
             </Link>
             <button
               className="public-mobile-trigger"
@@ -177,7 +181,7 @@ export function PublicLayout() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="public-mobile-menu">
-            {PUBLIC_NAV_ITEMS.map((link) => (
+            {publicNavItems.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -193,7 +197,7 @@ export function PublicLayout() {
               style={{ marginTop: 'var(--space-4)', width: '100%' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              Open dashboard
+              {t('common.openDashboard')}
             </Link>
           </div>
         )}
@@ -208,12 +212,12 @@ export function PublicLayout() {
       <footer className="public-footer">
         <div className="public-footer-container">
           <div className="public-footer-left">
-            <span className="public-footer-brand">VIBHINETRA</span>
-            <span className="public-footer-tagline">Passive by design. Evidence-driven intelligence.</span>
+            <span className="public-footer-brand">{t('footer.brand')}</span>
+            <span className="public-footer-tagline">{t('footer.tagline')}</span>
           </div>
           <div className="public-footer-right">
-            <span>SIH26145 — Unidirectional network cyber threat detection</span>
-            <span className="public-footer-copy">© 2026 Vibhinetra. Observational Security Operations.</span>
+            <span>{t('footer.sih')}</span>
+            <span className="public-footer-copy">{t('footer.copyright')}</span>
           </div>
         </div>
       </footer>
