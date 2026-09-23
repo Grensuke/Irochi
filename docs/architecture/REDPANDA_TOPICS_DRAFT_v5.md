@@ -106,9 +106,9 @@ Use one raw canonical-event topic per canonical `event_type`:
 
 | Topic | Event type carried | Publisher | Consumer | Initial partition proposal |
 |---|---|---|---|---:|
-| `irochi.events.connection.v1` | `connection` | Ingest Normalizer | Feature Processing | 6 |
-| `irochi.events.dns.v1` | `dns` | Ingest Normalizer | Feature Processing | 3 |
-| `irochi.events.tls.v1` | `tls` | Ingest Normalizer | Feature Processing | 3 |
+| `vibhinetra.events.connection.v1` | `connection` | Ingest Normalizer | Feature Processing | 6 |
+| `vibhinetra.events.dns.v1` | `dns` | Ingest Normalizer | Feature Processing | 3 |
+| `vibhinetra.events.tls.v1` | `tls` | Ingest Normalizer | Feature Processing | 3 |
 
 ### Why separate topics by event type?
 
@@ -119,11 +119,11 @@ For example:
 ```text
 DNS/DGA/Tunneling feature processing
         ↓
-irochi.events.dns.v1
+vibhinetra.events.dns.v1
 
 TLS/C2 feature processing
         ↓
-irochi.events.tls.v1
+vibhinetra.events.tls.v1
 ```
 
 The three topics still converge into the same logical Feature Processing stage.
@@ -141,15 +141,15 @@ Feature/Window design may reveal a better partitioning or topic structure. Any m
 Proposed naming convention:
 
 ```text
-irochi.events.<event_type>.v<schema_major>
+vibhinetra.events.<event_type>.v<schema_major>
 ```
 
 Examples:
 
 ```text
-irochi.events.connection.v1
-irochi.events.dns.v1
-irochi.events.tls.v1
+vibhinetra.events.connection.v1
+vibhinetra.events.dns.v1
+vibhinetra.events.tls.v1
 ```
 
 The major-version suffix allows an incompatible schema migration to run on a new topic without silently breaking existing consumers.
@@ -272,9 +272,9 @@ Proposed raw-event retention:
 
 | Topic | Cleanup policy | Time-based limit | Size-based limit (`retention.bytes`) | Reason |
 |---|---|---:|---:|---|
-| `irochi.events.connection.v1` | `delete` | 24 hours | TBD | replay/debug buffer and consumer recovery |
-| `irochi.events.dns.v1` | `delete` | 24 hours | TBD | replay/debug buffer and consumer recovery |
-| `irochi.events.tls.v1` | `delete` | 24 hours | TBD | replay/debug buffer and consumer recovery |
+| `vibhinetra.events.connection.v1` | `delete` | 24 hours | TBD | replay/debug buffer and consumer recovery |
+| `vibhinetra.events.dns.v1` | `delete` | 24 hours | TBD | replay/debug buffer and consumer recovery |
+| `vibhinetra.events.tls.v1` | `delete` | 24 hours | TBD | replay/debug buffer and consumer recovery |
 
 Redpanda is treated as a **bounded transport/replay buffer**, not the long-term source of truth for alerts.
 
@@ -336,7 +336,7 @@ Retention should be revisited after volume/throughput measurements and storage a
 Use one shared raw-event DLQ for the MVP:
 
 ```text
-irochi.events.dlq.v1
+vibhinetra.events.dlq.v1
 ```
 
 This keeps the laptop-scale deployment operationally simple.
@@ -406,15 +406,15 @@ Per-topic DLQs remain a valid alternative if later operational analysis shows cl
 The proposed raw-event consumer group is:
 
 ```text
-irochi-feature-processing
+vibhinetra-feature-processing
 ```
 
 It subscribes to:
 
 ```text
-irochi.events.connection.v1
-irochi.events.dns.v1
-irochi.events.tls.v1
+vibhinetra.events.connection.v1
+vibhinetra.events.dns.v1
+vibhinetra.events.tls.v1
 ```
 
 ### Why one consumer group?
@@ -685,7 +685,7 @@ Errors:
 Invalid / poison raw event
              |
              v
-   irochi.events.dlq.v1
+   vibhinetra.events.dlq.v1
 ```
 
 ---
@@ -842,7 +842,7 @@ Before promoting this document from DRAFT to FINAL, verify:
 | Producer idempotence | **PROPOSED** |
 | Consumer duplicate tolerance | **PROPOSED** |
 | JSON | **PROPOSED** |
-| `irochi-feature-processing` group | **PROPOSED** |
+| `vibhinetra-feature-processing` group | **PROPOSED** |
 | Producer compression (`lz4` / `zstd`) | **PROPOSED** |
 | Event-id-based downstream deduplication | **PROPOSED / OPEN** |
 | Redis dependency for cross-partition/shared state | **PROPOSED / OPEN** |

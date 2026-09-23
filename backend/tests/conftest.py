@@ -1,4 +1,4 @@
-"""Pytest fixtures for Irochi backend tests."""
+"""Pytest fixtures for Vibhinetra backend tests."""
 
 from __future__ import annotations
 

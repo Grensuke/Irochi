@@ -1,1 +1,1 @@
-"""Irochi backend application package."""
+"""Vibhinetra backend application package."""

@@ -8,7 +8,8 @@ from app.schemas.detectors import (
     Decision,
     DetectorInput,
     DetectorOutput,
-    SourceFeatureReference
+    SourceFeatureReference,
+    Severity
 )
 from app.services.detectors.base import BaseDetector
 from app.schemas.features import DnsFeatureRecord
@@ -25,8 +26,8 @@ class DnsDetector(BaseDetector):
 
     def _load_model(self):
         """Loads the model artifact outside the git repo."""
-        from app.core.config import IROCHI_DGA_MODEL_PATH
-        model_path = IROCHI_DGA_MODEL_PATH
+        from app.core.config import VIBHINETRA_DGA_MODEL_PATH
+        model_path = VIBHINETRA_DGA_MODEL_PATH
         meta_path = model_path.replace(".joblib", ".meta.json")
 
         try:
@@ -133,6 +134,7 @@ class DnsDetector(BaseDetector):
                 prob = float(self.model.predict_proba(X)[0][1])
 
                 envelope["score"] = prob
+                envelope["confidence"] = prob
                 envelope["evidence"] = {
                     "probability": prob,
                     "threshold": self.threshold,
@@ -142,6 +144,12 @@ class DnsDetector(BaseDetector):
 
                 if prob > self.threshold:
                     envelope["decision"] = Decision.DETECTION
+                    if prob > 0.95:
+                        envelope["severity_candidate"] = Severity.CRITICAL
+                    elif prob > 0.85:
+                        envelope["severity_candidate"] = Severity.HIGH
+                    else:
+                        envelope["severity_candidate"] = Severity.MEDIUM
 
             except Exception as e:
                 logger.error(f"Inference error in DnsDetector: {e}", exc_info=True)

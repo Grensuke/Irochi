@@ -2,7 +2,7 @@
  * VibhinetraLogo — Brand Logo & Emblem Styles
  * ======================================================== */
 
-.irochi-brand-container {
+.vibhinetra-brand-container {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -11,7 +11,7 @@
 }
 
 /* Badge Shell */
-.irochi-logo-badge {
+.vibhinetra-logo-badge {
   position: relative;
   display: flex;
   align-items: center;
@@ -27,7 +27,7 @@
   transition: all var(--transition-normal);
 }
 
-.irochi-logo-badge.has-glow:hover {
+.vibhinetra-logo-badge.has-glow:hover {
   box-shadow: 
     0 0 18px rgba(6, 182, 212, 0.5),
     0 4px 12px rgba(0, 0, 0, 0.6);
@@ -36,7 +36,7 @@
 }
 
 /* Image */
-.irochi-logo-img {
+.vibhinetra-logo-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -46,7 +46,7 @@
 }
 
 /* Subtle Specular Border Overlay */
-.irochi-logo-border {
+.vibhinetra-logo-border {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -56,7 +56,7 @@
 }
 
 /* Brand Text Title */
-.irochi-brand-title {
+.vibhinetra-brand-title {
   font-family: var(--font-mono);
   font-weight: 800;
   font-size: 1.05rem;
@@ -66,30 +66,30 @@
 }
 
 /* Size Variants */
-.irochi-size-xs .irochi-logo-badge {
+.vibhinetra-size-xs .vibhinetra-logo-badge {
   border-radius: 5px;
 }
 
-.irochi-size-sm .irochi-logo-badge {
+.vibhinetra-size-sm .vibhinetra-logo-badge {
   border-radius: 7px;
 }
 
-.irochi-size-md .irochi-logo-badge {
+.vibhinetra-size-md .vibhinetra-logo-badge {
   border-radius: 9px;
 }
 
-.irochi-size-lg .irochi-logo-badge {
+.vibhinetra-size-lg .vibhinetra-logo-badge {
   border-radius: 12px;
 }
 
-.irochi-size-xl .irochi-logo-badge {
+.vibhinetra-size-xl .vibhinetra-logo-badge {
   border-radius: 16px;
 }
 
 /* ========================================================
  * Light Mode Theme Overrides
  * ======================================================== */
-[data-theme="light"] .irochi-logo-badge {
+[data-theme="light"] .vibhinetra-logo-badge {
   background-color: #0f172a;
   border: 1px solid rgba(15, 23, 42, 0.25);
   box-shadow: 
@@ -97,7 +97,7 @@
     0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-[data-theme="light"] .irochi-logo-badge.has-glow:hover {
+[data-theme="light"] .vibhinetra-logo-badge.has-glow:hover {
   box-shadow: 
     0 4px 14px rgba(15, 23, 42, 0.24),
     0 0 12px rgba(6, 182, 212, 0.3);

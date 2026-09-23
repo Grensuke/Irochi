@@ -41,8 +41,8 @@ class ExfiltrationDetector(BaseDetector):
         self._load_model()
 
     def _load_model(self):
-        from app.core.config import IROCHI_EXFIL_MODEL_PATH
-        model_path = IROCHI_EXFIL_MODEL_PATH
+        from app.core.config import VIBHINETRA_EXFIL_MODEL_PATH
+        model_path = VIBHINETRA_EXFIL_MODEL_PATH
         meta_path = model_path.replace(".joblib", ".meta.json")
 
         try:
@@ -185,9 +185,9 @@ class ExfiltrationDetector(BaseDetector):
 
             if confidence >= self.confidence_cutoff and triggers >= self.min_triggers:
                 envelope["decision"] = Decision.DETECTION
-                if confidence > 0.9:
+                if confidence >= 0.85:
                     envelope["severity_candidate"] = Severity.CRITICAL
-                elif confidence > 0.75:
+                elif confidence >= 0.70:
                     envelope["severity_candidate"] = Severity.HIGH
                 else:
                     envelope["severity_candidate"] = Severity.MEDIUM

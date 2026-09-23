@@ -1,1 +1,1 @@
-"""Irochi schemas package."""
+"""Vibhinetra schemas package."""

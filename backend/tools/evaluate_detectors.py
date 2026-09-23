@@ -25,7 +25,7 @@ from app.schemas.detectors import DetectorInput, Decision, DetectorOutput, Threa
 from app.services.detectors.ddos import DdosDetector
 from app.services.detectors.recon import ReconDetector
 
-DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
+DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Vibhinetra-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
 # =====================================================================
 # LEGACY BASELINES

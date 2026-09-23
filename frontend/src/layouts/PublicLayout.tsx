@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { MeniscusNavbar } from '../components/MeniscusNavbar';
 import type { MeniscusItem } from '../components/MeniscusNavbar';
-import { IrochiLogo } from '../components/IrochiLogo';
+import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import './PublicLayout.css';
 
 const PUBLIC_NAV_ITEMS: MeniscusItem[] = [
@@ -138,7 +138,7 @@ export function PublicLayout() {
       <header className="public-header">
         <div className="public-header-container">
           <Link to="/" className="public-brand">
-            <IrochiLogo size={32} showText />
+            <VibhinetraLogo size={32} showText />
           </Link>
 
           {/* Desktop Meniscus Nav */}

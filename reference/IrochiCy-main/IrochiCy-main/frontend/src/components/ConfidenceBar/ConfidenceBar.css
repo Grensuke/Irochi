@@ -1,0 +1,7 @@
+.confidence-bar { display: flex; align-items: center; gap: var(--space-2); }
+.confidence-bar__value { font-family: var(--font-mono); font-size: var(--text-sm); min-width: 36px; }
+.confidence-bar__track { flex: 1; height: 5px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
+.confidence-bar__fill { height: 100%; border-radius: 3px; transition: width var(--transition-normal); background: var(--gradient-accent-h); box-shadow: 0 0 6px rgba(0,212,184,0.2); }
+.confidence-bar--large .confidence-bar__track { height: 8px; border-radius: 4px; }
+.confidence-bar--large .confidence-bar__value { font-size: var(--text-base); font-weight: 500; }
+.confidence-bar--large .confidence-bar__fill { box-shadow: 0 0 10px rgba(0,212,184,0.3); }

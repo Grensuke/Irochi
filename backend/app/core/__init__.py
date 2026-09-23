@@ -1,1 +1,1 @@
-"""Irochi core configuration."""
+"""Vibhinetra core configuration."""

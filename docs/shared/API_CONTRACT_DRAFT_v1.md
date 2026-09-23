@@ -648,7 +648,7 @@ This distinction is **preserved explicitly**:
 
 ### "Closed" semantics
 
-"Closed" is an analyst workflow status. It does **not** imply Irochi mitigated or stopped the threat. Irochi is a passive detection/intelligence system.
+"Closed" is an analyst workflow status. It does **not** imply Vibhinetra mitigated or stopped the threat. Vibhinetra is a passive detection/intelligence system.
 
 ---
 

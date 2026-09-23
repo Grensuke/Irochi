@@ -1,5 +1,5 @@
 # ==================================================
-# Irochi Backend — Dockerfile (Dummy Phase)
+# Vibhinetra Backend — Dockerfile (Dummy Phase)
 # ==================================================
 # Minimal FastAPI dummy-app container.
 # Matches docker-compose.yml expectations:

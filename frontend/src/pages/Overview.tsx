@@ -3,6 +3,7 @@
  * Dark operations-console aesthetic, high density, SVG-based charts.
  */
 
+import { useEffect } from 'react';
 import { useDashboard } from '../hooks/useDashboard';
 import { useAlerts } from '../hooks/useAlerts';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
@@ -20,9 +21,17 @@ import { formatTimestamp } from '../utils/format';
 import './Overview.css';
 
 export function Overview() {
-  const { summary, loading: summaryLoading, error: summaryError, isMock: summaryMock } = useDashboard();
-  const { alerts, loading: alertsLoading, isMock: alertsMock } = useAlerts();
+  const { summary, loading: summaryLoading, error: summaryError, isMock: summaryMock, refetch: refetchSummary } = useDashboard();
+  const { alerts, loading: alertsLoading, isMock: alertsMock, refetch: refetchAlerts } = useAlerts();
   const { liveAlerts, connectionState } = useLiveAlerts();
+
+  // Refetch the REST endpoints whenever a new live alert arrives via WebSocket
+  useEffect(() => {
+    if (liveAlerts.length > 0) {
+      refetchSummary();
+      refetchAlerts();
+    }
+  }, [liveAlerts[0]?.alert.id, refetchSummary, refetchAlerts]);
 
   return (
     <div className="overview-page">

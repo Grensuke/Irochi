@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { IrochiLogo } from '../components/IrochiLogo';
+import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import './Login.css';
 
 export function Login() {
@@ -40,7 +40,7 @@ export function Login() {
       <div className="login-card animate-fade-in">
         <div className="login-header">
           <Link to="/" className="login-brand">
-            <IrochiLogo size={44} showText />
+            <VibhinetraLogo size={44} showText />
           </Link>
           <h1>Sign in to your account</h1>
           <p className="login-subtitle">Threat intelligence dashboard</p>

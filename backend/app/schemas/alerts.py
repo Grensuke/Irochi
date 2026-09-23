@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 
 # ------------------------------------------------------------------
-# Enums — threat taxonomy per IROCHI_INIT_PROMPT.md Section 12
+# Enums — threat taxonomy per VIBHINETRA_INIT_PROMPT.md Section 12
 # ------------------------------------------------------------------
 
 

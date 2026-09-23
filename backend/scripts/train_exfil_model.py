@@ -23,8 +23,8 @@ except ImportError:
     print("XGBoost is not installed. Exiting.")
     sys.exit(1)
 
-DATASET_PATH = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling\Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv"
-MODEL_SAVE_DIR = r"C:\Users\STARK\Documents\Irochi-Data\models"
+DATASET_PATH = r"C:\Users\STARK\Documents\Vibhinetra-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling\Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv"
+MODEL_SAVE_DIR = r"C:\Users\STARK\Documents\Vibhinetra-Data\models"
 
 def load_and_preprocess_data():
     print(f"Loading {DATASET_PATH}...")

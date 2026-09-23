@@ -1,1 +1,1 @@
-"""Irochi API routes package."""
+"""Vibhinetra API routes package."""

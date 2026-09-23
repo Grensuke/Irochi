@@ -1,5 +1,5 @@
 # ==================================================
-# Irochi Frontend — Dockerfile (Dummy Phase)
+# Vibhinetra Frontend — Dockerfile (Dummy Phase)
 # ==================================================
 # Minimal React + Vite development container.
 # Matches docker-compose.yml expectations:

@@ -15,7 +15,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
 import { VerticalMeniscusRail } from '../components/VerticalMeniscusRail';
 import type { VerticalNavItem } from '../components/VerticalMeniscusRail';
-import { IrochiLogo } from '../components/IrochiLogo';
+import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import './AppLayout.css';
 
 const ICONS: Record<string, ReactNode> = {
@@ -132,7 +132,7 @@ export function AppLayout() {
 
         <div className="sidebar-brand">
           <Link to="/" className="sidebar-brand-link">
-            <IrochiLogo size={24} />
+            <VibhinetraLogo size={24} />
             {!collapsed && (
               <div className="sidebar-brand-meta">
                 <span className="sidebar-brand-text">VIBHINETRA</span>

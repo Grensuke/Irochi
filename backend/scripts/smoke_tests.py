@@ -27,7 +27,7 @@ async def send_connection(producer, src, dst, ts, orig_bytes=100, resp_bytes=200
             "history": "ShADadFf"
         }
     }
-    await producer.send_and_wait("irochi.events.connection.v1", json.dumps(event).encode('utf-8'))
+    await producer.send_and_wait("vibhinetra.events.connection.v1", json.dumps(event).encode('utf-8'))
 
 async def send_dns(producer, src, query, ts):
     event = {
@@ -51,7 +51,7 @@ async def send_dns(producer, src, query, ts):
             "answers": ["192.168.1.1"]
         }
     }
-    await producer.send_and_wait("irochi.events.dns.v1", json.dumps(event).encode('utf-8'))
+    await producer.send_and_wait("vibhinetra.events.dns.v1", json.dumps(event).encode('utf-8'))
 
 
 async def main():

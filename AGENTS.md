@@ -1,14 +1,14 @@
-# AGENTS.md — Irochi Project Root
+# AGENTS.md — Vibhinetra Project Root
 
 ## Project
 
-**Irochi**
+**Vibhinetra**
 
 **Problem Statement:** SIH26145
 
 **Problem Statement Title:** AI-Based Detection of Cyber Threats in Unidirectional IP Traffic
 
-Irochi is a passive/read-only cyber-threat detection and security-intelligence system for unidirectional IP traffic.
+Vibhinetra is a passive/read-only cyber-threat detection and security-intelligence system for unidirectional IP traffic.
 
 The system:
 - observes passively collected traffic;
@@ -155,7 +155,7 @@ Especially:
 - Five detector modules are logical modules, not five services.
 - NetFlow/IPFIX does not go through Zeek.
 - Raw canonical data and derived/windowed features remain separate.
-- Irochi remains passive/read-only.
+- Vibhinetra remains passive/read-only.
 
 If implementation pressure conflicts with these rules, stop and report it instead of weakening the architecture silently.
 
@@ -311,7 +311,7 @@ When a backend change affects frontend behavior:
 Frontend agents must:
 
 - use React + Vite + TypeScript;
-- preserve the established Irochi product shell/design system;
+- preserve the established Vibhinetra product shell/design system;
 - use the shared API/data contracts;
 - not invent backend capabilities;
 - use mock services for unfinished backend functionality;
@@ -475,7 +475,7 @@ One detector may produce multiple threat classes.
 
 ## Passive / Read-Only Product Semantics
 
-Irochi is an intelligence/detection system.
+Vibhinetra is an intelligence/detection system.
 
 "Closed" is an analyst workflow status.
 
@@ -485,7 +485,7 @@ Irochi is an intelligence/detection system.
 - traffic blocking;
 - automatic remediation.
 
-Avoid terminology that implies Irochi can act back on the production network.
+Avoid terminology that implies Vibhinetra can act back on the production network.
 
 ---
 
@@ -506,7 +506,7 @@ Do not make broad repository changes when the task is narrowly scoped.
 
 ## Final Instruction
 
-Keep `AGENTS.md` concise enough to be practical, but complete enough that a new AI agent can understand how Irochi is governed without relying on previous chat history.
+Keep `AGENTS.md` concise enough to be practical, but complete enough that a new AI agent can understand how Vibhinetra is governed without relying on previous chat history.
 
 Do not add speculative architecture.
 

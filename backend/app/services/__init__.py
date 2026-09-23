@@ -1,1 +1,1 @@
-"""Irochi services package."""
+"""Vibhinetra services package."""

@@ -16,9 +16,9 @@ class ZeekIngestPipeline:
         self.normalizer = IngestNormalizer()
         self.kafka_bootstrap_servers = kafka_bootstrap_servers
 
-        self.TOPIC_CONNECTION = "irochi.events.connection.v1"
-        self.TOPIC_DNS = "irochi.events.dns.v1"
-        self.TOPIC_TLS = "irochi.events.tls.v1"
+        self.TOPIC_CONNECTION = "vibhinetra.events.connection.v1"
+        self.TOPIC_DNS = "vibhinetra.events.dns.v1"
+        self.TOPIC_TLS = "vibhinetra.events.tls.v1"
 
     def run_zeek_on_pcap(self, pcap_path: str, bpf_filter: str = None) -> Path:
         """

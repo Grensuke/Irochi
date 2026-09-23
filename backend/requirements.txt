@@ -1,5 +1,5 @@
 # ==================================================
-# Irochi Backend — Python Dependencies
+# Vibhinetra Backend — Python Dependencies
 # ==================================================
 # Pinned versions for reproducibility.
 # ==================================================

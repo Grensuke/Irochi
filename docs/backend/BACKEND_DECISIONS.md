@@ -1,4 +1,4 @@
-# Backend Decisions — Irochi
+# Backend Decisions — Vibhinetra
 
 > **This file records stable backend-area decisions.**
 > It is NOT a chat history. Add entries when decisions are made.
@@ -80,9 +80,9 @@ These values are not yet formally locked in the final API contract but are used 
 
 All raw canonical-event Redpanda topics use `src_ip` as the partition key:
 
-- `irochi.events.connection.v1` → `hash(src_ip)`
-- `irochi.events.dns.v1` → `hash(src_ip)`
-- `irochi.events.tls.v1` → `hash(src_ip)`
+- `vibhinetra.events.connection.v1` → `hash(src_ip)`
+- `vibhinetra.events.dns.v1` → `hash(src_ip)`
+- `vibhinetra.events.tls.v1` → `hash(src_ip)`
 
 This decision was approved after evaluating the Feature/Window aggregation requirements. Destination-centric DDoS aggregation and pair-centric C2 beaconing require downstream shared state rather than relying on raw-topic partition locality. The currently defined TLS features provide no identified benefit from TLS-topic `(src_ip, dst_ip)` locality.
 
@@ -95,3 +95,9 @@ This locks the partition key only. It does not lock raw-topic partition counts, 
 **Status:** Locked
 
 All ML-based detector signals (such as XGBoost models or River streaming algorithms) must implement graceful fallback mechanisms. If a required model artifact is missing or an ML dependency fails to load (e.g. Cython build issues on specific operating systems), the detector must catch the exception, log a warning/error, and fall back to purely rule-based evaluation rather than crashing the pipeline.
+
+## BD-011: Dynamic Severity Distribution vs Default Fallbacks
+
+**Status:** Locked
+
+Detectors must actively evaluate confidence, probability scores, and statistical deviations to compute a dynamic `severity_candidate` (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`) rather than relying on a hardcoded fallback (`None`). The `AlertEngine` relies on this distribution to paint an accurate and prioritized operational picture on the SOC dashboard. Hardcoded `MEDIUM` defaults are prohibited for functional detectors.

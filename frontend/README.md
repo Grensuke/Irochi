@@ -1,8 +1,8 @@
-# Irochi — Frontend
+# Vibhinetra — Frontend
 
 **SIH 2026 — Problem Statement SIH26145**
 
-The React + Vite + TypeScript frontend product shell for the Irochi threat-detection system. It provides security intelligence dashboards, alert review, and network telemetry visualization.
+The React + Vite + TypeScript frontend product shell for the Vibhinetra threat-detection system. It provides security intelligence dashboards, alert review, and network telemetry visualization.
 
 ## Architecture & Integration Status
 

@@ -41,24 +41,24 @@ def parse_pair_key(pair_key: str) -> tuple[str, str]:
 
 def build_sliding_bucket_key(entity_type: EntityType, entity_key: str, time_bucket: int) -> str:
     """Builds the Redis key for a sliding window bucket."""
-    return f"irochi:feature:{entity_type.value}:{entity_key}:bucket:{time_bucket}"
+    return f"vibhinetra:feature:{entity_type.value}:{entity_key}:bucket:{time_bucket}"
 
 def build_tumbling_distinct_key(entity_type: EntityType, entity_key: str, window_id: int, field: str) -> str:
     """Builds the Redis key for a tumbling window distinct (HLL) state."""
-    return f"irochi:feature:{entity_type.value}:{entity_key}:hll:{window_id}:{field}"
+    return f"vibhinetra:feature:{entity_type.value}:{entity_key}:hll:{window_id}:{field}"
 
 def build_tumbling_metric_key(entity_type: EntityType, entity_key: str, window_id: int) -> str:
     """Builds the Redis key for a tumbling window metric state (Hash)."""
-    return f"irochi:feature:{entity_type.value}:{entity_key}:tumbling:{window_id}"
+    return f"vibhinetra:feature:{entity_type.value}:{entity_key}:tumbling:{window_id}"
 
 def build_tumbling_list_key(entity_type: EntityType, entity_key: str, window_id: int, field: str) -> str:
     """Builds the Redis key for a tumbling window list state."""
-    return f"irochi:feature:{entity_type.value}:{entity_key}:list:{window_id}:{field}"
+    return f"vibhinetra:feature:{entity_type.value}:{entity_key}:list:{window_id}:{field}"
 
 def build_correlation_key(connection_id: str) -> str:
     """Builds the Redis key for connection correlation state."""
-    return f"irochi:feature:connection:{connection_id}:correlation"
+    return f"vibhinetra:feature:connection:{connection_id}:correlation"
 
 def build_revision_key(entity_type: EntityType, entity_key: str) -> str:
     """Builds the Redis key for entity revision sequences."""
-    return f"irochi:revision:{entity_type.value}:{entity_key}"
+    return f"vibhinetra:revision:{entity_type.value}:{entity_key}"

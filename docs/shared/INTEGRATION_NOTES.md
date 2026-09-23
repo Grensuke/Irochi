@@ -1,4 +1,4 @@
-# Integration Notes — Irochi
+# Integration Notes — Vibhinetra
 
 > **This file tracks active frontend ↔ backend integration requests.**
 > It is for current integration work, not permanent architecture history.

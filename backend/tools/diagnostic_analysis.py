@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from tools.evaluate_detectors import custom_agg_ddos, custom_agg_recon, clean_columns
 
-DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
+DEFAULT_DATASET_ROOT = r"C:\Users\STARK\Documents\Vibhinetra-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling"
 
 
 

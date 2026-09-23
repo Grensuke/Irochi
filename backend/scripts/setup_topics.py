@@ -14,12 +14,12 @@ def setup_topics():
     Production partition counts, retention, and downstream topic topology remain OPEN.
     """
     topics = [
-        "irochi.events.connection.v1",
-        "irochi.events.dns.v1",
-        "irochi.events.tls.v1"
+        "vibhinetra.events.connection.v1",
+        "vibhinetra.events.dns.v1",
+        "vibhinetra.events.tls.v1"
     ]
 
-    container_name = "irochi-redpanda"
+    container_name = "vibhinetra-redpanda"
 
     logger.info("Bootstrapping raw event topics (DEVELOPMENT CONFIG ONLY)...")
 

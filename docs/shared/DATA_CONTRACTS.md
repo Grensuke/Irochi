@@ -1,4 +1,4 @@
-# Data Contracts — Irochi
+# Data Contracts — Vibhinetra
 
 > **This file documents cross-team data contracts.**
 > It references the canonical sources rather than duplicating them.

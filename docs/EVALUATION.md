@@ -1,6 +1,6 @@
-# Irochi Detector Evaluation
+# Vibhinetra Detector Evaluation
 
-This document outlines the evaluation methodology and findings for the Irochi detection pipeline. It separates the formal testing (Level 1) from the dataset-driven evaluation (Level 2).
+This document outlines the evaluation methodology and findings for the Vibhinetra detection pipeline. It separates the formal testing (Level 1) from the dataset-driven evaluation (Level 2).
 
 ## Evaluation Levels
 
@@ -11,7 +11,7 @@ Level 1 is a synthetic, deterministic test suite that invokes the real detector 
 
 ### Level 2: CIC-IDS2017 Methodology (Evaluated)
 Level 2 evaluates the detectors against the external CIC-IDS2017 dataset.
-- **Dataset Source**: `C:\Users\STARK\Documents\Irochi-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling\`
+- **Dataset Source**: `C:\Users\STARK\Documents\Vibhinetra-Data\CIC-IDS2017\GeneratedLabelledFlows\TrafficLabelling\`
 - **Ground Truth Definition**: "A window is malicious if it contains at least one flow explicitly labeled with the target attack." (Incident-presence evaluation).
 - **Tooling**: `evaluate_detectors.py`, `diagnostic_analysis.py`, `sensitivity_analysis.py`, and `cross_validation.py`. This tooling runs the real detector logic against the dataset offline without modifying the production detector code.
 

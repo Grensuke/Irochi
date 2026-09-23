@@ -374,13 +374,13 @@ state forms:
 
 ```text
 Sliding window:
-irochi:feature:<entity_type>:<entity_key>:bucket:<time_bucket>
+vibhinetra:feature:<entity_type>:<entity_key>:bucket:<time_bucket>
 
 Tumbling window:
-irochi:feature:<entity_type>:<entity_key>:window:<window_id>
+vibhinetra:feature:<entity_type>:<entity_key>:window:<window_id>
 
 Session / correlation:
-irochi:feature:<entity_type>:<entity_key>:correlation:<correlation_id>
+vibhinetra:feature:<entity_type>:<entity_key>:correlation:<correlation_id>
 ```
 
 The intended model is:
@@ -432,17 +432,17 @@ This section defines the structural Redis state required by the Feature/Window a
 
 | State ID | Feature(s) | Entity | Mechanism | Redis required? | In-memory allowed? | Redis key shape | Redis data structure | Write/update operation | Read/evaluation operation | Snapshot output | Atomicity requirement | TTL principle | Recovery consideration | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| DDOS-DST-COUNTERS | `packet_rate`, `byte_rate`, `syn_ratio` | Destination | Sliding | **Yes** — destination state requires cross-worker sharing | No — destination events are scattered across source-keyed partitions | `irochi:feature:destination:<dst_ip>:bucket:<time_bucket>` | Hash | `HINCRBY` per counter field | Aggregate relevant time buckets, compute rate/ratio | DdosFeaturePayload snapshot | Atomic per-field increment (no read-modify-write) | Bucket lifetime + late-arrival grace | Replay from Redpanda within 24h raw retention; longer windows may need checkpointing | PROPOSED |
-| DDOS-DST-CARDINALITY | `source_ip_entropy` — distinct source count component | Destination | Sliding | **Yes** — same cross-worker requirement as DDOS-DST-COUNTERS | No | `irochi:feature:destination:<dst_ip>:hll:<time_bucket>` | HyperLogLog | `PFADD <src_ip>` | `PFCOUNT` or `PFMERGE` across relevant buckets | Feeds into entropy estimation alongside frequency state | Atomic (PFADD is inherently idempotent) | Same as DDOS-DST-COUNTERS | Same as DDOS-DST-COUNTERS | PROPOSED |
-| DDOS-DST-ENTROPY | `source_ip_entropy` — frequency/distribution component | Destination | Sliding | **Yes** | No | `irochi:feature:destination:<dst_ip>:freq:<time_bucket>` | Hash with per-source counters, or probabilistic frequency sketch (implementation choice OPEN) | `HINCRBY` per frequency bucket | Read frequency distribution, compute entropy estimate | Combined with DDOS-DST-CARDINALITY to produce entropy value | Atomic per-field increment | Same as DDOS-DST-COUNTERS | Same as DDOS-DST-COUNTERS | PROPOSED / OPEN (implementation choice) |
-| RECON-SRC-BREADTH | `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out` | Source | Tumbling | Conditional — source locality may allow in-memory under current partitioning | **Yes** — source events land on the same partition under `src_ip` key | `irochi:feature:source:<src_ip>:window:<window_id>` | HyperLogLog (one per distinct-count metric per window) or Hash accumulator for fan-out count | `PFADD <dst_port>` / `PFADD <dst_ip>` / `HINCRBY fan_out 1` | `PFCOUNT` for distinct counts; `HGET` for fan-out | ReconFeaturePayload snapshot | PFADD idempotent; HINCRBY atomic | Window lifetime + grace | Replay from Redpanda within 24h retention | PROPOSED |
-| RECON-SRC-RATE | `scan_rate` | Source | Sliding | Conditional — same source-locality consideration | **Yes** | `irochi:feature:source:<src_ip>:bucket:<time_bucket>` | Hash (field = `scan_count`, value = count) | `HINCRBY scan_count 1` | Aggregate relevant buckets, compute rate | Part of ReconFeaturePayload | Atomic increment | Bucket lifetime + grace | Replay within retention | PROPOSED |
-| DNS-SRC-FREQ | `query_frequency` | Source | Sliding | Conditional | **Yes** | `irochi:feature:source:<src_ip>:bucket:<time_bucket>` | Hash (field = `dns_query_count`) | `HINCRBY dns_query_count 1` | Aggregate buckets, compute rate | DnsFeaturePayload windowed fields | Atomic increment | Bucket lifetime + grace | Replay within retention | PROPOSED |
-| DNS-SRC-DIST | record-type distribution | Source | Tumbling | Conditional | **Yes** | `irochi:feature:source:<src_ip>:window:<window_id>` | Hash (field per record type: `A`, `AAAA`, `MX`, `TXT`, `CNAME`, etc.; value = count) | `HINCRBY <record_type> 1` | `HGETALL`, compute distribution ratios | DnsFeaturePayload windowed fields | Atomic per-field increment | Window lifetime + grace | Replay within retention | PROPOSED |
-| BEACON-PAIR-T1 | (gating state — no feature output) | Pair | Sliding workflow — Tier 1 gating state | **Yes** — pair locality not guaranteed under source-keyed partitions | No | `irochi:feature:pair:<src_ip>|<dst_ip>:tier1` | Hash (fields: `count`, `first_seen`, `last_seen`) | `HINCRBY count 1`, `HSET last_seen <ts>`, conditional `HSETNX first_seen <ts>` | Check `count` against promotion threshold | None — Tier 1 does not emit feature records | Atomic via pipeline or Lua script | Tier 1 lifetime (shorter than Tier 2) | Tier 1 is lightweight; loss acceptable, pair re-enters on next observation | PROPOSED |
-| BEACON-PAIR-T2 | `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Pair | Sliding | **Yes** | No | `irochi:feature:pair:<src_ip>|<dst_ip>:tier2` | Hash (summary stats) + List or Sorted Set (bounded recent inter-arrival times) | Append new inter-arrival observation; update summary counters | Read bounded observation history; compute periodicity/variance/regularity | TlsC2FeaturePayload beaconing fields — full snapshot | Atomic append + summary update via Lua script or pipeline | Tier 2 lifetime (longer than Tier 1) | Higher-value state; may warrant checkpointing if window horizon approaches 24h | PROPOSED |
-| EXFIL-SRC-RATE | `outbound_inbound_ratio`, `byte_rate` | Source | Sliding | Conditional | **Yes** | `irochi:feature:source:<src_ip>:bucket:<time_bucket>` | Hash (fields: `outbound_bytes`, `inbound_bytes`, `total_bytes`) | `HINCRBY` per directional byte counter | Aggregate buckets; compute ratio and rate | ExfilFeaturePayload snapshot | Atomic per-field increment | Bucket lifetime + grace | Replay within retention | PROPOSED |
-| CORR-CONN | Flow-level join (`connection` ↔ `tls`) | Connection | Correlation | **Yes** — `connection` and `tls` events may arrive on different partitions | No | `irochi:feature:connection:<connection_id>:correlation` | Hash (fields populated incrementally as each side arrives) | `HSET` / `HMSET` for arriving side's fields | Check completeness (both sides present?) | TlsC2FeaturePayload correlation fields with `correlation_status` | Atomic field-set (HSET is inherently atomic per field) | Correlation timeout + grace | Short-lived; loss means the correlation is re-attempted on next matching event or marked partial | PROPOSED |
+| DDOS-DST-COUNTERS | `packet_rate`, `byte_rate`, `syn_ratio` | Destination | Sliding | **Yes** — destination state requires cross-worker sharing | No — destination events are scattered across source-keyed partitions | `vibhinetra:feature:destination:<dst_ip>:bucket:<time_bucket>` | Hash | `HINCRBY` per counter field | Aggregate relevant time buckets, compute rate/ratio | DdosFeaturePayload snapshot | Atomic per-field increment (no read-modify-write) | Bucket lifetime + late-arrival grace | Replay from Redpanda within 24h raw retention; longer windows may need checkpointing | PROPOSED |
+| DDOS-DST-CARDINALITY | `source_ip_entropy` — distinct source count component | Destination | Sliding | **Yes** — same cross-worker requirement as DDOS-DST-COUNTERS | No | `vibhinetra:feature:destination:<dst_ip>:hll:<time_bucket>` | HyperLogLog | `PFADD <src_ip>` | `PFCOUNT` or `PFMERGE` across relevant buckets | Feeds into entropy estimation alongside frequency state | Atomic (PFADD is inherently idempotent) | Same as DDOS-DST-COUNTERS | Same as DDOS-DST-COUNTERS | PROPOSED |
+| DDOS-DST-ENTROPY | `source_ip_entropy` — frequency/distribution component | Destination | Sliding | **Yes** | No | `vibhinetra:feature:destination:<dst_ip>:freq:<time_bucket>` | Hash with per-source counters, or probabilistic frequency sketch (implementation choice OPEN) | `HINCRBY` per frequency bucket | Read frequency distribution, compute entropy estimate | Combined with DDOS-DST-CARDINALITY to produce entropy value | Atomic per-field increment | Same as DDOS-DST-COUNTERS | Same as DDOS-DST-COUNTERS | PROPOSED / OPEN (implementation choice) |
+| RECON-SRC-BREADTH | `unique_destination_ports`, `unique_destination_hosts`, `connection_fan_out` | Source | Tumbling | Conditional — source locality may allow in-memory under current partitioning | **Yes** — source events land on the same partition under `src_ip` key | `vibhinetra:feature:source:<src_ip>:window:<window_id>` | HyperLogLog (one per distinct-count metric per window) or Hash accumulator for fan-out count | `PFADD <dst_port>` / `PFADD <dst_ip>` / `HINCRBY fan_out 1` | `PFCOUNT` for distinct counts; `HGET` for fan-out | ReconFeaturePayload snapshot | PFADD idempotent; HINCRBY atomic | Window lifetime + grace | Replay from Redpanda within 24h retention | PROPOSED |
+| RECON-SRC-RATE | `scan_rate` | Source | Sliding | Conditional — same source-locality consideration | **Yes** | `vibhinetra:feature:source:<src_ip>:bucket:<time_bucket>` | Hash (field = `scan_count`, value = count) | `HINCRBY scan_count 1` | Aggregate relevant buckets, compute rate | Part of ReconFeaturePayload | Atomic increment | Bucket lifetime + grace | Replay within retention | PROPOSED |
+| DNS-SRC-FREQ | `query_frequency` | Source | Sliding | Conditional | **Yes** | `vibhinetra:feature:source:<src_ip>:bucket:<time_bucket>` | Hash (field = `dns_query_count`) | `HINCRBY dns_query_count 1` | Aggregate buckets, compute rate | DnsFeaturePayload windowed fields | Atomic increment | Bucket lifetime + grace | Replay within retention | PROPOSED |
+| DNS-SRC-DIST | record-type distribution | Source | Tumbling | Conditional | **Yes** | `vibhinetra:feature:source:<src_ip>:window:<window_id>` | Hash (field per record type: `A`, `AAAA`, `MX`, `TXT`, `CNAME`, etc.; value = count) | `HINCRBY <record_type> 1` | `HGETALL`, compute distribution ratios | DnsFeaturePayload windowed fields | Atomic per-field increment | Window lifetime + grace | Replay within retention | PROPOSED |
+| BEACON-PAIR-T1 | (gating state — no feature output) | Pair | Sliding workflow — Tier 1 gating state | **Yes** — pair locality not guaranteed under source-keyed partitions | No | `vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier1` | Hash (fields: `count`, `first_seen`, `last_seen`) | `HINCRBY count 1`, `HSET last_seen <ts>`, conditional `HSETNX first_seen <ts>` | Check `count` against promotion threshold | None — Tier 1 does not emit feature records | Atomic via pipeline or Lua script | Tier 1 lifetime (shorter than Tier 2) | Tier 1 is lightweight; loss acceptable, pair re-enters on next observation | PROPOSED |
+| BEACON-PAIR-T2 | `inter_arrival_time`, `beacon_periodicity`, periodicity variance, regularity, connection frequency | Pair | Sliding | **Yes** | No | `vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier2` | Hash (summary stats) + List or Sorted Set (bounded recent inter-arrival times) | Append new inter-arrival observation; update summary counters | Read bounded observation history; compute periodicity/variance/regularity | TlsC2FeaturePayload beaconing fields — full snapshot | Atomic append + summary update via Lua script or pipeline | Tier 2 lifetime (longer than Tier 1) | Higher-value state; may warrant checkpointing if window horizon approaches 24h | PROPOSED |
+| EXFIL-SRC-RATE | `outbound_inbound_ratio`, `byte_rate` | Source | Sliding | Conditional | **Yes** | `vibhinetra:feature:source:<src_ip>:bucket:<time_bucket>` | Hash (fields: `outbound_bytes`, `inbound_bytes`, `total_bytes`) | `HINCRBY` per directional byte counter | Aggregate buckets; compute ratio and rate | ExfilFeaturePayload snapshot | Atomic per-field increment | Bucket lifetime + grace | Replay within retention | PROPOSED |
+| CORR-CONN | Flow-level join (`connection` ↔ `tls`) | Connection | Correlation | **Yes** — `connection` and `tls` events may arrive on different partitions | No | `vibhinetra:feature:connection:<connection_id>:correlation` | Hash (fields populated incrementally as each side arrives) | `HSET` / `HMSET` for arriving side's fields | Check completeness (both sides present?) | TlsC2FeaturePayload correlation fields with `correlation_status` | Atomic field-set (HSET is inherently atomic per field) | Correlation timeout + grace | Short-lived; loss means the correlation is re-attempted on next matching event or marked partial | PROPOSED |
 
 ### 9a.2 DDoS Destination State
 
@@ -455,7 +455,7 @@ DDoS destination state must support four features computed over a Sliding window
 
 #### Counter state (packet_rate, byte_rate, syn_ratio)
 
-**Redis key:** `irochi:feature:destination:<dst_ip>:bucket:<time_bucket>`
+**Redis key:** `vibhinetra:feature:destination:<dst_ip>:bucket:<time_bucket>`
 
 **Data structure:** Redis Hash with atomic counter fields:
 
@@ -468,7 +468,7 @@ fields:
 
 **Write:** On each `connection` event whose `dst_ip` matches:
 - Determine `time_bucket` from event timestamp
-- `HINCRBY irochi:feature:destination:<dst_ip>:bucket:<time_bucket> total_packets 1`
+- `HINCRBY vibhinetra:feature:destination:<dst_ip>:bucket:<time_bucket> total_packets 1`
 - `HINCRBY ... total_bytes <orig_bytes + resp_bytes>`
 - `HINCRBY ... syn_packets 1` (if SYN flag present)
 
@@ -489,10 +489,10 @@ fields:
 
 **Distinct count — HyperLogLog baseline (PROPOSED):**
 
-**Redis key:** `irochi:feature:destination:<dst_ip>:hll:<time_bucket>`
+**Redis key:** `vibhinetra:feature:destination:<dst_ip>:hll:<time_bucket>`
 
 ```text
-PFADD irochi:feature:destination:<dst_ip>:hll:<time_bucket> <src_ip>
+PFADD vibhinetra:feature:destination:<dst_ip>:hll:<time_bucket> <src_ip>
 ```
 
 HyperLogLog provides O(1) memory (~12KB per key) with ~0.81% standard error. It is inherently idempotent — adding the same `src_ip` twice has no effect.
@@ -507,7 +507,7 @@ HyperLogLog cannot provide entropy by itself; entropy requires frequency distrib
 
 **Minimum state required:** A bounded approximation of the per-source frequency distribution within each time bucket. Candidate approaches include:
 
-- **Hash with per-source counters:** `HINCRBY irochi:feature:destination:<dst_ip>:freq:<time_bucket> <src_ip> <packet_count>` — exact but memory proportional to unique source count per bucket
+- **Hash with per-source counters:** `HINCRBY vibhinetra:feature:destination:<dst_ip>:freq:<time_bucket> <src_ip> <packet_count>` — exact but memory proportional to unique source count per bucket
 - **Probabilistic frequency sketch** (e.g. Count-Min Sketch): bounded memory, approximate frequency estimation — but Redis does not natively support CMS; would require a module or application-level implementation
 - **Binned/bucketed frequency histogram:** group source IPs into a fixed number of frequency bins — bounded memory, approximate entropy
 
@@ -525,15 +525,15 @@ Recon source state must support two structurally different feature classes:
 
 These are distinct-count problems. `unique_destination_ports` counts how many distinct destination ports a source contacted within a Tumbling window. `unique_destination_hosts` counts distinct destination IPs. `connection_fan_out` counts total connections (a simple counter, not a distinct-count problem).
 
-**Redis key:** `irochi:feature:source:<src_ip>:window:<window_id>`
+**Redis key:** `vibhinetra:feature:source:<src_ip>:window:<window_id>`
 
 The `window_id` is derived from the Tumbling window boundaries (e.g. epoch-based: `floor(timestamp / window_duration)`).
 
 **Distinct-count state — HyperLogLog baseline (PROPOSED):**
 
 ```text
-PFADD irochi:feature:source:<src_ip>:window:<window_id>:ports <dst_port>
-PFADD irochi:feature:source:<src_ip>:window:<window_id>:hosts <dst_ip>
+PFADD vibhinetra:feature:source:<src_ip>:window:<window_id>:ports <dst_port>
+PFADD vibhinetra:feature:source:<src_ip>:window:<window_id>:hosts <dst_ip>
 ```
 
 Same trade-off as DDoS cardinality: HyperLogLog is O(1) memory and idempotent, with ~0.81% standard error. An exact Set (`SADD`/`SCARD`) is an alternative but memory is proportional to the number of unique destinations — for aggressive scanners this can be very large.
@@ -541,7 +541,7 @@ Same trade-off as DDoS cardinality: HyperLogLog is O(1) memory and idempotent, w
 **Fan-out counter:**
 
 ```text
-HINCRBY irochi:feature:source:<src_ip>:window:<window_id> connection_fan_out 1
+HINCRBY vibhinetra:feature:source:<src_ip>:window:<window_id> connection_fan_out 1
 ```
 
 Simple atomic counter — no distinct-count problem.
@@ -562,10 +562,10 @@ Simple atomic counter — no distinct-count problem.
 
 `scan_rate` uses Sliding time-bucketed counters, identical in structure to DDoS counters:
 
-**Redis key:** `irochi:feature:source:<src_ip>:bucket:<time_bucket>`
+**Redis key:** `vibhinetra:feature:source:<src_ip>:bucket:<time_bucket>`
 
 ```text
-HINCRBY irochi:feature:source:<src_ip>:bucket:<time_bucket> scan_count 1
+HINCRBY vibhinetra:feature:source:<src_ip>:bucket:<time_bucket> scan_count 1
 ```
 
 Evaluation: aggregate relevant buckets over the Sliding window, compute rate.
@@ -580,10 +580,10 @@ Two distinct state shapes:
 
 Counts DNS queries per source over a Sliding window.
 
-**Redis key:** `irochi:feature:source:<src_ip>:bucket:<time_bucket>`
+**Redis key:** `vibhinetra:feature:source:<src_ip>:bucket:<time_bucket>`
 
 ```text
-HINCRBY irochi:feature:source:<src_ip>:bucket:<time_bucket> dns_query_count 1
+HINCRBY vibhinetra:feature:source:<src_ip>:bucket:<time_bucket> dns_query_count 1
 ```
 
 Evaluation: aggregate buckets, compute queries/second.
@@ -594,13 +594,13 @@ Evaluation: aggregate buckets, compute queries/second.
 
 Tracks the distribution of DNS record types (A, AAAA, MX, TXT, CNAME, etc.) per source within a Tumbling window.
 
-**Redis key:** `irochi:feature:source:<src_ip>:window:<window_id>`
+**Redis key:** `vibhinetra:feature:source:<src_ip>:window:<window_id>`
 
 **Data structure:** Redis Hash with one field per record type:
 
 ```text
-HINCRBY irochi:feature:source:<src_ip>:window:<window_id> A 1
-HINCRBY irochi:feature:source:<src_ip>:window:<window_id> TXT 1
+HINCRBY vibhinetra:feature:source:<src_ip>:window:<window_id> A 1
+HINCRBY vibhinetra:feature:source:<src_ip>:window:<window_id> TXT 1
 ```
 
 Evaluation: `HGETALL`, compute distribution ratios (e.g. TXT proportion as a DNS tunneling signal).
@@ -625,7 +625,7 @@ The pair key is **not** sorted or canonicalized (§3 — LOCKED).
 
 **Purpose:** Track whether a pair has been observed enough times to warrant full periodicity analysis. Tier 1 is internal gating state only — it does **not** emit feature records.
 
-**Redis key:** `irochi:feature:pair:<src_ip>|<dst_ip>:tier1`
+**Redis key:** `vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier1`
 
 **Data structure:** Redis Hash:
 
@@ -638,9 +638,9 @@ fields:
 
 **Write:** On each `connection` event for a (src_ip, dst_ip) pair:
 ```text
-HINCRBY  irochi:feature:pair:<src_ip>|<dst_ip>:tier1 count 1
-HSET     irochi:feature:pair:<src_ip>|<dst_ip>:tier1 last_seen <timestamp>
-HSETNX   irochi:feature:pair:<src_ip>|<dst_ip>:tier1 first_seen <timestamp>
+HINCRBY  vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier1 count 1
+HSET     vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier1 last_seen <timestamp>
+HSETNX   vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier1 first_seen <timestamp>
 ```
 
 These can be pipelined or wrapped in a Lua script for atomicity.
@@ -653,7 +653,7 @@ These can be pipelined or wrapped in a Lua script for atomicity.
 
 **Purpose:** Maintain the state needed to compute periodicity, variance, regularity, and connection frequency for pairs that passed Tier 1 gating. Tier 2 is the feature-producing state.
 
-**Redis key:** `irochi:feature:pair:<src_ip>|<dst_ip>:tier2`
+**Redis key:** `vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier2`
 
 **Data structure:** Redis Hash (summary statistics) + Redis List or Sorted Set (bounded observation history):
 
@@ -668,7 +668,7 @@ These can be pipelined or wrapped in a Lua script for atomicity.
 
 **Observation history (bounded List or Sorted Set):**
 ```text
-  irochi:feature:pair:<src_ip>|<dst_ip>:tier2:history
+  vibhinetra:feature:pair:<src_ip>|<dst_ip>:tier2:history
   → bounded circular buffer of recent inter-arrival times or timestamps
   → used for periodicity/regularity computation at evaluation time
   → max length TBD (OPEN — bounded by memory budget)
@@ -703,7 +703,7 @@ Exfiltration source state supports two resolved Sliding features:
 - `outbound_inbound_ratio` — ratio of outbound to inbound bytes
 - `byte_rate` — transfer rate
 
-**Redis key:** `irochi:feature:source:<src_ip>:bucket:<time_bucket>`
+**Redis key:** `vibhinetra:feature:source:<src_ip>:bucket:<time_bucket>`
 
 **Data structure:** Redis Hash with directional byte counters:
 
@@ -716,8 +716,8 @@ fields:
 
 **Write:** On each `connection` event:
 ```text
-HINCRBY irochi:feature:source:<src_ip>:bucket:<time_bucket> outbound_bytes <orig_bytes>
-HINCRBY irochi:feature:source:<src_ip>:bucket:<time_bucket> inbound_bytes <resp_bytes>
+HINCRBY vibhinetra:feature:source:<src_ip>:bucket:<time_bucket> outbound_bytes <orig_bytes>
+HINCRBY vibhinetra:feature:source:<src_ip>:bucket:<time_bucket> inbound_bytes <resp_bytes>
 ```
 
 **Evaluation:** Aggregate buckets over the Sliding window, compute `outbound_inbound_ratio = outbound_bytes / inbound_bytes` and `byte_rate = total_bytes / window_duration`.
@@ -732,7 +732,7 @@ HINCRBY irochi:feature:source:<src_ip>:bucket:<time_bucket> inbound_bytes <resp_
 
 The `connection` ↔ `tls` correlation joins records that share a `connection_id` across different raw topics.
 
-**Redis key:** `irochi:feature:connection:<connection_id>:correlation`
+**Redis key:** `vibhinetra:feature:connection:<connection_id>:correlation`
 
 **Data structure:** Redis Hash with fields populated incrementally as each side arrives:
 
@@ -844,7 +844,7 @@ The `revision` field on each FeatureRecord must provide a total ordering for sna
 **Candidate mechanisms (PROPOSED / OPEN):**
 
 - **`computed_at` as revision proxy:** Use the emission wall-clock timestamp. Simple, but unsafe if multiple workers can concurrently emit snapshots for the same entity and clock skew exists.
-- **Redis-native monotonic counter:** `INCR irochi:revision:<entity_type>:<entity_key>` — provides a strict monotonic sequence per entity. More complex, adds one Redis round-trip per snapshot emission.
+- **Redis-native monotonic counter:** `INCR vibhinetra:revision:<entity_type>:<entity_key>` — provides a strict monotonic sequence per entity. More complex, adds one Redis round-trip per snapshot emission.
 - **Hybrid:** Use `computed_at` as the primary ordering and fall back to a Redis counter only for entities that can be concurrently evaluated by multiple workers.
 
 **Required invariant:** For any two snapshots S1 and S2 with the same `(entity_key, window_start, window_end)`, if S2 was computed from strictly more recent state than S1, then `S2.revision > S1.revision`.
@@ -890,16 +890,16 @@ These Redis requirements are consequences of the current partitioning model, not
 
 | State class | Key pattern | Structural components |
 |---|---|---|
-| Sliding bucket | `irochi:feature:<entity_type>:<entity_key>:bucket:<time_bucket>` | `entity_type` = `source` \| `destination` \| `pair`; `entity_key` = IP or pair encoding; `time_bucket` = derived from timestamp and bucket width |
-| Sliding HLL | `irochi:feature:<entity_type>:<entity_key>:hll:<time_bucket>` | Same as above; separate key because HLL is a distinct data structure |
-| Sliding frequency | `irochi:feature:<entity_type>:<entity_key>:freq:<time_bucket>` | Entropy-specific frequency/distribution state |
-| Tumbling window | `irochi:feature:<entity_type>:<entity_key>:window:<window_id>` | `window_id` = derived from window boundaries |
-| Pair Tier 1 | `irochi:feature:pair:<pair_key>:tier1` | `pair_key` = `<src_ip>\|<dst_ip>` |
-| Pair Tier 2 | `irochi:feature:pair:<pair_key>:tier2` | Same pair encoding |
-| Pair Tier 2 history | `irochi:feature:pair:<pair_key>:tier2:history` | Bounded observation list |
-| Correlation | `irochi:feature:connection:<connection_id>:correlation` | `connection_id` from canonical event |
-| Dedup marker | `irochi:dedup:<event_id>` | Optional — only if explicit event-level dedup is used |
-| Revision counter | `irochi:revision:<entity_type>:<entity_key>` | Optional — only if Redis-native revision is chosen |
+| Sliding bucket | `vibhinetra:feature:<entity_type>:<entity_key>:bucket:<time_bucket>` | `entity_type` = `source` \| `destination` \| `pair`; `entity_key` = IP or pair encoding; `time_bucket` = derived from timestamp and bucket width |
+| Sliding HLL | `vibhinetra:feature:<entity_type>:<entity_key>:hll:<time_bucket>` | Same as above; separate key because HLL is a distinct data structure |
+| Sliding frequency | `vibhinetra:feature:<entity_type>:<entity_key>:freq:<time_bucket>` | Entropy-specific frequency/distribution state |
+| Tumbling window | `vibhinetra:feature:<entity_type>:<entity_key>:window:<window_id>` | `window_id` = derived from window boundaries |
+| Pair Tier 1 | `vibhinetra:feature:pair:<pair_key>:tier1` | `pair_key` = `<src_ip>\|<dst_ip>` |
+| Pair Tier 2 | `vibhinetra:feature:pair:<pair_key>:tier2` | Same pair encoding |
+| Pair Tier 2 history | `vibhinetra:feature:pair:<pair_key>:tier2:history` | Bounded observation list |
+| Correlation | `vibhinetra:feature:connection:<connection_id>:correlation` | `connection_id` from canonical event |
+| Dedup marker | `vibhinetra:dedup:<event_id>` | Optional — only if explicit event-level dedup is used |
+| Revision counter | `vibhinetra:revision:<entity_type>:<entity_key>` | Optional — only if Redis-native revision is chosen |
 
 #### Open structural questions
 
@@ -951,7 +951,7 @@ DDoS destination state creates Redis hot-key contention during the exact high-ra
 
 **Residual risk:** At extremely high event rates, a single Redis Hash key for one `dst_ip` bucket could become a Redis-internal hotspot. This is a Redis-server-level concern, not an application-level serialization problem.
 
-**Secondary mitigation (OPEN):** Logical destination-key sharding — split one destination's bucket into N sub-buckets (e.g. `irochi:feature:destination:<dst_ip>:bucket:<time_bucket>:shard:<shard_id>`) and aggregate at evaluation time. This adds read complexity and should only be introduced if benchmarking shows that atomic increments on a single key are still a bottleneck.
+**Secondary mitigation (OPEN):** Logical destination-key sharding — split one destination's bucket into N sub-buckets (e.g. `vibhinetra:feature:destination:<dst_ip>:bucket:<time_bucket>:shard:<shard_id>`) and aggregate at evaluation time. This adds read complexity and should only be introduced if benchmarking shows that atomic increments on a single key are still a bottleneck.
 
 **Sharding is not locked and must not be introduced without benchmark evidence.**
 
@@ -1100,13 +1100,13 @@ One topic per detector domain, mirroring the "one raw topic per `event_type`" pa
 
 | Topic | `detector_domain` | Consumer |
 |---|---|---|
-| `irochi.features.ddos.v1` | `ddos` | DDoS Detector |
-| `irochi.features.recon.v1` | `recon` | Recon Detector |
-| `irochi.features.dns.v1` | `dns` | DNS/DGA/Tunneling Detector |
-| `irochi.features.tls_c2.v1` | `tls_c2` | TLS/C2 Detector |
-| `irochi.features.exfil.v1` | `exfil` | Exfiltration Detector |
+| `vibhinetra.features.ddos.v1` | `ddos` | DDoS Detector |
+| `vibhinetra.features.recon.v1` | `recon` | Recon Detector |
+| `vibhinetra.features.dns.v1` | `dns` | DNS/DGA/Tunneling Detector |
+| `vibhinetra.features.tls_c2.v1` | `tls_c2` | TLS/C2 Detector |
+| `vibhinetra.features.exfil.v1` | `exfil` | Exfiltration Detector |
 
-Naming convention: `irochi.features.<domain>.v<schema_major>`, consistent with the raw-topic convention and the canonical event's `schema_version` field.
+Naming convention: `vibhinetra.features.<domain>.v<schema_major>`, consistent with the raw-topic convention and the canonical event's `schema_version` field.
 
 ### Partition key for feature topics is not the same open question as for raw topics
 
@@ -1135,14 +1135,14 @@ Unlike the raw topics — which represent an observation stream and were correct
 
 ## 12. Consumer Topology
 
-Unlike the raw-event stage (one unified `irochi-feature-processing` group across three topics, because Feature Processing is one logical stage), the five detector modules are already-established logical boundaries (architecture checkpoint §11). Proposed: one consumer group per detector domain, each subscribing only to its own feature topic:
+Unlike the raw-event stage (one unified `vibhinetra-feature-processing` group across three topics, because Feature Processing is one logical stage), the five detector modules are already-established logical boundaries (architecture checkpoint §11). Proposed: one consumer group per detector domain, each subscribing only to its own feature topic:
 
 ```text
-irochi-detector-ddos      → irochi.features.ddos.v1
-irochi-detector-recon     → irochi.features.recon.v1
-irochi-detector-dns       → irochi.features.dns.v1
-irochi-detector-tls-c2    → irochi.features.tls_c2.v1
-irochi-detector-exfil     → irochi.features.exfil.v1
+vibhinetra-detector-ddos      → vibhinetra.features.ddos.v1
+vibhinetra-detector-recon     → vibhinetra.features.recon.v1
+vibhinetra-detector-dns       → vibhinetra.features.dns.v1
+vibhinetra-detector-tls-c2    → vibhinetra.features.tls_c2.v1
+vibhinetra-detector-exfil     → vibhinetra.features.exfil.v1
 ```
 
 This does not require five separate services (checkpoint §11 still applies — a single Python process can run multiple consumer-group memberships), but it does let any one detector's consumption be scaled or paused independently, which the earlier unified raw-topic group could not offer as cleanly.
@@ -1173,7 +1173,7 @@ Because §6 requires every feature record to be a full snapshot rather than a de
 
 Mirroring `REDPANDA_TOPICS_DRAFT_v5.md` §7's posture (DLQ as a safety net, not the primary validation mechanism): a Feature Processing computation failure (e.g. a malformed upstream event that passed Normalizer validation but breaks a specific feature calculation, or a Redis unavailability event mid-computation) should not silently drop the record or stall the worker.
 
-Proposed: reuse the same shared-DLQ pattern (`irochi.features.dlq.v1`), carrying at minimum:
+Proposed: reuse the same shared-DLQ pattern (`vibhinetra.features.dlq.v1`), carrying at minimum:
 
 ```text
 detector_domain
@@ -1272,9 +1272,9 @@ requirement exists.
 ## 19. Relationship Between Feature Processing and Other Components
 
 ```text
-irochi.events.connection.v1  ─┐
-irochi.events.dns.v1         ─┼──> Feature Processing (irochi-feature-processing)
-irochi.events.tls.v1         ─┘         |
+vibhinetra.events.connection.v1  ─┐
+vibhinetra.events.dns.v1         ─┼──> Feature Processing (vibhinetra-feature-processing)
+vibhinetra.events.tls.v1         ─┘         |
                                          v
                     (enrichment / windowed / correlation,
                      entity state in-memory + Redis per §9)
@@ -1284,7 +1284,7 @@ irochi.events.tls.v1         ─┘         |
    features.ddos.v1  features.recon.v1  features.dns.v1  features.tls_c2.v1  features.exfil.v1
              |               |               |               |               |
              v               v               v               v               v
-   irochi-detector-ddos  -recon         -dns            -tls-c2         -exfil
+   vibhinetra-detector-ddos  -recon         -dns            -tls-c2         -exfil
 ```
 
 Boundaries carried forward unchanged from the Redpanda draft: React never talks to Redpanda, PostgreSQL, or Redis directly; Redpanda is not the durable alert source of truth; detector modules remain logically distinct without being mandated as separate services.

@@ -165,9 +165,9 @@ class C2Detector(BaseDetector):
 
             if confidence >= self.confidence_cutoff and triggers >= self.min_triggers:
                 envelope["decision"] = Decision.DETECTION
-                if confidence > 0.9:
+                if confidence >= 0.85:
                     envelope["severity_candidate"] = Severity.CRITICAL
-                elif confidence > 0.75:
+                elif confidence >= 0.70:
                     envelope["severity_candidate"] = Severity.HIGH
                 else:
                     envelope["severity_candidate"] = Severity.MEDIUM

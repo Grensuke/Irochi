@@ -1,1 +1,1 @@
-"""Irochi WebSocket package."""
+"""Vibhinetra WebSocket package."""

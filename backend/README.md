@@ -1,8 +1,8 @@
-# Irochi — Backend
+# Vibhinetra — Backend
 
 **SIH 2026 — Problem Statement SIH26145**
 
-Backend for the Irochi threat-detection system. This is a real-time, streaming pipeline built with Python, FastAPI, and asynchronous consumers.
+Backend for the Vibhinetra threat-detection system. This is a real-time, streaming pipeline built with Python, FastAPI, and asynchronous consumers.
 
 ## Current Status
 

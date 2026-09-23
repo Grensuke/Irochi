@@ -1,0 +1,2 @@
+.page-transition { animation: slide-up-fade 220ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .page-transition { animation: none; } }

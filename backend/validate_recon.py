@@ -55,7 +55,7 @@ async def main():
 
     # 4. Setup Redpanda Consumer
     consumer = AIOKafkaConsumer(
-        "irochi.events.connection.v1",
+        "vibhinetra.events.connection.v1",
         bootstrap_servers='localhost:19092',
         group_id="validate-recon-group",
         auto_offset_reset="earliest"

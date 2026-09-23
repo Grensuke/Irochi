@@ -447,7 +447,7 @@ This reuses the existing enum from `backend/app/schemas/alerts.py` and `API_CONT
 
 ### Semantic notes
 
-- **`closed` is an analyst workflow status.** It does NOT imply that Irochi mitigated or stopped the threat. Irochi is a passive detection system (Architecture §1, AGENTS.md).
+- **`closed` is an analyst workflow status.** It does NOT imply that Vibhinetra mitigated or stopped the threat. Vibhinetra is a passive detection system (Architecture §1, AGENTS.md).
 - **`false_positive` is an analyst judgment**, not an automatic detector decision. A detector returning `no_threat` does not set `false_positive` — it simply does not produce an alert.
 - **`new` is the only status set by the Alert Engine.** All other transitions are analyst-initiated.
 

@@ -1,4 +1,4 @@
-# Backend Context — Irochi
+# Backend Context — Vibhinetra
 
 > **This file describes the CURRENT state of the backend.**
 > It is NOT a conversation transcript. Update it after each approved checkpoint.
@@ -7,7 +7,7 @@
 
 ## Phase
 
-Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infrastructure integration are completed.
+E2E Real PCAP Validation Complete. All work packages and infrastructure integrations are verified against real network telemetry.
 
 ## Implementation Status
 
@@ -25,6 +25,7 @@ Active Infrastructure & Detector Evaluation. WP-G (Alert Engine) and base infras
 - WP-K ✅ Incident Engine (Alert Correlation & Kill-Chain Tracking)
 - WP-L ✅ ML Integration (River in DDoS, XGBoost in Exfil)
 - EVALUATION ✅ Baseline Evaluation & Threshold Sensitivity completed
+- SEVERITY ✅ Implemented dynamic, context-aware severity assignment across all 6 core detectors (eliminating MEDIUM hardcoded fallbacks).
 - M8 = ✅ end-to-end MVP validation complete
 
 ## Backend Structure
@@ -67,6 +68,7 @@ The backend is fully wired to actual infrastructure services:
 - **DDoS Detector:** The default 1000 pps threshold misses low-bandwidth DoS attacks (e.g. Wednesday DoS Hulk). Candidate thresholds of 500-600 pps improve detection but introduce false positives in background traffic.
 - **Recon Detector:** The default 50 ports threshold is sensitive but generates false positives. Candidate threshold of 900 ports improves precision but requires more tuning.
 - **Flow/Window Distortion:** Reconstructing flows from PCAP causes artificial burstiness due to missing real-time inter-arrival spacing, heavily penalizing simple rate-based detection.
+- **E2E Real PCAP Audit:** Verified primary ML models (DGA, C2, Exfiltration) are fully active. The `UnknownDetector` successfully acts as a powerful statistical baseline fallback (catching extreme volumetric and port scan deviations). Incident engine successfully correlates cross-detector alerts into unified entity events.
 
 **Note:** The production defaults remain 1000 pps and 50 ports. Candidate thresholds are currently evaluation outputs, not finalized rules. See [`docs/EVALUATION.md`](../EVALUATION.md) for the full methodology and findings.
 
