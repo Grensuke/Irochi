@@ -8,16 +8,19 @@
  */
 
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
+import { useNotifications } from '../contexts/NotificationContext';
 import { VerticalMeniscusRail } from '../components/VerticalMeniscusRail';
 import type { VerticalNavItem } from '../components/VerticalMeniscusRail';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { VibhinetraLogo } from '../components/VibhinetraLogo';
+import { NotificationBell } from '../components/NotificationBell';
+import { AlertToastStack } from '../components/AlertToast';
 import './AppLayout.css';
 
 const ICONS: Record<string, ReactNode> = {
@@ -45,8 +48,114 @@ export function AppLayout() {
   const { user, organization, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
-  const { connectionState } = useLiveAlerts();
+  const { liveAlerts, connectionState } = useLiveAlerts();
+  const { ingestAlert } = useNotifications();
   const location = useLocation();
+  const lastProcessedRef = useRef(0);
+
+  // Feed live alerts into the notification system (critical & high only)
+  useEffect(() => {
+    if (liveAlerts.length === 0) return;
+    // Process only newly added alerts (at the front of the array)
+    const newAlerts = liveAlerts.filter(
+      (la) => la.receivedAt > lastProcessedRef.current,
+    );
+    if (newAlerts.length > 0) {
+      lastProcessedRef.current = Math.max(...newAlerts.map((a) => a.receivedAt));
+      newAlerts.forEach((la) => ingestAlert(la.alert, la.phase));
+    }
+  }, [liveAlerts, ingestAlert]);
+
+  // ── Demo Alert Simulator ──────────────────────────────────
+  // When the WebSocket is disconnected (no backend), simulate
+  // critical/high alerts to demonstrate the notification system.
+  const demoCounterRef = useRef(0);
+  useEffect(() => {
+    if (connectionState !== 'disconnected') return;
+
+    const DEMO_ALERTS = [
+      {
+        threat_type: 'volumetric_ddos' as const,
+        severity: 'critical' as const,
+        src_ip: '192.168.24.17',
+        dst_ip: '10.42.8.21',
+        dst_port: 443,
+        evidence_summary: 'SYN flood detected — 14,000 packets/sec exceeding baseline by 800%. Active volumetric attack in progress.',
+        detector_id: 'ddos_detector' as const,
+      },
+      {
+        threat_type: 'data_exfiltration' as const,
+        severity: 'critical' as const,
+        src_ip: '10.0.1.200',
+        dst_ip: '203.0.113.88',
+        dst_port: 443,
+        evidence_summary: 'Sustained outbound transfer of 4.2 GB exceeding historical baseline by 400%. Possible data exfiltration.',
+        detector_id: 'exfiltration_detector' as const,
+      },
+      {
+        threat_type: 'c2_beaconing' as const,
+        severity: 'high' as const,
+        src_ip: '10.0.5.20',
+        dst_ip: '198.51.100.42',
+        dst_port: 443,
+        evidence_summary: 'Periodic TLS connections with strict 60s jitter and suspicious SNI pattern detected.',
+        detector_id: 'tls_c2_detector' as const,
+      },
+      {
+        threat_type: 'recon_portscan' as const,
+        severity: 'high' as const,
+        src_ip: '10.0.4.55',
+        dst_ip: '10.42.8.0',
+        dst_port: 22,
+        evidence_summary: 'Sequential horizontal port scan targeting 256 hosts on internal subnet 10.42.8.0/24.',
+        detector_id: 'recon_detector' as const,
+      },
+      {
+        threat_type: 'dga_dns_tunnel' as const,
+        severity: 'critical' as const,
+        src_ip: '10.0.3.42',
+        dst_ip: '8.8.8.8',
+        dst_port: 53,
+        evidence_summary: 'High-entropy DNS queries at 300 req/min — DGA algorithm fingerprint matches known malware family.',
+        detector_id: 'dns_dga_tunnel_detector' as const,
+      },
+    ];
+
+    // Fire first demo alert after 3 seconds, then every 12-20s
+    const fireDemo = () => {
+      const idx = demoCounterRef.current % DEMO_ALERTS.length;
+      const template = DEMO_ALERTS[idx];
+      const now = new Date();
+      const demoAlert = {
+        alert_id: `DEMO-${Date.now()}-${idx}`,
+        timestamp: now.toISOString(),
+        threat_type: template.threat_type,
+        severity: template.severity,
+        confidence: 0.92 + Math.random() * 0.06,
+        entity_type: 'pair' as const,
+        entity_key: `${template.src_ip}-${template.dst_ip}`,
+        first_seen_at: new Date(now.getTime() - 60000).toISOString(),
+        last_seen_at: now.toISOString(),
+        resolved_at: null,
+        src_ip: template.src_ip,
+        dst_ip: template.dst_ip,
+        dst_port: template.dst_port,
+        status: 'new' as const,
+        evidence_summary: template.evidence_summary,
+        detector_id: template.detector_id,
+      };
+      ingestAlert(demoAlert, 'live');
+      demoCounterRef.current++;
+    };
+
+    const initialTimer = setTimeout(fireDemo, 3000);
+    const interval = setInterval(fireDemo, 12000 + Math.random() * 8000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [connectionState, ingestAlert]);
 
   const navGroups = useMemo(() => [
     {
@@ -248,6 +357,8 @@ export function AppLayout() {
             </div>
           </div>
           <div className="top-header-right">
+            <NotificationBell />
+            <div className="header-divider" />
             <div className="header-theme-switcher">
               <LanguageSwitcher compact />
               <button 
@@ -277,6 +388,9 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* On-screen alert toasts */}
+      <AlertToastStack />
     </div>
   );
 }
