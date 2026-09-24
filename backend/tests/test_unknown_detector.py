@@ -148,3 +148,58 @@ async def test_baseline_not_updated_during_active_unknown():
     assert outputs[0].decision == Decision.DETECTION
     assert before_stats1 == after_stats1, "Baseline should not be updated when unknown fires"
     assert before_stats2 == after_stats2, "Baseline should not be updated when unknown fires"
+
+
+@pytest.mark.asyncio
+async def test_unknown_detector_filters_low_confidence_noise():
+    store = MockBaselineStore()
+    detector = UnknownDetector(store, min_samples=25, z_threshold=4.5, confidence_cutoff=0.55)
+    
+    # Pre-populate baseline with count >= 25
+    key1 = ("ddos", "source", "192.168.1.50", "packet_rate")
+    key2 = ("ddos", "source", "192.168.1.50", "byte_rate")
+    
+    # mean=100, stddev=10 (m2=2500, count=25)
+    store.stats[key1] = {"count": 25, "mean": 100.0, "m2": 2500.0, "min": 80.0, "max": 120.0}
+    # mean=1000, stddev=100 (m2=250000, count=25)
+    store.stats[key2] = {"count": 25, "mean": 1000.0, "m2": 250000.0, "min": 800.0, "max": 1200.0}
+    
+    # Small jitter: packet_rate=135 (z = 3.5), byte_rate=1350 (z = 3.5)
+    # Both deviate at z=3.5, but below z_threshold=4.5 and confidence_cutoff=0.55
+    record = DdosFeatureRecord(
+        feature_id=str(uuid.uuid4()),
+        mechanism=FeatureMechanism.WINDOWED,
+        detector_domain=DetectorDomain.DDOS,
+        entity_type=EntityType.SOURCE,
+        entity_key="192.168.1.50",
+        computed_at=12345,
+        schema_version="1.0",
+        revision=1,
+        payload=DdosFeaturePayload(packet_rate=135.0, byte_rate=1350.0)
+    )
+    inputs = [DetectorInput(input_id=str(uuid.uuid4()), detector_id=DetectorId.UNKNOWN, feature_record=record)]
+    primary_outputs = [
+        DetectorOutput(
+            output_id=str(uuid.uuid4()),
+            input_id=inputs[0].input_id,
+            detector_id=DetectorId.DDOS,
+            entity_type=EntityType.SOURCE,
+            entity_key="192.168.1.50",
+            detector_version="1.0.0",
+            evaluated_at=12345,
+            decision=Decision.NO_THREAT,
+            threat_type=ThreatType.VOLUMETRIC_DDOS,
+            score=1.0,
+            source_feature_references=[
+                SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)
+            ]
+        )
+    ]
+    
+    outputs = await detector.evaluate_against_baseline(inputs, primary_outputs)
+    
+    # Should NOT trigger an alert
+    assert len(outputs) == 0, "Low-confidence deviation should not trigger an Unknown Threat alert"
+    # Should be absorbed into baseline
+    assert store.stats[key1]["count"] == 26, "Mild noise should be absorbed into baseline count"
+    assert store.stats[key2]["count"] == 26, "Mild noise should be absorbed into baseline count"

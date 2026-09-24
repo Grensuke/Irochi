@@ -16,9 +16,13 @@ def mock_redis_services():
     async def mock_consume(*args, **kwargs):
         if False: yield
 
-    from fakeredis import FakeAsyncRedis
-    fake_redis = FakeAsyncRedis(decode_responses=True)
-    fake_redis.ping = AsyncMock(return_value=True)
+    try:
+        from fakeredis import FakeAsyncRedis
+        fake_redis = FakeAsyncRedis(decode_responses=True)
+        fake_redis.ping = AsyncMock(return_value=True)
+    except ImportError:
+        fake_redis = AsyncMock()
+        fake_redis.ping = AsyncMock(return_value=True)
 
     with patch("app.services.state.redis_client.Redis.from_url", return_value=fake_redis), \
          patch("app.services.redis_pubsub.RedisPubSubService.start", new_callable=AsyncMock):
