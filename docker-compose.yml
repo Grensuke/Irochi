@@ -68,6 +68,36 @@ services:
       - vibhinetra-net
     command: npm run dev -- --host 0.0.0.0
 
+  # ------------------------------------------------
+  # Live Traffic Generator — Continuous Simulation
+  # ------------------------------------------------
+  # Continuously generates streaming network traffic
+  # (benign, C2, DNS/DGA, exfiltration, DDoS, recon, TLS)
+  # in an infinite loop for 24/7 deployment & live demos.
+  # ------------------------------------------------
+  traffic-generator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vibhinetra-traffic-generator
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redpanda:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDPANDA_BROKER=redpanda:9092
+      - LOOP_FOREVER=true
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app
+    networks:
+      - vibhinetra-net
+    command: python scripts/live_demo.py
+
 # ==================================================
 # CORE INFRASTRUCTURE SERVICES
 # ==================================================
