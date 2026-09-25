@@ -203,13 +203,13 @@ export function AlertDetailPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button
           className="btn btn-ghost btn-sm detail-page-back"
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
+          onClick={() => navigate('/app/alerts')}
+          aria-label="Back to alerts"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="10,3 5,8 10,13" />
           </svg>
-          Back
+          Back to Alerts
         </button>
         <button
           className="btn btn-primary btn-sm"

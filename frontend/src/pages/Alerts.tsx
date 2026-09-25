@@ -80,6 +80,20 @@ export function Alerts() {
         )}
       </div>
 
+      {!loading && !error && filtered.length > 0 && (
+        <div className="alerts-hint-bar">
+          <svg className="hint-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>
+            Click any alert row or <strong>View Incident</strong> button to open its forensic timeline, AI attack story, and incident workspace.
+          </span>
+          <span className="alerts-hint-pill">Incident Overview ↗</span>
+        </div>
+      )}
+
       <div className="alerts-body">
         {loading ? (
           <div className="panel" style={{ margin: '0 var(--space-6)' }}>
@@ -127,6 +141,7 @@ export function Alerts() {
                     <th>Confidence</th>
                     <th>Status</th>
                     <th>Phase</th>
+                    <th className="th-action">Incident</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,12 +152,15 @@ export function Alerts() {
                       onClick={() => navigate(`/app/alerts/${alert.alert_id}`)}
                       role="button"
                       tabIndex={0}
+                      title={`Click to open Incident Overview for alert ${alert.alert_id}`}
                       onKeyDown={(e) => e.key === 'Enter' && navigate(`/app/alerts/${alert.alert_id}`)}
                     >
                       <td className="mono" style={{ whiteSpace: 'nowrap' }}>
                         <span className="alert-time">{formatTimestamp(alert.timestamp)}</span>
                       </td>
-                      <td className="mono alert-id-cell">{alert.alert_id}</td>
+                      <td className="mono alert-id-cell">
+                        <span className="alert-id-text">{alert.alert_id}</span>
+                      </td>
                       <td><span className={`severity-badge ${alert.severity}`}>SEVERITY: {alert.severity.toUpperCase()}</span></td>
                       <td>{threatLabel(alert.threat_type)}</td>
                       <td className="mono">{alert.src_ip ?? '—'}</td>
@@ -155,6 +173,23 @@ export function Alerts() {
                       </td>
                       <td><span className={`status-text ${alert.status}`}>{STATUS_LABELS[alert.status]}</span></td>
                       <td><span className="phase-badge backfill">Backfilled</span></td>
+                      <td className="action-cell">
+                        <button
+                          type="button"
+                          className="view-incident-btn"
+                          aria-label={`Open Incident Overview for ${alert.alert_id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/app/alerts/${alert.alert_id}`);
+                          }}
+                        >
+                          <span>View Incident</span>
+                          <svg className="btn-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

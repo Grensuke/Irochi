@@ -8,8 +8,11 @@
 .lang-switcher-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 11px;
+  justify-content: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box;
   border: 1px solid var(--border-default, #333333);
   border-radius: var(--radius-md, 8px);
   background: var(--bg-elevated, #1A1A1A);

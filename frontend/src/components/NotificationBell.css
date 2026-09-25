@@ -5,30 +5,54 @@
 /* ── Bell Button ──────────────────────────────────────── */
 .notification-bell-container {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notification-bell-btn {
   position: relative;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-secondary, #CCC);
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  background: var(--bg-elevated, #1A1A1A);
+  border: 1px solid var(--border-default, #333333);
+  color: var(--text-secondary, #CCCCCC);
   cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-sm, 6px);
-  display: flex;
+  padding: 0;
+  border-radius: var(--radius-md, 8px);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 150ms ease;
+  transition: all 0.2s ease;
 }
 
 .notification-bell-btn:hover {
-  background: var(--bg-hover, rgba(255,255,255,0.05));
+  background: var(--bg-hover, rgba(255, 255, 255, 0.08));
   color: var(--text-primary, #F2F2F2);
-  border-color: var(--border-subtle, #262626);
+  border-color: var(--border-strong, #4D4D4D);
+}
+
+[data-theme="light"] .notification-bell-btn {
+  background: #FFFFFF;
+  border-color: #CCCCCC;
+  color: #2A2A2A;
+}
+
+[data-theme="light"] .notification-bell-btn:hover {
+  background: #F3F4F6;
+  border-color: #777777;
+  color: #111111;
 }
 
 .notification-bell-btn.has-unread {
   color: var(--severity-critical, #FF5C6C);
+}
+
+.notification-bell-btn .bell-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .notification-bell-btn.has-unread .bell-icon {
@@ -50,10 +74,10 @@
 /* ── Badge ────────────────────────────────────────────── */
 .notification-badge {
   position: absolute;
-  top: 1px;
-  right: 0px;
-  min-width: 16px;
-  height: 16px;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
   padding: 0 4px;
   border-radius: 10px;
   background: var(--severity-critical, #FF5C6C);
@@ -65,8 +89,15 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  box-shadow: 0 0 8px rgba(255, 92, 108, 0.5);
+  box-shadow: 0 0 8px rgba(255, 92, 108, 0.6);
+  border: 2px solid var(--bg-secondary, #1A1A1A);
   animation: badgePop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+  pointer-events: none;
+}
+
+[data-theme="light"] .notification-badge {
+  border-color: #FFFFFF;
 }
 
 @keyframes badgePop {
@@ -77,14 +108,15 @@
 /* ── Pulse Ring ───────────────────────────────────────── */
 .bell-pulse-ring {
   position: absolute;
-  top: 0;
-  right: -1px;
-  width: 18px;
-  height: 18px;
+  top: -5px;
+  right: -5px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   border: 2px solid var(--severity-critical, #FF5C6C);
   animation: bellPulseRing 2s ease-out infinite;
   pointer-events: none;
+  z-index: 1;
 }
 
 @keyframes bellPulseRing {

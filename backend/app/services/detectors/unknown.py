@@ -9,13 +9,25 @@ from app.schemas.detectors import (
 from app.services.detectors.base import BaseDetector
 from app.services.detectors.baseline_state import BaselineStateStore
 
-MIN_SAMPLES = 20
+MIN_SAMPLES = 25
 MIN_DEVIATING_SIGNALS = 2
-Z_THRESHOLD = 3.0
+Z_THRESHOLD = 4.5
+CONFIDENCE_CUTOFF = 0.55
 
 class UnknownDetector(BaseDetector):
-    def __init__(self, baseline_store: BaselineStateStore):
+    def __init__(
+        self,
+        baseline_store: BaselineStateStore,
+        min_samples: int = MIN_SAMPLES,
+        min_deviating_signals: int = MIN_DEVIATING_SIGNALS,
+        z_threshold: float = Z_THRESHOLD,
+        confidence_cutoff: float = CONFIDENCE_CUTOFF,
+    ):
         self.baseline_store = baseline_store
+        self.min_samples = min_samples
+        self.min_deviating_signals = min_deviating_signals
+        self.z_threshold = z_threshold
+        self.confidence_cutoff = confidence_cutoff
 
     @property
     def detector_id(self) -> DetectorId:
@@ -62,7 +74,7 @@ class UnknownDetector(BaseDetector):
                 )
                 
                 count = stats["count"]
-                if count < MIN_SAMPLES:
+                if count < self.min_samples:
                     insufficient_data_signals += 1
                     continue
                 
@@ -75,11 +87,11 @@ class UnknownDetector(BaseDetector):
                 else:
                     z = 0.0 if value == mean else float('inf')
                     
-                if abs(z) >= Z_THRESHOLD:
+                if abs(z) >= self.z_threshold:
                     deviating_signals.append({
                         "signal_name": field_name,
                         "value": float(value),
-                        "threshold": Z_THRESHOLD,
+                        "threshold": self.z_threshold,
                         "triggered": True,
                         "baseline_mean": mean,
                         "baseline_stddev": stddev,
@@ -88,39 +100,53 @@ class UnknownDetector(BaseDetector):
                     avg_z += abs(z)
 
             # If enough signals deviate
-            if len(deviating_signals) >= MIN_DEVIATING_SIGNALS:
+            if len(deviating_signals) >= self.min_deviating_signals:
                 avg_deviation = avg_z / len(deviating_signals)
                 confidence = min(1.0, avg_deviation / 10.0) # Scale arbitrarily to 0-1
-                severity_candidate = Severity.HIGH if avg_deviation > 5.0 else Severity.MEDIUM
-
-                evidence = {
-                    "message": "Significant deviation from historical baseline",
-                    "signals": deviating_signals,
-                    "alert_context": {
-                        "src_ip": record.entity_key if record.entity_type.value == "source" else None
-                    }
-                }
                 
-                unknown_threat_outputs.append(
-                    DetectorOutput(
-                        output_id=str(uuid.uuid4()),
-                        detector_id=self.detector_id,
-                        input_id=record_input.input_id,
-                        entity_type=record.entity_type,
-                        entity_key=record.entity_key,
-                        evaluated_at=int(time.time() * 1000000),
-                        detector_version="1.0.0",
-                        decision=Decision.DETECTION,
-                        threat_type=ThreatType.UNKNOWN_THREAT,
-                        confidence=confidence,
-                        score=confidence * 100,
-                        severity_candidate=severity_candidate,
-                        evidence=evidence,
-                        source_feature_references=[
-                            SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)
-                        ]
+                # Enforce confidence cutoff so noisy, low-confidence jitter does not flood alerts
+                if confidence >= self.confidence_cutoff:
+                    severity_candidate = Severity.HIGH if avg_deviation > 7.0 else Severity.MEDIUM
+
+                    evidence = {
+                        "message": "Significant deviation from historical baseline",
+                        "signals": deviating_signals,
+                        "alert_context": {
+                            "src_ip": record.entity_key if record.entity_type.value == "source" else None
+                        }
+                    }
+                    
+                    unknown_threat_outputs.append(
+                        DetectorOutput(
+                            output_id=str(uuid.uuid4()),
+                            detector_id=self.detector_id,
+                            input_id=record_input.input_id,
+                            entity_type=record.entity_type,
+                            entity_key=record.entity_key,
+                            evaluated_at=int(time.time() * 1000000),
+                            detector_version="1.0.0",
+                            decision=Decision.DETECTION,
+                            threat_type=ThreatType.UNKNOWN_THREAT,
+                            confidence=confidence,
+                            score=confidence * 100,
+                            severity_candidate=severity_candidate,
+                            evidence=evidence,
+                            source_feature_references=[
+                                SourceFeatureReference(feature_id=record.feature_id, revision=record.revision)
+                            ]
+                        )
                     )
-                )
+                else:
+                    # Deviation was below confidence cutoff (normal operational jitter).
+                    # Safely absorb into baseline so the baseline learns natural variance.
+                    for field_name, value in numeric_fields.items():
+                        await self.baseline_store.update_stats(
+                            record.detector_domain.value,
+                            record.entity_type.value,
+                            record.entity_key,
+                            field_name,
+                            float(value)
+                        )
             else:
                 # Primary was NO_THREAT, and we did not fire Anomaly. Safe to update baseline for all numeric fields.
                 for field_name, value in numeric_fields.items():
@@ -132,7 +158,4 @@ class UnknownDetector(BaseDetector):
                         float(value)
                     )
                     
-                # If there were signals with insufficient data, we could return INSUFFICIENT_DATA if we wanted, 
-                # but the primary NO_THREAT output is already present, so returning nothing is fine.
-                
         return unknown_threat_outputs
