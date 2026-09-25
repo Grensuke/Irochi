@@ -7,10 +7,16 @@
 import { useEffect, useRef, useState } from 'react';
 import './DiodeFlowVisualizer.css';
 
-export function DiodeFlowVisualizer() {
+interface DiodeFlowVisualizerProps {
+  realOpticalRate?: number;
+}
+
+export function DiodeFlowVisualizer({ realOpticalRate }: DiodeFlowVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [opticalRate, setOpticalRate] = useState(0);
+  const [mockRate, setMockRate] = useState(0);
+
+  const opticalRate = realOpticalRate !== undefined ? realOpticalRate : mockRate;
 
   // Main active drawing loop
   useEffect(() => {
@@ -47,9 +53,9 @@ export function DiodeFlowVisualizer() {
     }
     let packets: Packet[] = [];
     
-    // Telemetry rate update loop
+    // Telemetry rate update loop for mock mode
     const rateInterval = setInterval(() => {
-      setOpticalRate(Math.floor(Math.random() * 450) + 120);
+      setMockRate(Math.floor(Math.random() * 450) + 120);
     }, 1000);
 
     let animationFrameId: number;

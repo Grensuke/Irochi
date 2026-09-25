@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import time
 from typing import Callable
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,6 +36,12 @@ class DetectionPipeline:
         self.redis_service = redis_service
         self._task: asyncio.Task | None = None
         self._running = False
+        
+        # Live Telemetry State
+        self._last_telemetry_publish = time.time()
+        self._telemetry_flows = 0
+        self._telemetry_bytes = 0
+        self._telemetry_sample_events = []
 
     def start(self):
         """Starts the pipeline orchestrator loop in a background task."""
@@ -62,6 +69,29 @@ class DetectionPipeline:
             async for message in self.consumer.consume():
                 if not self._running:
                     break
+
+                # Live Telemetry Tracking
+                self._telemetry_flows += 1
+                inner_payload = message.payload.get("payload", {})
+                self._telemetry_bytes += inner_payload.get("orig_bytes", 0) + inner_payload.get("resp_bytes", 0)
+                
+                if len(self._telemetry_sample_events) < 5:
+                    self._telemetry_sample_events.append(message.payload)
+                
+                now = time.time()
+                if now - self._last_telemetry_publish >= 1.0:
+                    stats = {
+                        "flows_per_sec": self._telemetry_flows,
+                        "bytes_per_sec": self._telemetry_bytes,
+                        "events": self._telemetry_sample_events
+                    }
+                    # Fire and forget publish
+                    asyncio.create_task(self.redis_service.publish_telemetry(stats))
+                    
+                    self._last_telemetry_publish = now
+                    self._telemetry_flows = 0
+                    self._telemetry_bytes = 0
+                    self._telemetry_sample_events = []
 
                 try:
                     await self._process_message(message)

@@ -145,6 +145,7 @@ Established in runtime (`API_V1_PREFIX = "/api/v1"`). Path-based versioning — 
 | `GET` | `/api/v1/incidents/{incident_id}` | Single incident detail |
 | `GET` | `/api/v1/dashboard/summary` | Aggregate dashboard metrics |
 | `WS` | `/api/v1/ws/alerts` | Live alert stream (backfill + live) |
+| `WS` | `/api/v1/ws/telemetry` | Live network telemetry (flows, throughput, events) |
 | `POST` | `/api/v1/narrative/generate` | Generate AI narrative for an alert or incident context |
 
 No new endpoints are introduced in this pass, except for the new `narrative` AI capability.
@@ -523,6 +524,55 @@ Not defined in this pass. **OPEN.**
 ### Status
 
 **LOCKED.** (Approval provenance: AR-03. WebSocket envelope/backfill semantics)
+---
+
+## 14b. Telemetry WebSocket Contract
+
+### `WS /api/v1/ws/telemetry`
+
+**Purpose:** Live stream of active network flows and throughput statistics, along with a buffered window of recent raw connection events.
+
+**Connection URL pattern:**
+```
+ws://<host>/api/v1/ws/telemetry
+wss://<host>/api/v1/ws/telemetry  (TLS)
+```
+
+### Protocol Sequence
+
+1. Client connects.
+2. Server enters live mode, publishing telemetry statistics periodically (usually 1Hz).
+
+### Message Model
+
+```json
+{
+  "flows_per_sec": integer,
+  "bytes_per_sec": integer,
+  "events": [
+    {
+      "event_id": string,
+      "event_type": string,
+      "timestamp": integer,
+      "src_ip": string,
+      "dst_ip": string,
+      "src_port": integer,
+      "dst_port": integer,
+      "protocol": string,
+      "payload": {
+        "orig_bytes": integer,
+        "resp_bytes": integer,
+        "conn_state": string
+      }
+    }
+  ]
+}
+```
+
+### Status
+
+**ACTIVE.**
+
 ---
 
 ## 15. WebSocket Message Model
