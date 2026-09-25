@@ -1,6 +1,0 @@
-.toggle-switch { position: relative; width: 38px; height: 20px; border-radius: 10px; cursor: pointer; transition: background var(--transition-normal), box-shadow var(--transition-normal); flex-shrink: 0; }
-.toggle-switch--off { background: var(--border-strong, var(--border-default)); }
-.toggle-switch--on { background: var(--accent-primary); box-shadow: 0 0 12px rgba(0,212,184,0.3); }
-.toggle-switch__thumb { position: absolute; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: left 200ms ease; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-.toggle-switch--off .toggle-switch__thumb { left: 2px; }
-.toggle-switch--on .toggle-switch__thumb { left: 20px; }
