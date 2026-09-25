@@ -1,5 +1,0 @@
-.threat-type-pill {
-  font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;
-  padding: 3px 10px; border-radius: var(--radius-md); white-space: nowrap;
-  display: inline-flex; align-items: center; gap: 4px;
-}

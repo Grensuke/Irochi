@@ -70,10 +70,13 @@ htmlcov/
 # --------------------------------------------------
 # Reference Material
 # --------------------------------------------------
-/reference/VibhinetraCy-main/
+/reference/
 
 # Local development/test utilities
 /backend/scripts/insert_test_alert.py
 git_diff.txt
 *.diff
 frontend/temp_*.json
+*_local.txt
+*_utf8.txt
+rename_script.py

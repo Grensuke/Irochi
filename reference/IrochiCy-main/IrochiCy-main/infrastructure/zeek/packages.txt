@@ -1,2 +1,0 @@
-zeek/zeek-ja3 v1.0.0
-zeek/ja4 v0.12.0
