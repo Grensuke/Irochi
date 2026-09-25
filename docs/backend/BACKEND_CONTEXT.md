@@ -54,6 +54,7 @@ The backend is fully wired to actual infrastructure services:
 | GET | `/api/v1/incidents` | ✅ Working (Queries PostgreSQL) |
 | GET | `/api/v1/incidents/{incident_id}` | ✅ Working (Queries PostgreSQL) |
 | WS | `/api/v1/ws/alerts` | ✅ Working (Backfill via DB, Live via Redis Pub/Sub) |
+| WS | `/api/v1/ws/telemetry` | ✅ Working (Live flow and throughput stream via Redis Pub/Sub) |
 | POST | `/api/v1/narrative/generate` | ✅ Working (Generates AI explanation) |
 
 ## Evaluation Tooling & Findings

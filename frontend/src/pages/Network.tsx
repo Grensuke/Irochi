@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { EventType } from '../types';
 import { DiodeFlowVisualizer } from '../components/DiodeFlowVisualizer';
+import { PageHeader } from '../components/PageHeader';
+import { useLiveTelemetry } from '../hooks/useLiveTelemetry';
 import './Network.css';
 
 function NetworkGraphEmptyState() {
@@ -19,59 +21,12 @@ function NetworkGraphEmptyState() {
   );
 }
 
-// Mock event generator for the demo
-function generateMockEvent(id: number) {
-  const types: EventType[] = ['connection', 'dns', 'tls'];
-  const type = types[Math.floor(Math.random() * types.length)];
-  const protocols = type === 'connection' ? ['TCP', 'UDP'] : type === 'dns' ? ['UDP'] : ['TCP'];
-  const protocol = protocols[Math.floor(Math.random() * protocols.length)];
-  
-  const srcIp = `10.0.${Math.floor(Math.random() * 5)}.${Math.floor(Math.random() * 254) + 1}`;
-  const dstIp = `198.51.100.${Math.floor(Math.random() * 254) + 1}`;
-  const srcPort = Math.floor(Math.random() * 50000) + 1024;
-  const dstPort = type === 'dns' ? 53 : type === 'tls' ? 443 : Math.floor(Math.random() * 1000);
-
-  return {
-    id: `evt_${Date.now()}_${id}`,
-    type,
-    time: new Date().toISOString(),
-    connection: `${srcIp}:${srcPort} ➔ ${dstIp}:${dstPort}`,
-    source: srcIp,
-    destination: dstIp,
-    protocol,
-    sent: Math.floor(Math.random() * 5000) + 64,
-    received: Math.floor(Math.random() * 50000) + 128,
-    state: type === 'connection' ? (Math.random() > 0.8 ? 'S0' : 'SF') : '-',
-    sensor: 'vibhinetra-tap-01'
-  };
-}
-
 export function Network() {
   const [vizMode, setVizMode] = useState<'diode' | 'matrix'>('diode');
   const [typeFilter, setTypeFilter] = useState<EventType | ''>('');
   const [search, setSearch] = useState('');
   
-  const [events, setEvents] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Initial batch
-    const initialEvents = Array.from({ length: 15 }, (_, i) => generateMockEvent(i)).reverse();
-    setEvents(initialEvents);
-
-    let counter = 100;
-    const interval = setInterval(() => {
-      const numNew = Math.floor(Math.random() * 3) + 1; // 1 to 3 new events
-      const newEvents = Array.from({ length: numNew }, (_, i) => generateMockEvent(counter + i));
-      counter += numNew;
-      
-      setEvents(prev => {
-        const next = [...newEvents.reverse(), ...prev];
-        return next.slice(0, 30); // Keep max 30 events
-      });
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, []);
+  const { flows: flowsPerSec, throughput: mbps, events } = useLiveTelemetry();
 
   const filteredEvents = events.filter(ev => {
     if (typeFilter && ev.type !== typeFilter) return false;
@@ -88,15 +43,23 @@ export function Network() {
   });
 
   return (
-    <div className="network-page" style={{ maxWidth: '1600px', width: '100%', margin: '0 auto' }}>
-      <div className="page-header">
-        <h1>Network Events</h1>
-        <div className="page-header-actions">
-          <span className="mono" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            {filteredEvents.length} events
-          </span>
-        </div>
-      </div>
+    <div className="network-page">
+      <PageHeader 
+        title="Network Telemetry" 
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
+            <span className="mono" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+              {flowsPerSec.toLocaleString()} Flows/sec
+            </span>
+            <span className="mono" style={{ color: 'var(--severity-info)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+              {mbps.toFixed(1)} Mbps
+            </span>
+            <span className="mono" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+              {filteredEvents.length} events buffered
+            </span>
+          </div>
+        }
+      />
 
       <div className="filter-bar">
         <input
@@ -142,7 +105,7 @@ export function Network() {
 
         {/* Selected Visualizer */}
         {vizMode === 'diode' ? (
-          <DiodeFlowVisualizer />
+          <DiodeFlowVisualizer realOpticalRate={mbps} />
         ) : (
           <NetworkGraphEmptyState />
         )}

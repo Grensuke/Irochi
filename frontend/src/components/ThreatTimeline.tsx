@@ -10,19 +10,22 @@ interface ThreatTimelineProps {
 
 export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [windowHours, setWindowHours] = useState<number>(1);
 
-  const { buckets, activeThreats, maxCount } = useMemo(() => {
+  const { buckets, activeThreats, maxCount, binDurationMs } = useMemo(() => {
     const bins: Record<string, number>[] = Array.from({ length: 24 }, () => ({}));
     const threatSet = new Set<string>();
+
+    const binDurationMs = (windowHours * 60 * 60 * 1000) / 24;
 
     alerts.forEach((alert) => {
       const detectedTime = alert.detected_at ? new Date(alert.detected_at).getTime() : Date.now();
       const now = Date.now();
-      const ageHours = (now - detectedTime) / (1000 * 60 * 60);
+      const ageMs = now - detectedTime;
 
-      let binIndex = 23 - Math.floor(ageHours);
+      let binIndex = 23 - Math.floor(ageMs / binDurationMs);
 
-      // Clamp to bounds. If older than 24h, we drop it from this chart
+      // Clamp to bounds. If older than selected window, we drop it from this chart
       if (binIndex < 0) return;
       if (binIndex > 23) binIndex = 23;
       
@@ -50,8 +53,8 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
     // Round up max to nearest 5
     max = Math.ceil(max / 5) * 5;
 
-    return { buckets: bins, activeThreats: active, maxCount: max };
-  }, [alerts]);
+    return { buckets: bins, activeThreats: active, maxCount: max, binDurationMs };
+  }, [alerts, windowHours]);
 
   const W = 700;
   const H = 220;
@@ -101,7 +104,7 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
   if (hoverIndex !== null && hoverIndex >= 0 && hoverIndex < 24) {
     const bin = buckets[hoverIndex];
     const total = activeThreats.reduce((sum, t) => sum + (bin[t] || 0), 0);
-    const hourLabel = new Date(Date.now() - (23 - hoverIndex) * 3600000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' UTC';
+    const hourLabel = new Date(Date.now() - (23 - hoverIndex) * binDurationMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' UTC';
     
     // Sort tooltip items by count desc
     const sortedActive = [...activeThreats].sort((a, b) => (bin[b] || 0) - (bin[a] || 0));
@@ -120,7 +123,25 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
       <div className="panel-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <span className="panel-title">OBSERVED ALERT ACTIVITY</span>
-          <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>(24h)</span>
+          <select 
+            value={windowHours} 
+            onChange={(e) => setWindowHours(Number(e.target.value))}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-secondary)',
+              fontSize: '11px',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value={1}>LAST 1H</option>
+            <option value={3}>LAST 3H</option>
+            <option value={12}>LAST 12H</option>
+            <option value={24}>LAST 24H</option>
+          </select>
         </div>
         
         {/* Premium Legend */}
@@ -140,7 +161,7 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
         {alerts.length === 0 ? (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500, letterSpacing: '0.05em' }}>NO ALERT ACTIVITY</span>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '6px' }}>No observed alerts in the selected 24-hour window.</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '6px' }}>No observed alerts in the selected {windowHours}-hour window.</span>
           </div>
         ) : (
           <svg 
@@ -180,8 +201,8 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
             <text x={paddingX - 12} y={getY(0) + 3} fill="var(--text-muted)" fontSize="10" textAnchor="end">0</text>
 
             {/* X-axis labels */}
-            <text x={getX(0)} y={H - paddingY + 20} fill="var(--text-muted)" fontSize="10" textAnchor="middle">-24h</text>
-            <text x={getX(12)} y={H - paddingY + 20} fill="var(--text-muted)" fontSize="10" textAnchor="middle">-12h</text>
+            <text x={getX(0)} y={H - paddingY + 20} fill="var(--text-muted)" fontSize="10" textAnchor="middle">{windowHours < 1 ? `-${windowHours * 60}m` : `-${windowHours}h`}</text>
+            <text x={getX(12)} y={H - paddingY + 20} fill="var(--text-muted)" fontSize="10" textAnchor="middle">{windowHours / 2 < 1 ? `-${(windowHours / 2) * 60}m` : `-${windowHours / 2}h`}</text>
             <text x={getX(23)} y={H - paddingY + 20} fill="var(--text-muted)" fontSize="10" textAnchor="middle">Now</text>
 
             {/* Series Lines & Areas */}

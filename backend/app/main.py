@@ -18,6 +18,7 @@ from app.api.routes import health as health_routes
 from app.api.routes import narrative as narrative_routes
 from app.api.routes import incidents as incident_routes
 from app.api.websocket import alerts as ws_alerts
+from app.api.websocket import telemetry as ws_telemetry
 from contextlib import asynccontextmanager
 
 from app.core.config import (
@@ -154,3 +155,4 @@ app.include_router(incident_routes.router, prefix=API_V1_PREFIX + "/incidents", 
 # ------------------------------------------------------------------
 
 app.include_router(ws_alerts.router, prefix=API_V1_PREFIX, tags=["websocket"])
+app.include_router(ws_telemetry.router, prefix=API_V1_PREFIX, tags=["websocket"])

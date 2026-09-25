@@ -233,32 +233,20 @@ docker compose up --build
 
 ---
 
-## Running the Live Demo
+## How the Live Demo Works
 
-You have two options to drive detections into the live backend depending on your setup. Both options target the host-side Redpanda broker at `localhost:19092`.
+The live demo is now **completely automated** via the `traffic-generator` container in Docker Compose. You do not need to run any manual scripts to drive traffic into the pipeline.
 
-### Option A: Pre-Processed Playback Tape (Recommended for UI Testing)
+**The Pipeline Flow:**
+1. **Traffic Generator:** The `vibhinetra-traffic-generator` container continuously loops through the pre-processed `real_demo_traffic.jsonl` tape and pumps the network events into the Redpanda broker.
+2. **Detection & Correlation:** The backend consumes from Redpanda, runs the features through 6 ML/heuristic detectors, and persists Alerts to PostgreSQL. The Incident Engine then clusters them.
+3. **Real-Time UI Delivery:** The backend publishes the new Alerts to a Redis Pub/Sub channel. The FastAPI WebSocket service picks these up and pushes them to the React frontend in real-time.
 
-This script plays back a high-density, pre-processed `jsonl` tape (`real_demo_traffic.jsonl`) that is guaranteed to trigger a rich distribution of severities and multi-stage incidents on the dashboard.
-
+To reset the demo database manually if desired, you can still run the script from the host environment:
 ```bash
 cd backend
-
-# 1. Run the playback tape
-# --clear wipes the database first, --speed 0.5 slows playback down for visual presentation
-.venv\Scripts\python.exe scripts\playback_demo.py --clear --speed 0.5
+.venv\Scripts\python.exe scripts\playback_demo.py --clear
 ```
-
-### Option B: Raw PCAP Ingestion (Requires Zeek / Full Infrastructure)
-
-To run a raw PCAP through the ingest pipeline in real time:
-
-```bash
-cd backend
-.venv\Scripts\python.exe scripts\live_demo.py --pcap /path/to/traffic.pcap
-```
-
-Both scripts replay telemetry through the Ingest Normalizer → Redpanda pipeline, triggering the full detection flow in real time.
 
 ---
 

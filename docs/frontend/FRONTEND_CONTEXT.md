@@ -67,7 +67,8 @@ frontend/
 │   │   ├── useAlerts.ts
 │   │   ├── useLiveAlerts.ts
 │   │   ├── useIncidents.ts
-│   │   └── useIncident.ts
+│   │   ├── useIncident.ts
+│   │   └── useLiveTelemetry.ts
 │   ├── layouts/
 │   │   └── AppLayout.tsx / AppLayout.css
 │   ├── pages/
@@ -111,9 +112,9 @@ frontend/
 | GET /api/v1/incidents/{id} | `useIncident` → AlertDetailPage |
 | GET /api/v1/dashboard/summary | `useDashboard` → SummaryBar, ThreatBreakdown, Threats page, Analytics page |
 | WS /api/v1/ws/alerts | `useLiveAlerts` → LiveFeed |
+| WS /api/v1/ws/telemetry | `useLiveTelemetry` → Network, SummaryBar |
 
 **MOCK / DEMO (Simulated Data):**
-- Network page (uses synthetic traffic data for DiodeFlowVisualizer)
 - Analytics trends (synthetic historical charts)
 - Traffic charts (synthetic throughput/protocol data)
 - Settings (UI only)
@@ -121,7 +122,6 @@ frontend/
 ## Pending
 
 - Implement historical analytics APIs to replace mock Analytics trends
-- Replace mock traffic generator for Network page
 - Real authentication and authorization
 - Real multi-tenancy support
 

@@ -12,6 +12,7 @@ class RedisPubSubService:
         self.redis_url = redis_url
         self._client: Redis | None = None
         self._channel = "vibhinetra.alerts.live"
+        self._telemetry_channel = "vibhinetra.telemetry.live"
 
     async def start(self):
         if self._client is None:
@@ -54,4 +55,30 @@ class RedisPubSubService:
                         logger.error(f"Failed to parse pub/sub message: {e}")
         finally:
             await pubsub.unsubscribe(self._channel)
+            await pubsub.close()
+
+    async def publish_telemetry(self, telemetry_payload: dict):
+        if self._client is None:
+            raise RuntimeError("Redis PubSub client is not started")
+
+        message = json.dumps(telemetry_payload)
+        await self._client.publish(self._telemetry_channel, message)
+
+    async def subscribe_telemetry(self) -> AsyncGenerator[dict, None]:
+        if self._client is None:
+            raise RuntimeError("Redis PubSub client is not started")
+
+        pubsub = self._client.pubsub()
+        await pubsub.subscribe(self._telemetry_channel)
+
+        try:
+            async for message in pubsub.listen():
+                if message["type"] == "message":
+                    try:
+                        data = json.loads(message["data"])
+                        yield data
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Failed to parse telemetry pub/sub message: {e}")
+        finally:
+            await pubsub.unsubscribe(self._telemetry_channel)
             await pubsub.close()
