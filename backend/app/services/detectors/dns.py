@@ -43,9 +43,16 @@ class DnsDetector(BaseDetector):
 
                 logger.info(f"Successfully loaded DGA model {self.metadata.get('model_version')} from {model_path}")
             else:
-                logger.error(f"DGA model or metadata not found at {model_path}")
+                msg = f"DGA model or metadata not found at {model_path}"
+                logger.error(msg)
+                from app.core.config import BACKEND_ENV
+                if BACKEND_ENV == "production":
+                    raise FileNotFoundError(msg)
         except Exception as e:
             logger.error(f"Failed to load DGA model: {e}", exc_info=True)
+            from app.core.config import BACKEND_ENV
+            if BACKEND_ENV == "production":
+                raise e
 
     @property
     def detector_id(self) -> DetectorId:
@@ -71,7 +78,7 @@ class DnsDetector(BaseDetector):
                 "input_id": input_data.input_id,
                 "detector_id": self.detector_id,
                 "detector_version": self.detector_version,
-                "evaluated_at": int(time.time()),
+                "evaluated_at": int(time.time() * 1000000),
                 "threat_type": ThreatType.DGA_DNS_TUNNEL,
                 "entity_type": input_data.feature_record.entity_type,
                 "entity_key": input_data.feature_record.entity_key,
