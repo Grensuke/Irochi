@@ -24,6 +24,7 @@ APP_VERSION = "0.1.0-dummy"
 API_V1_PREFIX = "/api/v1"
 BACKEND_ENV = os.getenv("BACKEND_ENV", "development")
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
+DISABLE_PIPELINE = os.getenv("DISABLE_PIPELINE", "false").lower() == "true"
 ENABLE_API_DOCS = os.getenv("ENABLE_API_DOCS", "true").lower() == "true"
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 

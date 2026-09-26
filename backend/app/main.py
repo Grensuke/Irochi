@@ -24,7 +24,7 @@ from contextlib import asynccontextmanager
 from app.core.config import (
     API_V1_PREFIX, APP_DESCRIPTION, APP_TITLE, APP_VERSION,
     REDIS_URL, REDPANDA_BROKER, REDPANDA_CONSUMER_GROUP, REDPANDA_TOPICS,
-    ENABLE_API_DOCS, CORS_ALLOWED_ORIGINS
+    ENABLE_API_DOCS, CORS_ALLOWED_ORIGINS, DISABLE_PIPELINE
 )
 from app.core.database import AsyncSessionLocal
 from app.services.state.redis_client import RedisStateService
@@ -62,51 +62,57 @@ async def lifespan(app: FastAPI):
     global _pipeline, _state_service
 
     # 1. State/Infrastructure
-    _state_service = RedisStateService(REDIS_URL)
-    consumer = None
-    try:
-        await _state_service.start()
-        state_adapter = FeatureStateAdapter(_state_service)
+    if not DISABLE_PIPELINE:
+        _state_service = RedisStateService(REDIS_URL)
+        consumer = None
+        try:
+            await _state_service.start()
+            state_adapter = FeatureStateAdapter(_state_service)
 
-        redis_pubsub = await get_redis_pubsub()
+            redis_pubsub = await get_redis_pubsub()
 
-        # 2. Streaming Consumer
-        consumer = KafkaConsumerService(
-            bootstrap_servers=REDPANDA_BROKER,
-            group_id=REDPANDA_CONSUMER_GROUP,
-            topics=REDPANDA_TOPICS,
-        )
-        await consumer.start()
+            # 2. Streaming Consumer
+            consumer = KafkaConsumerService(
+                bootstrap_servers=REDPANDA_BROKER,
+                group_id=REDPANDA_CONSUMER_GROUP,
+                topics=REDPANDA_TOPICS,
+            )
+            await consumer.start()
 
-        # 3. Engines & Router
-        feature_engine = FeatureEngine(state_adapter)
+            # 3. Engines & Router
+            feature_engine = FeatureEngine(state_adapter)
 
-        registry = DetectorRegistry()
-        registry.register(DdosDetector(redis_service=_state_service))
-        registry.register(ReconDetector())
-        registry.register(DnsDetector())
-        
-        from app.services.detectors.c2 import C2Detector
-        from app.services.detectors.exfil import ExfiltrationDetector
-        registry.register(C2Detector())
-        registry.register(ExfiltrationDetector())
+            registry = DetectorRegistry()
+            registry.register(DdosDetector(redis_service=_state_service))
+            registry.register(ReconDetector())
+            registry.register(DnsDetector())
+            
+            from app.services.detectors.c2 import C2Detector
+            from app.services.detectors.exfil import ExfiltrationDetector
+            registry.register(C2Detector())
+            registry.register(ExfiltrationDetector())
 
-        baseline_store = BaselineStateStore(_state_service)
-        registry.register(UnknownDetector(baseline_store))
+            baseline_store = BaselineStateStore(_state_service)
+            registry.register(UnknownDetector(baseline_store))
 
-        grouping = PassThroughGrouping()
-        router = DetectorRouter(registry, grouping)
+            grouping = PassThroughGrouping()
+            router = DetectorRouter(registry, grouping)
 
-        # 4. Start Pipeline
-        _pipeline = DetectionPipeline(
-            consumer=consumer,
-            feature_engine=feature_engine,
-            router=router,
-            session_factory=AsyncSessionLocal,
-            redis_service=redis_pubsub,
-        )
-        _pipeline.start()
+            # 4. Start Pipeline
+            _pipeline = DetectionPipeline(
+                consumer=consumer,
+                feature_engine=feature_engine,
+                router=router,
+                session_factory=AsyncSessionLocal,
+                redis_service=redis_pubsub,
+            )
+            _pipeline.start()
 
+            yield
+        finally:
+            pass
+    else:
+        logger.info("DISABLE_PIPELINE is set to True. Running in lightweight static API mode.")
         yield
     finally:
         # Shutdown
