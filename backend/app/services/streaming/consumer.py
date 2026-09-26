@@ -30,10 +30,14 @@ class KafkaConsumerService:
                 *self.topics,
                 bootstrap_servers=self.bootstrap_servers,
                 group_id=self.group_id,
-                auto_offset_reset="earliest",
+                auto_offset_reset="latest",
             )
-            await self._consumer.start()
-            logger.info(f"Redpanda Consumer started for topics: {self.topics}")
+            try:
+                await self._consumer.start()
+                logger.info(f"Redpanda Consumer started for topics: {self.topics}")
+            except Exception as e:
+                logger.error(f"Failed to connect to Redpanda/Kafka at {self.bootstrap_servers}: {e}")
+                self._consumer = None
 
     async def stop(self):
         """Stop the consumer connection."""
@@ -48,7 +52,10 @@ class KafkaConsumerService:
         Malformed JSON payloads are safely skipped.
         """
         if self._consumer is None:
-            raise RuntimeError("Consumer is not started")
+            logger.warning("Consumer is disabled due to connection failure. Idling...")
+            import asyncio
+            while True:
+                await asyncio.sleep(60)
 
         async for msg in self._consumer:
             try:
