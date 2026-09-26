@@ -1,17 +1,11 @@
 # ==================================================
-# Vibhinetra Backend — Dockerfile (Dummy Phase)
-# ==================================================
-# Minimal FastAPI dummy-app container.
-# Matches docker-compose.yml expectations:
-#   - Port 8000
-#   - uvicorn with --reload for development
-#
-# This Dockerfile is for the DUMMY backend only.
-# Production concerns (multi-stage builds, non-root
-# users, health checks, etc.) will be added later.
+# Vibhinetra Backend — Dockerfile
 # ==================================================
 
 FROM python:3.12.10-slim
+
+# Create a non-root user
+RUN groupadd -r vibhinetra && useradd -r -g vibhinetra vibhinetra
 
 # Prevent Python from writing .pyc files and enable
 # unbuffered stdout/stderr for container logging
@@ -27,8 +21,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Change ownership
+RUN chown -R vibhinetra:vibhinetra /app
+USER vibhinetra
+
 # Expose the backend port
 EXPOSE 8000
 
-# Default command — overridden by docker-compose.yml
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')" || exit 1
+
+# Default command — runs database migrations then starts the server
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
