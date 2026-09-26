@@ -13,7 +13,8 @@ export function useLiveTelemetry() {
     const connect = () => {
       if (isCleanedUp) return;
       
-      const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/v1/ws/telemetry`;
+      const defaultWsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+    const wsUrl = `${import.meta.env.VITE_WS_URL || defaultWsUrl}/api/v1/ws/telemetry`;
       ws = new WebSocket(wsUrl);
 
       ws.onmessage = (event) => {
