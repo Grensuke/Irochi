@@ -18,10 +18,17 @@ export function ThreatTimeline({ alerts }: ThreatTimelineProps) {
 
     const binDurationMs = (windowHours * 60 * 60 * 1000) / 24;
 
+    // Calculate the most recent alert time to use as 'now' for the timeline window.
+    // This allows the graph to render correctly even with historical demo data.
+    const latestTime = alerts.reduce((max, alert) => {
+      const t = alert.detected_at ? new Date(alert.detected_at).getTime() : 0;
+      return t > max ? t : max;
+    }, 0);
+    const referenceTime = latestTime > 0 ? latestTime : Date.now();
+
     alerts.forEach((alert) => {
       const detectedTime = alert.detected_at ? new Date(alert.detected_at).getTime() : Date.now();
-      const now = Date.now();
-      const ageMs = now - detectedTime;
+      const ageMs = referenceTime - detectedTime;
 
       let binIndex = 23 - Math.floor(ageMs / binDurationMs);
 

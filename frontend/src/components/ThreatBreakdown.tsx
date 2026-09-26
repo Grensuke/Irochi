@@ -52,9 +52,10 @@ export function ThreatBreakdown({ summary, loading }: ThreatBreakdownProps) {
     const fraction = total > 0 ? item.count / total : 0;
     // Add small gap by reducing the fraction slightly for the dasharray, only if not 100%
     const gap = fraction > 0 && fraction < 1 ? 2 : 0;
-    const dash = (fraction * circumference) - gap;
-    const strokeDasharray = `${Math.max(0, dash)} ${circumference}`;
-    const strokeDashoffset = -currentOffset;
+    const dash = Math.max(0, (fraction * circumference) - gap);
+    const emptySpace = circumference - dash;
+    const strokeDasharray = `${dash} ${emptySpace}`;
+    const strokeDashoffset = circumference - currentOffset;
     currentOffset += fraction * circumference;
     
     return {
