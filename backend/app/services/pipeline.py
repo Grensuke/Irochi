@@ -132,37 +132,37 @@ class DetectionPipeline:
                 if not detector_outputs:
                     continue
 
-            for output in detector_outputs:
-                if output.decision != Decision.DETECTION:
-                    continue
+                for output in detector_outputs:
+                    if output.decision != Decision.DETECTION:
+                        continue
 
-                # Pipeline-level debounce to prevent DB session overhead
-                cache_key = (output.detector_id, output.entity_key)
-                now = time.time()
-                if now - self._recent_detections.get(cache_key, 0) < 5.0:
-                    continue
-                self._recent_detections[cache_key] = now
+                    # Pipeline-level debounce to prevent DB session overhead
+                    cache_key = (output.detector_id, output.entity_key)
+                    now = time.time()
+                    if now - self._recent_detections.get(cache_key, 0) < 5.0:
+                        continue
+                    self._recent_detections[cache_key] = now
 
-                # 3. Alert Persistence and Redis Publish
-                # Create a fresh database session scope ONLY for actual detections
-                async with self.session_factory() as session:
-                    pg_service = PostgresAlertService(session)
-                    alert_engine = AlertEngine(
-                        postgres_service=pg_service,
-                        redis_service=self.redis_service
-                    )
-                    incident_engine = IncidentEngine()
-
-                    try:
-                        alert_payload = await alert_engine.process_detector_output(output)
-                        if alert_payload:
-                            await incident_engine.on_alert(alert_payload, session)
-                    except Exception as e:
-                        logger.error(
-                            f"Error persisting detector output {output.output_id} "
-                            f"from detector {output.detector_id.value}: {e}",
-                            exc_info=True
+                    # 3. Alert Persistence and Redis Publish
+                    # Create a fresh database session scope ONLY for actual detections
+                    async with self.session_factory() as session:
+                        pg_service = PostgresAlertService(session)
+                        alert_engine = AlertEngine(
+                            postgres_service=pg_service,
+                            redis_service=self.redis_service
                         )
+                        incident_engine = IncidentEngine()
+
+                        try:
+                            alert_payload = await alert_engine.process_detector_output(output)
+                            if alert_payload:
+                                await incident_engine.on_alert(alert_payload, session)
+                        except Exception as e:
+                            logger.error(
+                                f"Error persisting detector output {output.output_id} "
+                                f"from detector {output.detector_id.value}: {e}",
+                                exc_info=True
+                            )
                         
         total_time = time.time() - t0
         if total_time > 0.05:

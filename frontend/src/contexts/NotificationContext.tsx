@@ -102,14 +102,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           : next;
       });
 
-      // Only show toast for LIVE alerts (not backfill)
-      if (phase === 'live') {
+      // Only show toast for LIVE alerts (not backfill) AND only for CRITICAL severity
+      if (phase === 'live' && alert.severity === 'critical') {
         const toast: Toast = {
           id: `toast-${alert.alert_id}-${now}`,
           alert,
           createdAt: now,
         };
-        setToasts((prev) => [toast, ...prev].slice(0, 5));
+        // Keep strictly one-by-one to avoid stacking clutter
+        setToasts((prev) => [toast, ...prev].slice(0, 1));
       }
     },
     [],
