@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from app.services.state.redis_client import RedisStateService
 from app.schemas.features import EntityType
 from app.services.features.keys import (
@@ -191,3 +191,82 @@ class FeatureStateAdapter:
     async def get_correlation_state(self, connection_id: str) -> Dict[str, str]:
         key = build_correlation_key(connection_id)
         return await self.redis.get_correlation(key)
+
+    async def execute_tumbling_batch(
+        self,
+        entity_type: EntityType,
+        entity_key: str,
+        window_id: int,
+        increments: Dict[str, int],
+        distinct_adds: Dict[str, str],
+        list_appends: Dict[str, str],
+        ttl_seconds: int,
+        max_list_length: int = 1000
+    ) -> Tuple[Dict[str, str], Dict[str, int], Dict[str, List[str]]]:
+        """
+        Executes writes and reads for a tumbling window in a single Redis pipeline roundtrip.
+        """
+        if self.redis._client is None:
+            raise RuntimeError("Redis client is not started")
+
+        metric_key = build_tumbling_metric_key(entity_type, entity_key, window_id)
+        
+        async with self.redis._client.pipeline(transaction=True) as pipe:
+            # 1. Writes
+            if increments:
+                for field, amount in increments.items():
+                    if amount != 0:
+                        pipe.hincrby(metric_key, field, amount)
+                pipe.expire(metric_key, ttl_seconds)
+                
+            for field, value in distinct_adds.items():
+                if value is not None:
+                    d_key = build_tumbling_distinct_key(entity_type, entity_key, window_id, field)
+                    pipe.pfadd(d_key, value)
+                    pipe.expire(d_key, ttl_seconds)
+                    
+            for field, value in list_appends.items():
+                if value is not None:
+                    l_key = build_tumbling_list_key(entity_type, entity_key, window_id, field)
+                    pipe.rpush(l_key, value)
+                    pipe.ltrim(l_key, -max_list_length, -1)
+                    pipe.expire(l_key, ttl_seconds)
+                    
+            # 2. Reads
+            pipe.hgetall(metric_key)
+            distinct_keys = list(distinct_adds.keys())
+            for field in distinct_keys:
+                d_key = build_tumbling_distinct_key(entity_type, entity_key, window_id, field)
+                pipe.pfcount(d_key)
+                
+            list_keys = list(list_appends.keys())
+            for field in list_keys:
+                l_key = build_tumbling_list_key(entity_type, entity_key, window_id, field)
+                pipe.lrange(l_key, 0, -1)
+                
+            results = await pipe.execute()
+            
+        # 3. Parse results from the back of the results array
+        total_reads = 1 + len(distinct_keys) + len(list_keys)
+        read_results = results[-total_reads:] if total_reads > 0 else []
+        
+        metrics_raw = read_results[0] if read_results else {}
+        metrics = {}
+        if isinstance(metrics_raw, dict):
+            for k, v in metrics_raw.items():
+                k_str = k.decode('utf-8') if isinstance(k, bytes) else k
+                v_str = v.decode('utf-8') if isinstance(v, bytes) else v
+                metrics[k_str] = v_str
+        
+        distinct_counts = {}
+        idx = 1
+        for field in distinct_keys:
+            distinct_counts[field] = read_results[idx]
+            idx += 1
+            
+        list_values = {}
+        for field in list_keys:
+            list_values[field] = read_results[idx]
+            idx += 1
+            
+        return metrics, distinct_counts, list_values

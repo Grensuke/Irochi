@@ -54,6 +54,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev
     container_name: vibhinetra-frontend
     ports:
       - "5173:5173"
@@ -92,6 +93,7 @@ services:
       - REDPANDA_BROKER=redpanda:9092
       - LOOP_FOREVER=true
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     volumes:
       - ./backend:/app
     networks:

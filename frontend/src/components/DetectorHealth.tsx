@@ -1,6 +1,6 @@
 /**
  * Detector Health panel.
- * Technical system health overview for the 5 logical detection modules.
+ * Technical system health overview for the 6 logical detection modules.
  */
 
 const MOCK_DETECTORS = [
@@ -9,6 +9,7 @@ const MOCK_DETECTORS = [
   { id: 'dns', name: 'DNS / DGA Tunneling', status: 'active', info: 'Operational' },
   { id: 'c2', name: 'TLS/C2 Detector', status: 'active', info: 'Operational (Behavioral Heuristic)' },
   { id: 'exfil', name: 'Exfiltration Detector', status: 'active', info: 'Operational (Behavioral Heuristic)' },
+  { id: 'anomaly', name: 'Unknown / Anomaly Detector', status: 'active', info: 'Operational (Statistical Baseline)' },
 ];
 
 export function DetectorHealth() {

@@ -14,11 +14,6 @@ sqlalchemy==2.0.38
 asyncpg==0.30.0
 alembic==1.14.1
 
-# --- Testing ---
-pytest==8.3.5
-pytest-asyncio==0.25.3
-httpx==0.28.1
-
 # --- WebSocket ---
 websockets==15.0.1
 

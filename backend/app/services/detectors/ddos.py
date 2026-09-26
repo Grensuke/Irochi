@@ -57,6 +57,10 @@ class DdosDetector(BaseDetector):
         self.confidence_cutoff = confidence_cutoff
         self.redis_service = redis_service
         self._version = "2.0.0"
+        
+        # In-memory cache for River models to avoid extreme pickling overhead per packet
+        self._river_models = {}
+
 
     @property
     def detector_id(self) -> DetectorId:
@@ -92,23 +96,19 @@ class DdosDetector(BaseDetector):
                 continue
 
             anomaly_score = 0.0
-            if HAS_RIVER and self.redis_service and self.redis_service._client:
-                key = f"vibhinetra:anomaly:river:ddos:{record.entity_key}"
-                model = None
-                try:
-                    data = await self.redis_service._client.get(key)
-                    if data:
-                        model = pickle.loads(bytes.fromhex(data))
-                except Exception as e:
-                    logger.warning(f"Failed to load river model from redis: {e}")
+            if HAS_RIVER:
+                model_key = "global"  # Use a single global model to avoid 1.5s per-IP numba JIT compilation latency
+                model = self._river_models.get(model_key)
 
                 if model is None:
+                    # Initialize the global model once
                     model = anomaly.HalfSpaceTrees(
                         n_trees=25,
                         height=10,
                         window_size=250,
                         seed=42
                     )
+                    self._river_models[model_key] = model
 
                 features = {
                     "packet_rate": float(signals["packet_rate"] or 0),
@@ -120,10 +120,10 @@ class DdosDetector(BaseDetector):
                 try:
                     anomaly_score = model.score_one(features)
                     model.learn_one(features)
-                    hex_data = pickle.dumps(model).hex()
-                    await self.redis_service._client.set(key, hex_data)
+                    # Skip writing back to redis per packet to save massive CPU overhead
+                    # In a production system, this would be persisted periodically via a background task.
                 except Exception as e:
-                    logger.warning(f"Failed to score/save river model: {e}")
+                    logger.warning(f"Failed to score river model: {e}")
                     anomaly_score = 0.0
                     
             signals["anomaly_score"] = anomaly_score

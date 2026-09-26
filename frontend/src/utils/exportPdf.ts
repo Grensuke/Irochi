@@ -11,12 +11,12 @@ import { THREAT_TYPE_LABELS, DETECTOR_LABELS } from '../types';
 
 // ─── Color Palette (RGB tuples) ──────────────────────
 const COLORS = {
-  black: [20, 20, 25] as [number, number, number],
-  darkGray: [60, 60, 68] as [number, number, number],
-  medGray: [120, 120, 130] as [number, number, number],
-  lightGray: [200, 200, 205] as [number, number, number],
-  bgLight: [245, 245, 248] as [number, number, number],
-  accent: [99, 102, 241] as [number, number, number],      // Indigo
+  black: [15, 23, 42] as [number, number, number],       // Slate 900
+  darkGray: [51, 65, 85] as [number, number, number],    // Slate 700
+  medGray: [100, 116, 139] as [number, number, number],  // Slate 500
+  lightGray: [226, 232, 240] as [number, number, number],// Slate 200
+  bgLight: [248, 250, 252] as [number, number, number],  // Slate 50
+  accent: [59, 130, 246] as [number, number, number],    // Blue 500
   critical: [239, 68, 68] as [number, number, number],
   high: [245, 158, 11] as [number, number, number],
   medium: [234, 179, 8] as [number, number, number],
@@ -74,9 +74,9 @@ class VibhinetraPdfReport {
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(7);
     this.doc.setTextColor(...COLORS.medGray);
-    this.doc.text(`© 2026 Vibhinetra — All Rights Reserved. Passive Network Intelligence.`, this.marginLeft, footerY);
+    this.doc.text(`(c) 2026 Vibhinetra. All Rights Reserved.`, this.marginLeft, footerY);
     this.doc.text(`Page ${this.pageNumber}`, this.pageWidth - this.marginRight, footerY, { align: 'right' });
-    this.doc.text(`CONFIDENTIAL — FOR AUTHORIZED PERSONNEL ONLY`, this.pageWidth / 2, footerY, { align: 'center' });
+    this.doc.text(`CONFIDENTIAL - AUTHORIZED PERSONNEL ONLY`, this.pageWidth / 2, footerY, { align: 'center' });
   }
 
   private drawSectionHeader(title: string) {
@@ -165,25 +165,25 @@ class VibhinetraPdfReport {
   // ─── Report Sections ──────────────────────────────
 
   public buildCoverHeader(alert: Alert) {
-    // Top accent banner
+    // Top border accent
     this.doc.setFillColor(...COLORS.accent);
-    this.doc.rect(0, 0, this.pageWidth, 38, 'F');
+    this.doc.rect(0, 0, this.pageWidth, 3, 'F');
 
     // Logo / title
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(22);
-    this.doc.setTextColor(...COLORS.white);
+    this.doc.setTextColor(...COLORS.black);
     this.doc.text('VIBHINETRA', this.marginLeft, 16);
 
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(9);
-    this.doc.setTextColor(200, 200, 255);
+    this.doc.setTextColor(...COLORS.medGray);
     this.doc.text('Passive Network Intelligence — Incident Report', this.marginLeft, 23);
 
     // Report timestamp
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(8);
-    this.doc.setTextColor(180, 180, 240);
+    this.doc.setTextColor(...COLORS.darkGray);
     const now = new Date();
     this.doc.text(
       `Generated: ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })} UTC`,
@@ -197,12 +197,17 @@ class VibhinetraPdfReport {
     );
 
     // Classification banner
-    this.doc.setFillColor(30, 30, 40);
-    this.doc.rect(0, 38, this.pageWidth, 7, 'F');
+    this.doc.setFillColor(...COLORS.bgLight);
+    this.doc.rect(0, 32, this.pageWidth, 8, 'F');
+    this.doc.setDrawColor(...COLORS.lightGray);
+    this.doc.setLineWidth(0.3);
+    this.doc.line(0, 32, this.pageWidth, 32);
+    this.doc.line(0, 40, this.pageWidth, 40);
+
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(7);
-    this.doc.setTextColor(...COLORS.white);
-    this.doc.text('CLASSIFICATION: CONFIDENTIAL — FOR AUTHORIZED PERSONNEL ONLY', this.pageWidth / 2, 43, { align: 'center' });
+    this.doc.setFontSize(7.5);
+    this.doc.setTextColor(...COLORS.darkGray);
+    this.doc.text('CLASSIFICATION: CONFIDENTIAL — FOR AUTHORIZED PERSONNEL ONLY', this.pageWidth / 2, 37.5, { align: 'center' });
 
     this.y = 52;
   }
@@ -262,9 +267,37 @@ class VibhinetraPdfReport {
       this.doc.text(kpi.label, x + 4, this.y + 5);
       // Value
       this.doc.setFont('helvetica', 'bold');
-      this.doc.setFontSize(11);
+      let fontSize = 11;
+      this.doc.setFontSize(fontSize);
+      
+      // Allow wrapping within the box width
+      let lines = this.doc.splitTextToSize(kpi.value, kpiWidth - 8);
+      
+      // If it overflows to multiple lines, step down the font size
+      if (lines.length > 1) {
+        fontSize = 9;
+        this.doc.setFontSize(fontSize);
+        lines = this.doc.splitTextToSize(kpi.value, kpiWidth - 8);
+      }
+      if (lines.length > 2) {
+        fontSize = 7.5;
+        this.doc.setFontSize(fontSize);
+        lines = this.doc.splitTextToSize(kpi.value, kpiWidth - 8);
+      }
+      
+      // Hard truncate to protect the box height if it's exceptionally long
+      if (lines.length > 2) {
+        lines = lines.slice(0, 2);
+        if (lines[1].length > 3) {
+           lines[1] = lines[1].substring(0, lines[1].length - 3) + '...';
+        }
+      }
+
       this.doc.setTextColor(...COLORS.black);
-      this.doc.text(kpi.value, x + 4, this.y + 13);
+      
+      // Adjust vertical start point based on line count so it stays centered
+      const startY = lines.length > 1 ? this.y + 10.5 : this.y + 13;
+      this.doc.text(lines, x + 4, startY);
     });
     this.y += 24;
 
@@ -274,8 +307,10 @@ class VibhinetraPdfReport {
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(9);
     this.doc.setTextColor(...COLORS.darkGray);
-    this.doc.text(threats.join('  •  '), this.marginLeft + 4, this.y);
-    this.y += 6;
+    const threatsText = threats.join('  •  ');
+    const threatLines = this.doc.splitTextToSize(threatsText, this.contentWidth - 8);
+    this.doc.text(threatLines, this.marginLeft + 4, this.y);
+    this.y += (threatLines.length * 4.5) + 2;
 
     // Forecast
     if (incident.forecast_next_stage) {
@@ -286,7 +321,7 @@ class VibhinetraPdfReport {
       this.doc.setFont('helvetica', 'bold');
       this.doc.setFontSize(8);
       this.doc.setTextColor(...COLORS.critical);
-      this.doc.text(`⚠ RISK FORECAST: Next predicted stage → ${THREAT_TYPE_LABELS[incident.forecast_next_stage as ThreatType] ?? incident.forecast_next_stage}`, this.marginLeft + 8, this.y + 3);
+      this.doc.text(`[!] RISK FORECAST: Next predicted stage -> ${THREAT_TYPE_LABELS[incident.forecast_next_stage as ThreatType] ?? incident.forecast_next_stage}`, this.marginLeft + 8, this.y + 3);
       this.y += 12;
     }
 
@@ -317,10 +352,11 @@ class VibhinetraPdfReport {
       if (isActive) {
         this.doc.setFillColor(...COLORS.accent);
         this.doc.circle(cx, circleY, 5, 'F');
-        this.doc.setFont('helvetica', 'bold');
-        this.doc.setFontSize(7);
-        this.doc.setTextColor(...COLORS.white);
-        this.doc.text('✓', cx - 1.5, circleY + 2);
+        // Draw a manual checkmark instead of unicode to avoid missing glyphs in PDF helvetica
+        this.doc.setDrawColor(...COLORS.white);
+        this.doc.setLineWidth(1);
+        this.doc.line(cx - 2, circleY, cx - 0.5, circleY + 2);
+        this.doc.line(cx - 0.5, circleY + 2, cx + 2.5, circleY - 1.5);
       } else {
         this.doc.setDrawColor(...COLORS.lightGray);
         this.doc.setLineWidth(0.8);
@@ -340,7 +376,7 @@ class VibhinetraPdfReport {
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(5.5);
         this.doc.setTextColor(...COLORS.accent);
-        this.doc.text('CURRENT', cx, circleY + 17, { align: 'center' });
+        this.doc.text('CURRENT', cx, circleY + 11 + (labelLines.length * 3.2), { align: 'center' });
       }
     });
 
@@ -397,7 +433,7 @@ class VibhinetraPdfReport {
       this.doc.setFont('helvetica', 'normal');
       this.doc.setFontSize(7);
       this.doc.setTextColor(...COLORS.medGray);
-      const details = `SRC: ${a.src_ip || 'N/A'}  →  DST: ${a.dst_ip || 'N/A'}${a.dst_port ? ':' + a.dst_port : ''}  |  CONFIDENCE: ${((a.confidence ?? 0) * 100).toFixed(0)}%`;
+      const details = `SRC: ${a.src_ip || 'N/A'}  ->  DST: ${a.dst_ip || 'N/A'}${a.dst_port ? ':' + a.dst_port : ''}  |  CONFIDENCE: ${((a.confidence ?? 0) * 100).toFixed(0)}%`;
       this.doc.text(details, this.marginLeft + 14, this.y + 13);
 
       // Correlation reason
@@ -405,7 +441,7 @@ class VibhinetraPdfReport {
         this.doc.setFont('helvetica', 'italic');
         this.doc.setFontSize(6.5);
         this.doc.setTextColor(...COLORS.accent);
-        this.doc.text(`↳ ${ev.reason}`, this.marginLeft + 14, this.y + 17);
+        this.doc.text(`>> ${ev.reason}`, this.marginLeft + 14, this.y + 17);
         this.y += 22;
       } else {
         this.y += 18;

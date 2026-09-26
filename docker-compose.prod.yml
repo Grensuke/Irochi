@@ -1,0 +1,161 @@
+# ==================================================
+# Vibhinetra — Docker Compose (Production)
+# ==================================================
+# STATUS: PRODUCTION DEPLOYMENT HARDENED
+#
+# Topology:
+# Internet -> Frontend (Nginx, port 80)
+# Frontend -> FastAPI Backend (internal)
+# Backend -> Postgres, Redis, Redpanda (internal)
+# ==================================================
+
+version: "3.9"
+
+services:
+  # ------------------------------------------------
+  # Frontend — React + Nginx
+  # ------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: vibhinetra-frontend-prod
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - vibhinetra-net
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ------------------------------------------------
+  # Backend — FastAPI
+  # ------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vibhinetra-backend-prod
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - REDPANDA_BROKER=redpanda:9092
+      - BACKEND_ENV=production
+    volumes:
+      - ./models:/app/models:ro
+    restart: unless-stopped
+    networks:
+      - vibhinetra-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    # Start the backend by running migrations first
+    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  # ------------------------------------------------
+  # Live Traffic Generator — Demo Mode
+  # ------------------------------------------------
+  traffic-generator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vibhinetra-traffic-generator-prod
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDPANDA_BROKER=redpanda:9092
+      - LOOP_FOREVER=true
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    volumes:
+      - ./backend:/app
+    networks:
+      - vibhinetra-net
+    command: python scripts/live_demo.py
+
+# ==================================================
+# CORE INFRASTRUCTURE SERVICES
+# ==================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: vibhinetra-postgres-prod
+    # No ports exposed to host in production
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vibhinetra-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vibhinetra} -d ${POSTGRES_DB:-vibhinetra}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vibhinetra-redis-prod
+    # No ports exposed to host in production
+    volumes:
+      - redis_data:/data
+    networks:
+      - vibhinetra-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
+    container_name: vibhinetra-redpanda-prod
+    # No external listener or admin port exposed in production
+    command:
+      - redpanda
+      - start
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --node-id 0
+      - --kafka-addr internal://0.0.0.0:9092
+      - --advertise-kafka-addr internal://redpanda:9092
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    networks:
+      - vibhinetra-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9644/v1/status/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  vibhinetra-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  redpanda_data:

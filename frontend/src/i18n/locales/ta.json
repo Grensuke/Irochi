@@ -197,7 +197,10 @@
     "det4Method": "TLS metadata features + scikit-learn ensemble",
     "det5Label": "Exfiltration Detector",
     "det5Desc": "Detects anomalous outbound data volumes that are consistent with data exfiltration. Relies on passive flow-level byte and packet counters.",
-    "det5Method": "Statistical baseline deviation + River adaptive model"
+    "det5Method": "Statistical baseline deviation + River adaptive model",
+    "cap7Title": "Unknown / Anomaly Detector",
+    "cap7Desc": "Leverages unsupervised machine learning and statistical baselining to identify traffic patterns that deviate significantly from established normal operational behavior.",
+    "cap7Signal": "Overall flow entropy, protocol anomalies"
   },
   "about": {
     "eyebrow": "விபிநேத்ரா பற்றி",
@@ -205,7 +208,7 @@
     "title2": "துல்லியமான நுண்ணறிவு.",
     "subtitle": "விபிநேத்ரா என்பது நிகழ்நேர செயலற்ற அச்சுறுத்தல் கண்டறிதல் அமைப்பாகும்.",
     "missionTitle": "பணி",
-    "missionText": "SIH2026 இன் கீழ் உருவாக்கப்பட்டது.",
+    "missionText": " இன் கீழ் உருவாக்கப்பட்டது.",
     "whyPassiveTitle": "Why Passive Matters",
     "whyPassiveText": "In industrial control systems (ICS/SCADA), tactical networks, and high-security air-gapped zones, networks are often coupled via physical data diodes or unidirectional mirrors. Because packet injection can trigger emergency faults, active probes or inline blocking devices are prohibited. Passive detection ensures zero operational interference.",
     "principlesTitle": "Operational Principles",
@@ -306,7 +309,7 @@
   "contact": {
     "eyebrow": "GET IN TOUCH",
     "title": "Contact & Collaboration",
-    "subtitle": "Have questions about SIH26145, unidirectional network telemetry, or project deployment? Use this form to review the UI layout.",
+    "subtitle": "Have questions about unidirectional network telemetry, or project deployment? Use this form to review the UI layout.",
     "demoTitle": "Demo Contact Interface",
     "demoText": "In accordance with Vibhinetra's passive architecture and project scope, there is no active outbound mail service or contact API endpoint connected. Form submission is disabled.",
     "fullName": "FULL NAME",

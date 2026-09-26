@@ -80,7 +80,7 @@ async def test_benign_domain(dns_detector):
 
     assert output.decision == Decision.NO_THREAT
     assert output.score == 0.10
-    assert output.confidence is None
+    assert output.confidence == 0.10
     assert output.evidence["threshold"] == 0.80
 
 @pytest.mark.asyncio

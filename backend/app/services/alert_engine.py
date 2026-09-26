@@ -3,15 +3,20 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.schemas.detectors import DetectorOutput, Decision
+from app.schemas.detectors import DetectorOutput, Decision, DetectorId
 from app.schemas.alerts import AlertStatus, Severity, AlertResponse
 from app.services.postgres_alert_service import PostgresAlertService
 from app.services.redis_pubsub import RedisPubSubService
 from app.models.alert import Alert
 
+import time
+
 logger = logging.getLogger(__name__)
 
 class AlertEngine:
+    # Class-level cache to debounce Postgres updates for the same alert
+    _suppression_cache = {}
+
     def __init__(
         self,
         postgres_service: PostgresAlertService,
@@ -30,8 +35,10 @@ class AlertEngine:
         - Publishes to Redis after commit.
         """
         # 1. Decision Filtering
-        logger.info(f"AlertEngine received output from {output.detector_id} with decision {output.decision}")
+        logger.info(f"AlertEngine received output from {output.detector_id} for {output.entity_key} with decision {output.decision}")
         if output.decision in (Decision.NO_THREAT, Decision.INSUFFICIENT_DATA):
+            if output.detector_id != DetectorId.UNKNOWN:
+                logger.info(f"Dropped {output.decision} from {output.detector_id}. Evidence: {output.evidence}")
             return None
 
         if output.decision in (Decision.INVALID_INPUT, Decision.DETECTOR_ERROR):
@@ -57,6 +64,19 @@ class AlertEngine:
 
         # 3. Handle Severity Fallback
         severity = output.severity_candidate if output.severity_candidate else Severity.MEDIUM.value
+
+        # Debounce high-frequency alerts to protect PostgreSQL
+        cache_key = (str(output.detector_id), str(output.entity_key))
+        now = time.time()
+        if cache_key in self._suppression_cache:
+            if now - self._suppression_cache[cache_key] < 5.0:
+                # Suppress this output to avoid database spam
+                return None
+        
+        # We will only update the cache if DB commit succeeds, but we can optimistically set it here
+        # or at the end. Setting it here prevents concurrent tasks in the same process from bypassing.
+        self._suppression_cache[cache_key] = now
+
 
         # Prepare evidence
         evidence = output.evidence or {}

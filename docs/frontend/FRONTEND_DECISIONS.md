@@ -81,19 +81,16 @@ Frontend types in `src/types/index.ts` are PRESENTATION types matching the API r
 **Status:** Active
 
 High-fidelity floating indicator navigation components (`VerticalMeniscusRail` and `MeniscusNavbar`):
-- **Horizontal Floating Pill Dock:** Frosted glass capsule container with a hardware-accelerated floating pill indicator that glides fluidly across tabs using cubic-bezier spring physics (`cubic-bezier(0.16, 1, 0.3, 1)`).
-- **Collapsed Sidebar Floating Bubble Rail:** Vertical navigation rail with a floating bubble indicator smoothly highlighting the active SOC module with popout hover tooltips.
-- **Theme-Adaptive Palette (Dark & Light Modes):**
-  - **Dark Mode:** Dark frosted glass container (`rgba(22, 25, 34, 0.85)`), metallic gradient pill (`linear-gradient(180deg, #2e3544, #1e232e)`), muted slate text (`#94a3b8`), and crisp white active indicators (`#ffffff`).
-  - **Light Mode:** Frosted white glass container (`rgba(255, 255, 255, 0.95)`), dark charcoal pill (`#0f172a`), slate text (`#64748b`), and crisp white active items (`#ffffff`).
-- **Smooth 120 FPS Transitions:** Hardware-accelerated GPU transitions with zero edge artifacts, zero harsh popups, and smooth color crossfading.
-- **Unified Navigation:** Full React Router integration and keyboard accessibility without any separate bottom floating dock.
+- **Horizontal Floating Pill Dock:** CSS Grid layout ensures mathematically perfect center alignment (`1fr auto 1fr`). Hardware-accelerated floating pill indicator glides fluidly across tabs using cubic-bezier spring physics (`cubic-bezier(0.16, 1, 0.3, 1)`).
+- **MacOS Segmented Control Aesthetic:** Instead of hardcoded colors, the component uses dynamic CSS theme variables (`var(--bg-primary)`, `var(--bg-secondary)`) to create a deeply tactile, interactive hardware switch look. The track acts as a darker inset cutout with an inner drop shadow, while the active pill acts as a raised button with a sharp outer drop shadow.
+- **Theme-Adaptive Palette:** Flawlessly inherits dark/light mode characteristics directly from the global design system without requiring manual `[data-theme="light"]` overrides.
+- **Unified Navigation:** Full React Router integration and keyboard accessibility.
 
 ## FD-011: Client-Side PDF Generation
 
 **Status:** Locked
 
-Report generation (PDF) is performed entirely client-side using `jspdf` and canvas drawing methods. This avoids introducing heavy backend dependencies (e.g., WeasyPrint, wkhtmltopdf) and keeps the FastAPI backend purely focused on intelligence data delivery.
+Report generation (PDF) is performed entirely client-side using `jspdf` and canvas drawing methods, employing a clean, white-label Slate theme. To guarantee zero text overflows and flawless layout regardless of dynamic data length, the engine implements progressive text-scaling, dynamic line-wrapping (`splitTextToSize`), and vertical auto-centering. This avoids introducing heavy backend dependencies (e.g., WeasyPrint, wkhtmltopdf) while delivering a highly polished, resilient corporate report.
 
 ## FD-012: Live Telemetry Simulation in UI
 

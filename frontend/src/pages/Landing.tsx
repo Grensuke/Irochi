@@ -17,6 +17,7 @@ export function Landing() {
     { title: t('landing.cap4Title'), desc: t('landing.cap4Desc'), signal: t('landing.cap4Signal') },
     { title: t('landing.cap5Title'), desc: t('landing.cap5Desc'), signal: t('landing.cap5Signal') },
     { title: t('landing.cap6Title'), desc: t('landing.cap6Desc'), signal: t('landing.cap6Signal') },
+    { title: t('landing.cap7Title'), desc: t('landing.cap7Desc'), signal: t('landing.cap7Signal') },
   ], [t]);
 
   const PIPELINE_STAGES = useMemo(() => [
@@ -147,7 +148,7 @@ export function Landing() {
                 <div className="cap-card-border-glow" />
                 <div className="cap-card-header">
                   <div className="cap-technical-marker">{t('landing.signalSelector')}</div>
-                  <h3 className="cap-title">{cap.title}</h3>
+                  <h3 className="landing-cap-title">{cap.title}</h3>
                 </div>
                 <p className="cap-desc">{cap.desc}</p>
                 <div className="cap-meta">

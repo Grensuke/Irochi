@@ -65,13 +65,19 @@ class UnknownDetector(BaseDetector):
 
             insufficient_data_signals = 0
             
+            field_names = list(numeric_fields.keys())
+            if not field_names:
+                continue
+                
+            bulk_stats = await self.baseline_store.bulk_get_stats(
+                record.detector_domain.value,
+                record.entity_type.value,
+                record.entity_key,
+                field_names
+            )
+            
             for field_name, value in numeric_fields.items():
-                stats = await self.baseline_store.get_stats(
-                    record.detector_domain.value,
-                    record.entity_type.value,
-                    record.entity_key,
-                    field_name
-                )
+                stats = bulk_stats.get(field_name, {"count": 0.0, "mean": 0.0, "m2": 0.0})
                 
                 count = stats["count"]
                 if count < self.min_samples:
@@ -139,23 +145,21 @@ class UnknownDetector(BaseDetector):
                 else:
                     # Deviation was below confidence cutoff (normal operational jitter).
                     # Safely absorb into baseline so the baseline learns natural variance.
-                    for field_name, value in numeric_fields.items():
-                        await self.baseline_store.update_stats(
-                            record.detector_domain.value,
-                            record.entity_type.value,
-                            record.entity_key,
-                            field_name,
-                            float(value)
-                        )
-            else:
-                # Primary was NO_THREAT, and we did not fire Anomaly. Safe to update baseline for all numeric fields.
-                for field_name, value in numeric_fields.items():
-                    await self.baseline_store.update_stats(
+                    fields_to_update = {k: float(v) for k, v in numeric_fields.items()}
+                    await self.baseline_store.bulk_update_stats(
                         record.detector_domain.value,
                         record.entity_type.value,
                         record.entity_key,
-                        field_name,
-                        float(value)
+                        fields_to_update
                     )
+            else:
+                # Primary was NO_THREAT, and we did not fire Anomaly. Safe to update baseline for all numeric fields.
+                fields_to_update = {k: float(v) for k, v in numeric_fields.items()}
+                await self.baseline_store.bulk_update_stats(
+                    record.detector_domain.value,
+                    record.entity_type.value,
+                    record.entity_key,
+                    fields_to_update
+                )
                     
         return unknown_threat_outputs
