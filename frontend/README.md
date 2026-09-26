@@ -1,6 +1,6 @@
 # Vibhinetra — Frontend
 
-**SIH 2026 — Problem Statement SIH26145**
+
 
 The React + Vite + TypeScript frontend product shell for the Vibhinetra threat-detection system. It provides security intelligence dashboards, alert review, and network telemetry visualization.
 
@@ -27,6 +27,9 @@ The following features currently use mock synthetic data for demonstration and l
 - `DiodeFlowVisualizer`: Visualizes simplex data-diode flow dynamics (currently using synthetic data).
 - `AlertTable` & `AlertDetail`: Interface for analysts to review, investigate, and triage detected threats.
 - `LiveFeed`: Real-time streaming feed of new alerts.
+- **Incident Investigation Queue**: Advanced UI with risk scores, AI narratives, and visual phase indicators.
+- **Client-Side PDF Export**: Generates highly polished, white-label security reports locally without backend dependencies.
+- **Silent Background Refetching**: Powers real-time dashboard reactivity without visual loading flashes.
 
 ## Running with Docker (Recommended)
 

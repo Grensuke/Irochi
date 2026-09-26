@@ -243,30 +243,23 @@ async def process_tumbling(
         dst_port = event.dst_port
         dst_ip = event.dst_ip
 
-        await state_adapter.increment_tumbling_metric(
-            entity_type, entity_key, window_id, {"total_conns": 1}, ttl_seconds=window_size_sec*2
-        )
-
+        distinct_adds = {}
         if dst_port is not None:
-            await state_adapter.add_tumbling_distinct(
-                entity_type, entity_key, window_id, "dst_port", str(dst_port), ttl_seconds=window_size_sec*2
-            )
+            distinct_adds["dst_port"] = str(dst_port)
         if dst_ip is not None:
-            await state_adapter.add_tumbling_distinct(
-                entity_type, entity_key, window_id, "dst_ip", str(dst_ip), ttl_seconds=window_size_sec*2
-            )
-
-        # Get metrics
-        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+            distinct_adds["dst_ip"] = str(dst_ip)
+            
+        metrics, distinct_counts, _ = await state_adapter.execute_tumbling_batch(
+            entity_type, entity_key, window_id, 
+            increments={"total_conns": 1}, 
+            distinct_adds=distinct_adds, 
+            list_appends={}, 
+            ttl_seconds=window_size_sec*2
+        )
+        
         total_conns = int(metrics.get("total_conns", 0))
-
-        # Get counts
-        unique_ports = await state_adapter.count_tumbling_distinct(
-            entity_type, entity_key, window_id, "dst_port"
-        )
-        unique_hosts = await state_adapter.count_tumbling_distinct(
-            entity_type, entity_key, window_id, "dst_ip"
-        )
+        unique_ports = distinct_counts.get("dst_port", 0)
+        unique_hosts = distinct_counts.get("dst_ip", 0)
 
         scan_rate = total_conns / window_size_sec
         connection_fan_out = unique_hosts / max(total_conns, 1)
@@ -306,26 +299,25 @@ async def process_tumbling(
             "total_conns": 1,
             "syn_only_conns": syn_only_val
         }
-
-        await state_adapter.increment_tumbling_metric(
-            entity_type, entity_key, window_id, increments, ttl_seconds=window_size_sec*2
-        )
-
+        
+        distinct_adds = {}
         src_ip = event.src_ip
         if src_ip is not None:
-            await state_adapter.add_tumbling_distinct(
-                entity_type, entity_key, window_id, "src_ip", str(src_ip), ttl_seconds=window_size_sec*2
-            )
-
-        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+            distinct_adds["src_ip"] = str(src_ip)
+            
+        metrics, distinct_counts, _ = await state_adapter.execute_tumbling_batch(
+            entity_type, entity_key, window_id, 
+            increments=increments, 
+            distinct_adds=distinct_adds, 
+            list_appends={}, 
+            ttl_seconds=window_size_sec*2
+        )
+        
         current_pkts = int(metrics.get("total_pkts", 0))
         current_bytes = int(metrics.get("total_bytes", 0))
         current_conns = int(metrics.get("total_conns", 0))
         current_syn_only = int(metrics.get("syn_only_conns", 0))
-
-        unique_src_count = await state_adapter.count_tumbling_distinct(
-            entity_type, entity_key, window_id, "src_ip"
-        )
+        unique_src_count = distinct_counts.get("src_ip", 0)
 
         packet_rate = current_pkts / window_size_sec
         byte_rate = current_bytes / window_size_sec
@@ -357,11 +349,14 @@ async def process_tumbling(
             "resp_bytes": resp_bytes
         }
 
-        await state_adapter.increment_tumbling_metric(
-            entity_type, entity_key, window_id, increments, ttl_seconds=window_size_sec*2
+        metrics, _, _ = await state_adapter.execute_tumbling_batch(
+            entity_type, entity_key, window_id, 
+            increments=increments, 
+            distinct_adds={}, 
+            list_appends={}, 
+            ttl_seconds=window_size_sec*2
         )
-
-        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
+        
         current_orig = int(metrics.get("orig_bytes", 0))
         current_resp = int(metrics.get("resp_bytes", 0))
 
@@ -384,23 +379,16 @@ async def process_tumbling(
         return ExfilFeatureRecord(**envelope_args, payload=payload)
 
     if detector_domain == DetectorDomain.TLS_C2 and event.event_type == EventType.CONNECTION:
-        # 1. Increment connection count
-        await state_adapter.increment_tumbling_metric(
-            entity_type, entity_key, window_id, {"total_conns": 1}, ttl_seconds=window_size_sec*2
+        metrics, _, list_values = await state_adapter.execute_tumbling_batch(
+            entity_type, entity_key, window_id, 
+            increments={"total_conns": 1}, 
+            distinct_adds={}, 
+            list_appends={"timestamps": str(event.timestamp)}, 
+            ttl_seconds=window_size_sec*2
         )
         
-        # 2. Append timestamp to list for behavioral analysis
-        # event.timestamp is in microseconds
-        await state_adapter.append_tumbling_list(
-            entity_type, entity_key, window_id, "timestamps", str(event.timestamp), 
-            ttl_seconds=window_size_sec*2, max_length=1000
-        )
-        
-        metrics = await state_adapter.get_tumbling_metrics(entity_type, entity_key, window_id)
         current_conns = int(metrics.get("total_conns", 0))
-        
-        # 3. Retrieve timestamps and calculate exact variance/mean
-        raw_timestamps = await state_adapter.get_tumbling_list(entity_type, entity_key, window_id, "timestamps")
+        raw_timestamps = list_values.get("timestamps", [])
         # Ensure we decode bytes if returned by Redis
         decoded_timestamps = [int(ts.decode('utf-8') if isinstance(ts, bytes) else ts) for ts in raw_timestamps]
         

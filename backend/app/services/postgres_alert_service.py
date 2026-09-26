@@ -21,10 +21,17 @@ class PostgresAlertService:
 
     async def create_alert(self, alert: Alert) -> Alert:
         """Create a new alert in PostgreSQL."""
-        self.session.add(alert)
-        await self.session.commit()
-        await self.session.refresh(alert)
-        return alert
+        try:
+            self.session.add(alert)
+            await self.session.commit()
+            await self.session.refresh(alert)
+            return alert
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create alert for {alert.entity_key}: {e}")
+            logger.error(f"Evidence: {alert.evidence}")
+            raise
 
     async def get_alert(self, alert_id: uuid.UUID) -> Alert | None:
         """Fetch a single alert by ID."""

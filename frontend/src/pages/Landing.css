@@ -233,6 +233,11 @@
   transition: border-color var(--transition-fast);
 }
 
+/* Make the 7th (Anomaly) card act as a full-width foundation */
+.cap-card:last-child:nth-child(7) {
+  grid-column: 1 / -1;
+}
+
 .cap-card:hover {
   border-color: var(--border-strong);
 }
@@ -251,7 +256,7 @@
   letter-spacing: 0.1em;
 }
 
-.cap-title {
+.landing-cap-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
@@ -416,7 +421,7 @@
 
 /* Final CTA Section */
 .landing-cta {
-  padding: var(--space-20) var(--space-6) var(--space-40);
+  padding: 40px var(--space-6) 60px;
   position: relative;
   text-align: center;
 }
@@ -453,7 +458,8 @@
 
 /* Toggle button */
 .deep-dive-toggle-area {
-  margin-bottom: var(--space-6);
+  margin: 0 auto var(--space-6);
+  max-width: 840px;
 }
 
 .deep-dive-trigger {
@@ -532,6 +538,8 @@
 
 /* Collapsible content wrapper */
 .deep-dive-content {
+  max-width: 840px;
+  margin: 0 auto;
   max-height: 0;
   overflow: hidden;
   opacity: 0;

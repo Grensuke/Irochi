@@ -36,6 +36,13 @@ const DETECTOR_MAPPING = [
     desc: 'Evaluates outbound traffic sizes. Compares transfers against historical baselines of standard internal entities to flag unauthorized payload transfers.',
     signals: ['Unidirectional payload volume, outbound session durations, protocol transfer baselines.'],
     evidence: 'Anomalous outbound transfer of 4.2GB payload. Historical host baseline is 10MB per 24 hours.'
+  },
+  {
+    detector: 'Unknown / Anomaly Detector',
+    threats: ['Unknown / Anomaly'],
+    desc: 'Leverages unsupervised machine learning and statistical baselining to identify traffic patterns that deviate significantly from established normal operational behavior.',
+    signals: ['Overall flow entropy, unexpected protocol-port combinations, rare external IP interactions.'],
+    evidence: 'High confidence anomaly: Unrecognized protocol signature communicating with low-reputation ASN.'
   }
 ];
 
@@ -53,7 +60,7 @@ export function Capabilities() {
             {t('capabilities.title2', 'No network write-back.')}
           </h1>
           <p className="cap-subtitle">
-            {t('capabilities.subtitle', 'Vibhinetra uses five specialized, logical detector modules running on normalized streaming telemetry to identify the six core cyber threat capabilities.')}
+            {t('capabilities.subtitle', 'Vibhinetra uses six specialized, logical detector modules running on normalized streaming telemetry to identify the core cyber threat capabilities.')}
           </p>
         </section>
 

@@ -212,25 +212,26 @@ async def send_tls(
 
 
 async def send_recon_scan(
-    producer: AIOKafkaProducer, attacker_ip: str, target_ip: str, ts: int
+    producer: AIOKafkaProducer, attacker_ip: str, ts: int
 ):
-    """Generates a rapid multi-port TCP SYN sweep against a target IP."""
-    target_ports = random.sample(
-        [21, 22, 23, 25, 53, 80, 110, 135, 139, 443, 445, 1433, 3306, 3389, 5432, 8080, 8443],
-        k=random.randint(6, 12),
-    )
-    for port in target_ports:
-        await send_connection(
-            producer=producer,
-            src=attacker_ip,
-            dst=target_ip,
-            ts=ts,
-            dst_port=port,
-            orig_bytes=60,
-            resp_bytes=0,
-            conn_state="S0",
-            history="S",
-        )
+    """Generates a rapid multi-port TCP SYN sweep against multiple target IPs to trigger Recon detector."""
+    # Sweep across 60 hosts and 60 ports to ensure threshold triggers
+    target_ports = random.sample(range(1, 1024), k=60)
+    for host_suffix in range(1, 61):
+        target_ip = f"10.0.0.{host_suffix}"
+        # Pick 5 random ports per host to spread it out but keep volume very high
+        for port in random.sample(target_ports, k=5):
+            await send_connection(
+                producer=producer,
+                src=attacker_ip,
+                dst=target_ip,
+                ts=ts,
+                dst_port=port,
+                orig_bytes=60,
+                resp_bytes=0,
+                conn_state="S0",
+                history="S",
+            )
 
 
 async def run_live_demo(
@@ -313,13 +314,13 @@ async def run_live_demo(
                     break
 
             # -------------------------------------------------------------
-            # 1. Background Normal Traffic (2 to 6 random benign flows)
+            # 1. Background Normal Traffic (Massive increase for flood)
             # -------------------------------------------------------------
-            for _ in range(random.randint(2, 6)):
+            for _ in range(random.randint(50, 150)):
                 src = f"192.168.1.{random.randint(10, 80)}"
                 dst = f"10.0.0.{random.randint(1, 200)}"
-                orig_b = random.randint(100, 4000)
-                resp_b = random.randint(200, 30000)
+                orig_b = random.randint(1000, 40000)
+                resp_b = random.randint(2000, 300000)
                 await send_connection(producer, src, dst, now, orig_bytes=orig_b, resp_bytes=resp_b)
                 stats["connections"] += 1
                 total_events += 1
@@ -334,78 +335,82 @@ async def run_live_demo(
             # -------------------------------------------------------------
             # 2. C2 Beaconing (Regular periodic heartbeat to attacker C2)
             # -------------------------------------------------------------
-            if random.random() < 0.85:
-                # Compromised workstation 1
-                await send_connection(producer, "192.168.1.15", "198.51.100.45", now, dst_port=443, orig_bytes=148, resp_bytes=152)
-                await send_tls(producer, "192.168.1.15", "198.51.100.45", "sync.cloud-telemetry.org", now, ja3="72a589da586844d7f0818ce684948eea")
-                stats["c2"] += 2
-                total_events += 2
-
-            if random.random() < 0.65:
-                # Compromised workstation 2
-                await send_connection(producer, "192.168.1.22", "198.51.100.99", now, dst_port=8443, orig_bytes=124, resp_bytes=128)
-                stats["c2"] += 1
-                total_events += 1
+            if random.random() < 0.95:
+                # 5 Compromised workstations to create 5 distinct alerts
+                for i in range(15, 20):
+                    c2_src = f"192.168.1.{i}"
+                    await send_connection(producer, c2_src, "198.51.100.45", now, dst_port=443, orig_bytes=148, resp_bytes=152)
+                    await send_tls(producer, c2_src, "198.51.100.45", "sync.cloud-telemetry.org", now, ja3="72a589da586844d7f0818ce684948eea")
+                    stats["c2"] += 2
+                    total_events += 2
 
             # -------------------------------------------------------------
             # 3. DGA / DNS Tunneling (Pseudo-random domain query)
             # -------------------------------------------------------------
-            if random.random() < 0.50:
-                dga_len = random.randint(12, 20)
-                dga_domain = f"{''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=dga_len))}.biz"
-                await send_dns(producer, "192.168.1.15", dga_domain, now)
-                stats["dns"] += 1
-                total_events += 1
+            if random.random() < 0.70:
+                for i in range(20, 25):
+                    dga_src = f"192.168.1.{i}"
+                    dga_len = random.randint(12, 20)
+                    dga_domain = f"{''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=dga_len))}.biz"
+                    await send_dns(producer, dga_src, dga_domain, now)
+                    stats["dns"] += 1
+                    total_events += 1
 
             # -------------------------------------------------------------
             # 4. Recon / Port Scanning (Periodic reconnaissance bursts)
             # -------------------------------------------------------------
-            if random.random() < 0.20:
-                attacker = f"203.0.113.{random.randint(10, 50)}"
-                target = f"10.0.0.{random.randint(1, 10)}"
-                await send_recon_scan(producer, attacker, target, now)
-                stats["recon"] += 1
-                total_events += 8
+            if random.random() < 0.50:
+                # 5 distinct attackers
+                for i in range(10, 15):
+                    attacker = f"203.0.113.{i}"
+                    await send_recon_scan(producer, attacker, now)
+                    stats["recon"] += 1
+                    total_events += 300
 
             # -------------------------------------------------------------
             # 5. Data Exfiltration Spikes (Periodic massive outbound transfers)
             # -------------------------------------------------------------
-            if random.random() < 0.15:  # ~15% chance per second
-                exfil_bytes = random.randint(1_500_000, 6_000_000)
-                logger.info(f"[{now}] Injecting Data Exfiltration spike ({exfil_bytes / 1e6:.1f} MB)...")
-                for _ in range(3):
-                    await send_connection(
-                        producer,
-                        "192.168.1.15",
-                        "198.51.100.45",
-                        now,
-                        orig_bytes=exfil_bytes,
-                        resp_bytes=4096,
-                    )
-                    stats["exfil"] += 1
-                    total_events += 1
+            if random.random() < 0.40:
+                # 5 distinct internal hosts exfiltrating data
+                for i in range(100, 105):
+                    exfil_bytes = random.randint(15_000_000, 60_000_000)
+                    exfil_src = f"192.168.1.{i}"
+                    logger.info(f"[{now}] Injecting Data Exfiltration spike ({exfil_bytes / 1e6:.1f} MB) from {exfil_src}...")
+                    for _ in range(3):
+                        await send_connection(
+                            producer,
+                            exfil_src,
+                            "198.51.100.45",
+                            now,
+                            orig_bytes=exfil_bytes,
+                            resp_bytes=4096,
+                        )
+                        stats["exfil"] += 1
+                        total_events += 1
 
             # -------------------------------------------------------------
             # 6. Volumetric DDoS Bursts (Bursts of high-rate SYN packets)
             # -------------------------------------------------------------
-            if random.random() < 0.08:  # ~8% chance per second
-                logger.info(f"[{now}] Injecting Volumetric DDoS burst (30 botnet flows)...")
-                target_server = "10.0.0.5"
-                for i in range(30):
-                    src_bot = f"botnet-{random.randint(1, 150)}.attacker.com"
-                    await send_connection(
-                        producer,
-                        src_bot,
-                        target_server,
-                        now,
-                        dst_port=80,
-                        orig_bytes=64,
-                        resp_bytes=0,
-                        conn_state="S0",
-                        history="S",
-                    )
-                    stats["ddos"] += 1
-                    total_events += 1
+            if random.random() < 0.35:
+                # 5 distinct target servers receiving DDoS
+                for target_ip_suffix in range(5, 10):
+                    target_server = f"10.0.0.{target_ip_suffix}"
+                    logger.info(f"[{now}] Injecting Volumetric DDoS burst (300 botnet flows) to {target_server}...")
+                    for i in range(300):
+                        src_bot = f"botnet-{random.randint(1, 1500)}.attacker.com"
+                        await send_connection(
+                            producer,
+                            src_bot,
+                            target_server,
+                            now,
+                            dst_port=80,
+                            orig_bytes=64,
+                            resp_bytes=0,
+                            conn_state="S0",
+                            history="S",
+                        )
+                        stats["ddos"] += 1
+                        total_events += 1
 
             # -------------------------------------------------------------
             # Periodic Telemetry Log (Every ~15 seconds)
@@ -436,6 +441,11 @@ async def run_live_demo(
 
 def main():
     import argparse
+    from app.core.config import DEMO_MODE
+    
+    if not DEMO_MODE:
+        logger.info("DEMO_MODE is false. Live traffic generator is disabled.")
+        return
 
     parser = argparse.ArgumentParser(description="Vibhinetra Continuous Live Telemetry Generator")
     parser.add_argument(

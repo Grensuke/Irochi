@@ -77,7 +77,7 @@
     "approachTitle": "Intelligence without active interference",
     "approachText": "Vibhinetra operates as a passive observer. By reading mirrored network traffic or NetFlow telemetry, the system feeds flow structures and protocol metadata through machine-learning detection engines. Analysts receive detailed confidence scoring and supporting evidence to triage alerts manually—guaranteeing operational safety.",
     "capEyebrow": "THREAT DETECTABILITY",
-    "capTitle": "Six Threat Capabilities",
+    "capTitle": "Seven Threat Capabilities",
     "capSubtitle": "Passively classifying network risks into core capabilities through specialized detection models.",
     "signalSelector": "SIGNAL SELECTOR",
     "inputData": "INPUT DATA:",
@@ -197,7 +197,10 @@
     "det4Method": "TLS metadata features + scikit-learn ensemble",
     "det5Label": "Exfiltration Detector",
     "det5Desc": "Detects anomalous outbound data volumes that are consistent with data exfiltration. Relies on passive flow-level byte and packet counters.",
-    "det5Method": "Statistical baseline deviation + River adaptive model"
+    "det5Method": "Statistical baseline deviation + River adaptive model",
+    "cap7Title": "Unknown / Anomaly Detector",
+    "cap7Desc": "Leverages unsupervised machine learning and statistical baselining to identify traffic patterns that deviate significantly from established normal operational behavior.",
+    "cap7Signal": "Overall flow entropy, protocol anomalies"
   },
   "about": {
     "eyebrow": "ABOUT VIBHINETRA",
@@ -205,7 +208,7 @@
     "title2": "Precise intelligence.",
     "subtitle": "Vibhinetra is a passive, real-time threat-detection and security-intelligence system designed for unidirectional IP traffic segments.",
     "missionTitle": "Project Mission",
-    "missionText": "Developed under **SIH2026 Problem Statement SIH26145**, Vibhinetra addresses the need for robust threat visibility in critical, highly sensitive, or one-directional network taps. It gathers packet telemetry, normalizes features, and processes indicators of compromise without ever writing to or disrupting the live path.",
+    "missionText": "Vibhinetra addresses the need for robust threat visibility in critical, highly sensitive, or one-directional network taps. It gathers packet telemetry, normalizes features, and processes indicators of compromise without ever writing to or disrupting the live path.",
     "whyPassiveTitle": "Why Passive Matters",
     "whyPassiveText": "In industrial control systems (ICS/SCADA), tactical networks, and high-security air-gapped zones, networks are often coupled via physical data diodes or unidirectional mirrors. Because packet injection can trigger emergency faults, active probes or inline blocking devices are prohibited. Passive detection ensures zero operational interference.",
     "principlesTitle": "Operational Principles",
@@ -306,7 +309,7 @@
   "contact": {
     "eyebrow": "GET IN TOUCH",
     "title": "Contact & Collaboration",
-    "subtitle": "Have questions about SIH26145, unidirectional network telemetry, or project deployment? Use this form to review the UI layout.",
+    "subtitle": "Have questions about unidirectional network telemetry, or project deployment? Use this form to review the UI layout.",
     "demoTitle": "Demo Contact Interface",
     "demoText": "In accordance with Vibhinetra's passive architecture and project scope, there is no active outbound mail service or contact API endpoint connected. Form submission is disabled.",
     "fullName": "FULL NAME",
@@ -372,7 +375,7 @@
   "footer": {
     "brand": "VIBHINETRA",
     "tagline": "Passive by design. Evidence-driven intelligence.",
-    "sih": "SIH26145 — Unidirectional network cyber threat detection",
+    "sih": "Unidirectional network cyber threat detection",
     "copyright": "© 2026 Vibhinetra. Observational Security Operations."
   }
 }

@@ -58,9 +58,21 @@ class ExfiltrationDetector(BaseDetector):
                     
                 logger.info(f"Successfully loaded XGBoost Exfiltration model from {model_path}")
             else:
-                logger.error(f"XGBoost Exfiltration model or metadata not found at {model_path}")
+                msg = f"Genuine XGBoost Exfiltration model not found at {model_path}. ML enhancement unavailable. Exfiltration detector will run in behavioral heuristic-only mode."
+                logger.warning(msg)
+                self.weights = {
+                    "ratio": 0.5,
+                    "rate": 0.5,
+                    "ml_anomaly": 0.0
+                }
         except Exception as e:
-            logger.error(f"Failed to load XGBoost Exfiltration model: {e}", exc_info=True)
+            msg = f"Failed to load XGBoost Exfiltration model: {e}. ML enhancement unavailable. Exfiltration detector will run in behavioral heuristic-only mode."
+            logger.warning(msg, exc_info=True)
+            self.weights = {
+                "ratio": 0.5,
+                "rate": 0.5,
+                "ml_anomaly": 0.0
+            }
 
     @property
     def detector_id(self) -> DetectorId:

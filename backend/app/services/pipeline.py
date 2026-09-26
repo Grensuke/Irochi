@@ -3,6 +3,7 @@ import asyncio
 import time
 from typing import Callable
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.detectors import Decision, DetectorId
 
 from app.services.streaming.consumer import KafkaConsumerService
 from app.services.features.engine import FeatureEngine
@@ -42,6 +43,7 @@ class DetectionPipeline:
         self._telemetry_flows = 0
         self._telemetry_bytes = 0
         self._telemetry_sample_events = []
+        self._recent_detections = {}
 
     def start(self):
         """Starts the pipeline orchestrator loop in a background task."""
@@ -113,19 +115,36 @@ class DetectionPipeline:
         """Processes a single ConsumerMessage through the pipeline engines."""
 
         # 1. Feature Extraction
+        t0 = time.time()
         feature_records = await self.feature_engine.process(message)
-        if not feature_records:
-            return
-
-        for record in feature_records:
-            # 2. Detector Routing
-            detector_outputs = await self.router.route(record)
-            if not detector_outputs:
-                continue
+        t1 = time.time()
+        
+        router_total_time = 0
+        
+        if feature_records:
+            for record in feature_records:
+                # 2. Detector Routing
+                t2 = time.time()
+                detector_outputs = await self.router.route(record)
+                t3 = time.time()
+                router_total_time += (t3 - t2)
+                
+                if not detector_outputs:
+                    continue
 
             for output in detector_outputs:
+                if output.decision != Decision.DETECTION:
+                    continue
+
+                # Pipeline-level debounce to prevent DB session overhead
+                cache_key = (output.detector_id, output.entity_key)
+                now = time.time()
+                if now - self._recent_detections.get(cache_key, 0) < 5.0:
+                    continue
+                self._recent_detections[cache_key] = now
+
                 # 3. Alert Persistence and Redis Publish
-                # Create a fresh database session scope per alert output
+                # Create a fresh database session scope ONLY for actual detections
                 async with self.session_factory() as session:
                     pg_service = PostgresAlertService(session)
                     alert_engine = AlertEngine(
@@ -144,3 +163,7 @@ class DetectionPipeline:
                             f"from detector {output.detector_id.value}: {e}",
                             exc_info=True
                         )
+                        
+        total_time = time.time() - t0
+        if total_time > 0.05:
+            logger.info(f"DEBUG PIPELINE TIMING: Total message processing took {total_time*1000:.2f}ms (Feature: {(t1-t0)*1000:.2f}ms, Router sum: {router_total_time*1000:.2f}ms). Event Type: {message.payload.get('event_type')}")

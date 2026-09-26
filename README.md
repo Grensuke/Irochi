@@ -1,6 +1,6 @@
 # Vibhinetra
 
-**SIH 2026 — Problem Statement SIH26145**
+
 
 **Problem Statement Title:** AI-Based Detection of Cyber Threats in Unidirectional IP Traffic
 
@@ -120,7 +120,7 @@ NetFlow / IPFIX ─────────────────────�
                               React Dashboard
 ```
 
-See [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md) for the full annotated architecture.
+See [`docs/architecture/_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md) for the full annotated architecture.
 
 ---
 
@@ -203,17 +203,38 @@ cp .env.example .env
 
 ---
 
-## Running the Stack (Docker)
+## Deployment Setup
 
+### 1. Local Development
+Runs the full stack with Vite dev server and FastAPI with `--reload`. Includes the demo traffic generator.
 ```bash
 docker compose up --build
 ```
-
 | Service | URL |
 |---|---|
 | Frontend (React) | http://localhost:5173 |
 | Backend API | http://localhost:8000 |
 | API Docs (Swagger) | http://localhost:8000/docs |
+
+### 2. Demo Deployment
+Runs the production multi-stage builds, but leaves the synthetic `traffic-generator` active to pump mock data.
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+(Requires `DEMO_MODE=true` in `.env`)
+
+### 3. Production Deployment (Real Traffic)
+Runs the hardened production stack. No dummy traffic. Wait for real Zeek telemetry.
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+**Important Production Requirements:**
+- Must set `DEMO_MODE=false` in `.env`.
+- Must provide strong `SECRET_KEY` and `POSTGRES_PASSWORD` in `.env` (the backend will refuse to start on default values in production).
+- Must configure `CORS_ALLOWED_ORIGINS` (e.g. `https://yourdomain.com`).
+- ML Models: Both `dns_dga_model_v1.joblib` and `exfil_model_v1.joblib` (with their respective `.meta.json` files) **must** be present in the `models/` directory. The production backend will explicitly fail to start if they are missing. (In development, it gracefully falls back to rule-based detection).
+- Infrastructure ports (PostgreSQL, Redis, Redpanda) are **not** exposed to the host network.
+- The React frontend is served via an Nginx reverse proxy on port 80 (configured via `FRONTEND_PORT`).
 
 ---
 
@@ -254,7 +275,7 @@ cd backend
 
 | Document | Purpose |
 |---|---|
-| [`docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/SIH26145_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md) | Locked architecture decisions |
+| [`docs/architecture/_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md`](docs/architecture/_CANONICAL_ARCHITECTURE_CHECKPOINT_FINAL.md) | Locked architecture decisions |
 | [`docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md`](docs/data/CANONICAL_EVENT_SCHEMA_FINAL.md) | Canonical event contract |
 | [`docs/shared/API_CONTRACT_DRAFT_v1.md`](docs/shared/API_CONTRACT_DRAFT_v1.md) | REST + WebSocket API contract |
 | [`AGENTS.md`](AGENTS.md) | Agent governance and project rules |

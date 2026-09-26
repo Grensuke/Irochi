@@ -14,7 +14,6 @@ import { About } from './pages/About';
 import { Capabilities } from './pages/Capabilities';
 import { Architecture } from './pages/Architecture';
 import { Documentation } from './pages/Documentation';
-import { Contact } from './pages/Contact';
 import { Login } from './pages/Login';
 import { Overview } from './pages/Overview';
 import { Alerts } from './pages/Alerts';
@@ -46,7 +45,6 @@ export function AppRouter() {
           <Route path="/capabilities" element={<Capabilities />} />
           <Route path="/architecture" element={<Architecture />} />
           <Route path="/documentation" element={<Documentation />} />
-          <Route path="/contact" element={<Contact />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/access-denied" element={<AccessDenied />} />

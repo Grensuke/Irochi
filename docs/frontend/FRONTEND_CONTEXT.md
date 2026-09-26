@@ -38,6 +38,10 @@ E2E Real PCAP Validation Complete. (Integration verified with actual telemetry.)
 - Added "Export to PDF" capability using `jspdf` to `AlertDetailPage.tsx` integrating AI narrative data.
 - Refined UI across alert tables and feeds to display structured severity tags (`SEVERITY: CRITICAL`).
 - Implemented **silent background refetching** in `useDashboard` and `useAlerts` to allow real-time reactivity to backend updates without visual flashing or constant loading states.
+- Removed SIH/SIH26145 branding references from UI labels and internal translation tokens.
+- Restyled `MeniscusNavbar` to use a dynamic MacOS segmented-control aesthetic and CSS Grid for perfect centering, decoupling it from hardcoded colors.
+- Upgraded PDF Export Engine (`exportPdf.ts`): Refactored to a clean "white-label" theme, completely fixed Unicode rendering bugs (manual checkmarks), and implemented a robust dynamic line-wrapping and progressive text-scaling algorithm for KPI boxes to guarantee zero text overflow on long threat labels.
+- Added a 7th capability ("Unknown/Anomaly Detector") to the Landing Page and configured its grid layout to be full-width centered.
 - **End-to-End Validation**: Passed all visual and data-sync E2E validations using real PCAP data (Friday-WorkingHours). Incident queues, AI narratives, PDF exports, and telemetry views were verified via an automated UI subagent.
 
 ## Frontend Structure

@@ -40,9 +40,9 @@ class PostgresIncidentService:
             Incident.entity_key == src_ip,
             Incident.status == "open",
             Incident.last_event_at >= window_start
-        )
+        ).order_by(Incident.updated_at.desc()).limit(1)
         result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def list_incidents(
         self,

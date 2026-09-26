@@ -23,7 +23,8 @@ from contextlib import asynccontextmanager
 
 from app.core.config import (
     API_V1_PREFIX, APP_DESCRIPTION, APP_TITLE, APP_VERSION,
-    REDIS_URL, REDPANDA_BROKER, REDPANDA_CONSUMER_GROUP, REDPANDA_TOPICS
+    REDIS_URL, REDPANDA_BROKER, REDPANDA_CONSUMER_GROUP, REDPANDA_TOPICS,
+    ENABLE_API_DOCS, CORS_ALLOWED_ORIGINS
 )
 from app.core.database import AsyncSessionLocal
 from app.services.state.redis_client import RedisStateService
@@ -126,6 +127,9 @@ app = FastAPI(
     description=APP_DESCRIPTION,
     version=APP_VERSION,
     lifespan=lifespan,
+    docs_url="/docs" if ENABLE_API_DOCS else None,
+    redoc_url="/redoc" if ENABLE_API_DOCS else None,
+    openapi_url="/openapi.json" if ENABLE_API_DOCS else None,
 )
 
 # ------------------------------------------------------------------
@@ -134,7 +138,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

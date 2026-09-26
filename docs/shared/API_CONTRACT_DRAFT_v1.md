@@ -67,8 +67,8 @@ All canonical definitions remain authoritative in their upstream documents. This
 
 **Inherited Active / not LOCKED (BD-008):**
 
-- 5 detector IDs: `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`
-- 6 threat types: `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`
+- 6 detector IDs: `ddos_detector`, `recon_detector`, `dns_dga_tunnel_detector`, `tls_c2_detector`, `exfiltration_detector`, `unknown_detector`
+- 7 threat types: `volumetric_ddos`, `c2_beaconing`, `dga_dns_tunnel`, `encrypted_malware`, `recon_portscan`, `data_exfiltration`, `unknown_threat`
 - 5 severities: `critical`, `high`, `medium`, `low`, `info`
 - `detector_id` ≠ `threat_type`
 
@@ -706,15 +706,14 @@ This distinction is **preserved explicitly**:
 
 BD-008 taxonomy inherited as **Active** (not promoted to Locked):
 
-| Detector IDs (5) | Threat Types (6) |
+| Detector IDs (6) | Threat Types (7) |
 |---|---|
 | `ddos_detector` | `volumetric_ddos` |
-| `recon_detector` | `c2_beaconing` |
+| `recon_detector` | `recon_portscan` |
 | `dns_dga_tunnel_detector` | `dga_dns_tunnel` |
-| `tls_c2_detector` | `encrypted_malware` |
-| `exfiltration_detector` | `recon_portscan` |
-| `unknown_detector` | `data_exfiltration` |
-| | `unknown_threat` |
+| `tls_c2_detector` | `c2_beaconing`, `encrypted_malware` |
+| `exfiltration_detector` | `data_exfiltration` |
+| `unknown_detector` | `unknown_threat` |
 
 The API uses these values as-is. No API-specific detector IDs or threat names are created. `detector_id` and `threat_type` are **distinct fields** — one detector may emit multiple threat types.
 

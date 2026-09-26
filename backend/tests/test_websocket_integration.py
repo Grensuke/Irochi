@@ -62,10 +62,36 @@ async def test_websocket_releases_db_connection(monkeypatch):
     Ensure the WebSocket endpoint releases its database transaction/connection
     after finishing the backfill and before entering the infinite loop.
     """
+    # Create the test DB if it doesn't exist
+    import asyncpg
+    from urllib.parse import urlparse
+    parsed = urlparse(config.POSTGRES_URL)
+    sys_url = f"postgresql://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}/postgres"
+    conn = await asyncpg.connect(sys_url)
+    try:
+        await conn.execute('CREATE DATABASE vibhinetra_test')
+    except asyncpg.exceptions.DuplicateDatabaseError:
+        pass
+    finally:
+        await conn.close()
+        
     test_url = config.POSTGRES_URL.rsplit('/', 1)[0] + "/vibhinetra_test"
-    engine = create_async_engine(test_url, pool_pre_ping=True)
-    SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
-    monkeypatch.setattr("app.api.websocket.alerts.AsyncSessionLocal", SessionLocal)
+    setup_engine = create_async_engine(test_url, pool_pre_ping=True)
+    
+    # Run migrations/table creation for the test DB
+    async with setup_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    await setup_engine.dispose()
+        
+    # Delay engine creation to avoid binding to the pytest event loop
+    def mock_session_local(*args, **kwargs):
+        from sqlalchemy.pool import NullPool
+        engine = create_async_engine(test_url, poolclass=NullPool)
+        session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
+        return session_maker(*args, **kwargs)
+        
+    monkeypatch.setattr("app.api.websocket.alerts.AsyncSessionLocal", mock_session_local)
 
     client = TestClient(app)
 

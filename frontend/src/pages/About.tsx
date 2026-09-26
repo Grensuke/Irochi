@@ -24,7 +24,7 @@ export function About() {
           <div className="about-card">
             <h2 className="about-card-title">{t('about.missionTitle', 'Project Mission')}</h2>
             <p className="about-card-text">
-              {t('about.missionText', 'Developed under SIH2026 Problem Statement SIH26145, Vibhinetra addresses the need for robust threat visibility in critical, highly sensitive, or one-directional network taps. It gathers packet telemetry, normalizes features, and processes indicators of compromise without ever writing to or disrupting the live path.')}
+              {t('about.missionText', 'Vibhinetra addresses the need for robust threat visibility in critical, highly sensitive, or one-directional network taps. It gathers packet telemetry, normalizes features, and processes indicators of compromise without ever writing to or disrupting the live path.')}
             </p>
           </div>
 

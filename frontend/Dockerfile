@@ -1,29 +1,31 @@
 # ==================================================
-# Vibhinetra Frontend — Dockerfile (Dummy Phase)
-# ==================================================
-# Minimal React + Vite development container.
-# Matches docker-compose.yml expectations:
-#   - Port 5173
-#   - npm run dev with --host 0.0.0.0
-#
-# This Dockerfile is for the DUMMY frontend only.
-# Production concerns (multi-stage builds, nginx,
-# static asset serving, etc.) will be added later.
+# Vibhinetra Frontend — Dockerfile
 # ==================================================
 
-FROM node:22-alpine
-
+# --------------------------------------------------
+# Stage 1: Development / Base
+# --------------------------------------------------
+FROM node:22-alpine as dev
 WORKDIR /app
-
-# Install dependencies first (layer caching)
 COPY package.json package-lock.json ./
 RUN npm ci
-
-# Copy application code
 COPY . .
-
-# Expose the dev server port
 EXPOSE 5173
-
-# Default command — overridden by docker-compose.yml
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+# --------------------------------------------------
+# Stage 2: Build
+# --------------------------------------------------
+FROM dev as builder
+RUN npm run build
+
+# --------------------------------------------------
+# Stage 3: Production Server (nginx)
+# --------------------------------------------------
+FROM nginx:alpine as production
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:80/ || exit 1
+CMD ["nginx", "-g", "daemon off;"]
