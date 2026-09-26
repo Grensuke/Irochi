@@ -11,7 +11,8 @@
 
 import type { Alert, ConnectionState, WsMessage } from '../types';
 
-const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/v1/ws/alerts`;
+const defaultWsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+const WS_URL = `${import.meta.env.VITE_WS_URL || defaultWsUrl}/api/v1/ws/alerts`;
 
 const RECONNECT_DELAY_MS = 3000;
 const MAX_RECONNECT_ATTEMPTS = 10;
