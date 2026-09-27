@@ -9,7 +9,7 @@ let isRunning = false;
 let demoAlerts: Alert[] = [];
 let rawAlertTemplates: any[] = [];
 let currentIndex = 0;
-let loopInterval: NodeJS.Timeout | null = null;
+let loopInterval: ReturnType<typeof setInterval> | null = null;
 
 // The backend sends 50 backfill alerts when WS connects, so we start the simulation 
 // with a clean slate (0 alerts) to satisfy the user's request, and let it build up.
