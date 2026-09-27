@@ -21,7 +21,6 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import { NotificationBell } from '../components/NotificationBell';
 import { AlertToastStack } from '../components/AlertToast';
-import { demoSimulator } from '../services/demoSimulator';
 import './AppLayout.css';
 
 const ICONS: Record<string, ReactNode> = {
@@ -139,18 +138,6 @@ export function AppLayout() {
     }
     return location.pathname === '/app' ? t('nav.overview', 'Overview') : '';
   })();
-
-  const [isDemoRunning, setIsDemoRunning] = useState(false);
-
-  const toggleDemoSimulator = useCallback(async () => {
-    if (demoSimulator.isRunning()) {
-      demoSimulator.stop();
-      setIsDemoRunning(false);
-    } else {
-      setIsDemoRunning(true);
-      await demoSimulator.start();
-    }
-  }, []);
 
   return (
     <div className={`app-layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
@@ -282,13 +269,6 @@ export function AppLayout() {
           </div>
           <div className="top-header-right">
             <div className="header-utility-actions">
-              <button 
-                onClick={toggleDemoSimulator}
-                className={`btn btn-sm ${isDemoRunning ? 'btn-danger' : 'btn-primary'}`}
-                style={{ marginRight: '16px' }}
-              >
-                {isDemoRunning ? 'Stop Live Feed' : '▶ Play Live Stream'}
-              </button>
               <NotificationBell />
               <div className="header-divider" />
               <LanguageSwitcher compact />

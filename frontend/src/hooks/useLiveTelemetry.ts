@@ -12,6 +12,16 @@ export function useLiveTelemetry() {
 
     const connect = () => {
       if (isCleanedUp) return;
+
+      // Listen for demo simulator telemetry events
+      const handleDemoTelemetry = (e: Event) => {
+        const ce = e as CustomEvent;
+        if (ce.detail && ce.detail.bytes_per_sec !== undefined) {
+          setFlows(ce.detail.flows_per_sec || 0);
+          setThroughput((ce.detail.bytes_per_sec * 8) / 1000000);
+        }
+      };
+      window.addEventListener('demo-live-telemetry', handleDemoTelemetry);
       
       const defaultWsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
     const wsUrl = `${import.meta.env.VITE_WS_URL || defaultWsUrl}/api/v1/ws/telemetry`;
@@ -71,6 +81,15 @@ export function useLiveTelemetry() {
         ws.onclose = null;
         ws.close();
       }
+      
+      const handleDemoTelemetry = (e: Event) => {
+        const ce = e as CustomEvent;
+        if (ce.detail && ce.detail.bytes_per_sec !== undefined) {
+          setFlows(ce.detail.flows_per_sec || 0);
+          setThroughput((ce.detail.bytes_per_sec * 8) / 1000000);
+        }
+      };
+      window.removeEventListener('demo-live-telemetry', handleDemoTelemetry);
     };
   }, []);
 

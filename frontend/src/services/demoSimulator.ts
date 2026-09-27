@@ -85,6 +85,16 @@ export const demoSimulator = {
       // Dispatch to the WebSocket mock so Toasts and LiveFeed work
       window.dispatchEvent(new CustomEvent('demo-live-alert', { detail: { alert: liveAlert } }));
 
+      // Dispatch fake telemetry data for the KPI dashboard
+      const fakeFlows = Math.floor(Math.random() * (120 - 40 + 1) + 40); // 40-120 flows/sec
+      const fakeBytes = fakeFlows * Math.floor(Math.random() * (1500 - 300 + 1) + 300); // Bytes/sec
+      window.dispatchEvent(new CustomEvent('demo-live-telemetry', { 
+        detail: { 
+          flows_per_sec: fakeFlows,
+          bytes_per_sec: fakeBytes
+        } 
+      }));
+
       currentIndex++;
     }, 800);
   },
@@ -100,6 +110,7 @@ export const demoSimulator = {
     
     // Tell the app to refetch from the real backend
     window.dispatchEvent(new Event('demo-state-changed'));
+    window.dispatchEvent(new CustomEvent('demo-live-telemetry', { detail: { flows_per_sec: 0, bytes_per_sec: 0 } }));
   },
 
   isRunning: () => isRunning,
