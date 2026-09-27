@@ -42,5 +42,10 @@ export function useAlerts(): UseAlertsResult {
 
   const refetch = useCallback(() => fetchData(true), [fetchData]);
 
+  useEffect(() => {
+    window.addEventListener('demo-state-changed', refetch);
+    return () => window.removeEventListener('demo-state-changed', refetch);
+  }, [refetch]);
+
   return { alerts, loading, error, isMock, refetch };
 }

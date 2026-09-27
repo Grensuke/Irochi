@@ -43,6 +43,19 @@ export function useLiveAlerts(): UseLiveAlertsResult {
     setConnectionState(state);
   }, []);
 
+  useEffect(() => {
+    const handleDemoEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ alert: Alert }>;
+      if (customEvent.detail && customEvent.detail.alert) {
+        handleAlert(customEvent.detail.alert, 'live');
+        setConnectionState('live');
+      }
+    };
+    
+    window.addEventListener('demo-live-alert', handleDemoEvent);
+    return () => window.removeEventListener('demo-live-alert', handleDemoEvent);
+  }, [handleAlert]);
+
   const connect = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.disconnect();

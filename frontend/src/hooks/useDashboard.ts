@@ -42,5 +42,10 @@ export function useDashboard(): UseDashboardResult {
 
   const refetch = useCallback(() => fetchData(true), [fetchData]);
 
+  useEffect(() => {
+    window.addEventListener('demo-state-changed', refetch);
+    return () => window.removeEventListener('demo-state-changed', refetch);
+  }, [refetch]);
+
   return { summary, loading, error, isMock, refetch };
 }

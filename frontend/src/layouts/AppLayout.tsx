@@ -21,6 +21,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { VibhinetraLogo } from '../components/VibhinetraLogo';
 import { NotificationBell } from '../components/NotificationBell';
 import { AlertToastStack } from '../components/AlertToast';
+import { demoSimulator } from '../services/demoSimulator';
 import './AppLayout.css';
 
 const ICONS: Record<string, ReactNode> = {
@@ -66,96 +67,7 @@ export function AppLayout() {
     }
   }, [liveAlerts, ingestAlert]);
 
-  // ── Demo Alert Simulator ──────────────────────────────────
-  // When the WebSocket is disconnected (no backend), simulate
-  // critical/high alerts to demonstrate the notification system.
-  const demoCounterRef = useRef(0);
-  useEffect(() => {
-    if (connectionState !== 'disconnected') return;
-
-    const DEMO_ALERTS = [
-      {
-        threat_type: 'volumetric_ddos' as const,
-        severity: 'critical' as const,
-        src_ip: '192.168.24.17',
-        dst_ip: '10.42.8.21',
-        dst_port: 443,
-        evidence_summary: 'SYN flood detected — 14,000 packets/sec exceeding baseline by 800%. Active volumetric attack in progress.',
-        detector_id: 'ddos_detector' as const,
-      },
-      {
-        threat_type: 'data_exfiltration' as const,
-        severity: 'critical' as const,
-        src_ip: '10.0.1.200',
-        dst_ip: '203.0.113.88',
-        dst_port: 443,
-        evidence_summary: 'Sustained outbound transfer of 4.2 GB exceeding historical baseline by 400%. Possible data exfiltration.',
-        detector_id: 'exfiltration_detector' as const,
-      },
-      {
-        threat_type: 'c2_beaconing' as const,
-        severity: 'high' as const,
-        src_ip: '10.0.5.20',
-        dst_ip: '198.51.100.42',
-        dst_port: 443,
-        evidence_summary: 'Periodic TLS connections with strict 60s jitter and suspicious SNI pattern detected.',
-        detector_id: 'tls_c2_detector' as const,
-      },
-      {
-        threat_type: 'recon_portscan' as const,
-        severity: 'high' as const,
-        src_ip: '10.0.4.55',
-        dst_ip: '10.42.8.0',
-        dst_port: 22,
-        evidence_summary: 'Sequential horizontal port scan targeting 256 hosts on internal subnet 10.42.8.0/24.',
-        detector_id: 'recon_detector' as const,
-      },
-      {
-        threat_type: 'dga_dns_tunnel' as const,
-        severity: 'critical' as const,
-        src_ip: '10.0.3.42',
-        dst_ip: '8.8.8.8',
-        dst_port: 53,
-        evidence_summary: 'High-entropy DNS queries at 300 req/min — DGA algorithm fingerprint matches known malware family.',
-        detector_id: 'dns_dga_tunnel_detector' as const,
-      },
-    ];
-
-    // Fire first demo alert after 3 seconds, then every 12-20s
-    const fireDemo = () => {
-      const idx = demoCounterRef.current % DEMO_ALERTS.length;
-      const template = DEMO_ALERTS[idx];
-      const now = new Date();
-      const demoAlert = {
-        alert_id: `DEMO-${Date.now()}-${idx}`,
-        timestamp: now.toISOString(),
-        threat_type: template.threat_type,
-        severity: template.severity,
-        confidence: 0.92 + Math.random() * 0.06,
-        entity_type: 'pair' as const,
-        entity_key: `${template.src_ip}-${template.dst_ip}`,
-        first_seen_at: new Date(now.getTime() - 60000).toISOString(),
-        last_seen_at: now.toISOString(),
-        resolved_at: null,
-        src_ip: template.src_ip,
-        dst_ip: template.dst_ip,
-        dst_port: template.dst_port,
-        status: 'new' as const,
-        evidence_summary: template.evidence_summary,
-        detector_id: template.detector_id,
-      };
-      ingestAlert(demoAlert, 'live');
-      demoCounterRef.current++;
-    };
-
-    const initialTimer = setTimeout(fireDemo, 3000);
-    const interval = setInterval(fireDemo, 12000 + Math.random() * 8000);
-
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-    };
-  }, [connectionState, ingestAlert]);
+  // The demo logic has been moved to a manual Play button in the header.
 
   const navGroups = useMemo(() => [
     {
@@ -227,6 +139,18 @@ export function AppLayout() {
     }
     return location.pathname === '/app' ? t('nav.overview', 'Overview') : '';
   })();
+
+  const [isDemoRunning, setIsDemoRunning] = useState(false);
+
+  const toggleDemoSimulator = useCallback(async () => {
+    if (demoSimulator.isRunning()) {
+      demoSimulator.stop();
+      setIsDemoRunning(false);
+    } else {
+      setIsDemoRunning(true);
+      await demoSimulator.start();
+    }
+  }, []);
 
   return (
     <div className={`app-layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
@@ -358,6 +282,13 @@ export function AppLayout() {
           </div>
           <div className="top-header-right">
             <div className="header-utility-actions">
+              <button 
+                onClick={toggleDemoSimulator}
+                className={`btn btn-sm ${isDemoRunning ? 'btn-danger' : 'btn-primary'}`}
+                style={{ marginRight: '16px' }}
+              >
+                {isDemoRunning ? 'Stop Live Feed' : '▶ Play Live Stream'}
+              </button>
               <NotificationBell />
               <div className="header-divider" />
               <LanguageSwitcher compact />
