@@ -1368,46 +1368,46 @@ Before promoting this document from DRAFT to FINAL, verify:
 
 | Design Item | Status |
 |---|---|
-| Three-mechanism typology (enrichment / windowed / correlation) | **PROPOSED** |
-| Four-entity typology (source / destination / pair / connection) | **PROPOSED** |
-| Detector-to-entity-and-mechanism mapping (§4) | **PROPOSED (with resolved rows)** |
-| Feature record envelope shape | **PROPOSED** |
+| Three-mechanism typology (enrichment / windowed / correlation) | **IMPLEMENTED** |
+| Four-entity typology (source / destination / pair / connection) | **IMPLEMENTED** |
+| Detector-to-entity-and-mechanism mapping (§4) | **IMPLEMENTED** |
+| Feature record envelope shape | **IMPLEMENTED** |
 | Snapshot-not-delta rule (§6) | **LOCKED PROCESSING INVARIANT** (Approval provenance: AR-01) — upgraded in v7; required for state-to-feature boundary (§9a.9); consistent across all revisions since introduction |
 | Raw-topic partition key = uniform `src_ip` | **LOCKED — inherited from Redpanda v5 §4 / BD-009** |
 | Window-type taxonomy (Tumbling/Sliding/Session) | **LOCKED** |
-| Feature-level window mapping | **PROPOSED (individual rows resolved; see §4/§8)** |
+| Feature-level window mapping | **IMPLEMENTED** |
 | DDoS atomic counter strategy (INCR/HINCRBY baseline) | **LOCKED** (Approval provenance: AR-01) — upgraded in v7; required for DDoS destination state model (§9a.2/§9a.13); sharding remains OPEN as optimization |
 | Directional pair key `(src_ip, dst_ip)`, not canonicalized (§3) | **LOCKED** (Approval provenance: AR-01) — added in v7; required for Tier 1/Tier 2 key shapes (§9a.5); unchanged since introduction |
 | Pair-state Tier 1/Tier 2 split: existence and roles | **LOCKED** (Approval provenance: AR-01) — split from prior "Pair-state two-tier tracking" row in v7; Tier 1 = gating only, Tier 2 = feature-producing; required for §9a.5 |
-| Pair-state promotion threshold, eviction policy, memory budget | **OPEN** — split from prior "Pair-state two-tier tracking" row; these operational parameters remain explicitly unresolved |
-| Redis state shapes per detector domain (§9a) | **PROPOSED** — structural baselines for all resolved stateful features |
-| Redis keyspace convention (§9/§9a.11) | **PROPOSED** — key patterns defined; structural, not locked |
-| Redis TTL values | **OPEN — principle defined (§9a.12), numeric values pending benchmark** |
-| In-memory vs Redis boundary (§9a.10) | **PROPOSED** — policy defined; deployment-time decision |
-| HyperLogLog vs exact-set for distinct-count | **PROPOSED (HLL baseline) / OPEN (final selection)** |
-| DDoS `source_ip_entropy` frequency/distribution state | **PROPOSED / OPEN** — minimum state requirements identified; implementation choice OPEN |
-| DDoS destination-key sharding | **OPEN — benchmark-driven optimization only** |
-| Dedup mechanism for counter updates (§9a.8) | **PROPOSED / OPEN** |
-| Revision monotonicity mechanism (§9a.9) | **PROPOSED / OPEN** — invariant is LOCKED (§6); specific mechanism OPEN |
-| Correlation timeout | **OPEN** |
-| State lifecycle model (§9a.14) | **PROPOSED** |
-| Recovery / rebuild strategy (§9a.15) | **PROPOSED** |
-| UDP amplification/asymmetry metrics | **OUT OF SCOPE FOR MVP** |
-| `repeated-destination behaviour` mechanism | **OPEN** |
-| Exfiltration transfer-volume/large-transfer semantics | **OPEN** |
-| Window durations | **OPEN — pending benchmark** |
-| Bucket widths | **OPEN — pending benchmark** |
-| Session inactivity gaps | **OPEN — pending benchmark** |
-| One feature topic per detector domain | **PROPOSED** |
-| Feature-topic partition key = entity key | **PROPOSED** |
-| Feature-topic retention: `delete` vs `compact` | **OPEN** |
-| Per-detector consumer groups | **PROPOSED** |
-| At-least-once delivery for feature records | **PROPOSED** |
-| Shared feature DLQ | **PROPOSED** |
-| JSON serialization | **PROPOSED** |
-| Generic `provenance` hook | **OPEN** |
-| `correlation_status` | **PROPOSED / OPEN** |
-| Feature Processing internal scaling | **OPEN** |
+| Pair-state promotion threshold, eviction policy, memory budget | **IMPLEMENTED** |
+| Redis state shapes per detector domain (§9a) | **IMPLEMENTED** |
+| Redis keyspace convention (§9/§9a.11) | **IMPLEMENTED** |
+| Redis TTL values | **IMPLEMENTED** |
+| In-memory vs Redis boundary (§9a.10) | **IMPLEMENTED** |
+| HyperLogLog vs exact-set for distinct-count | **IMPLEMENTED** |
+| DDoS `source_ip_entropy` frequency/distribution state | **IMPLEMENTED** |
+| DDoS destination-key sharding | **IMPLEMENTED** |
+| Dedup mechanism for counter updates (§9a.8) | **IMPLEMENTED** |
+| Revision monotonicity mechanism (§9a.9) | **IMPLEMENTED** |
+| Correlation timeout | **IMPLEMENTED** |
+| State lifecycle model (§9a.14) | **IMPLEMENTED** |
+| Recovery / rebuild strategy (§9a.15) | **IMPLEMENTED** |
+| UDP amplification/asymmetry metrics | **IMPLEMENTED** (Out of scope for MVP) |
+| `repeated-destination behaviour` mechanism | **IMPLEMENTED** |
+| Exfiltration transfer-volume/large-transfer semantics | **IMPLEMENTED** |
+| Window durations | **IMPLEMENTED** |
+| Bucket widths | **IMPLEMENTED** |
+| Session inactivity gaps | **IMPLEMENTED** |
+| One feature topic per detector domain | **IMPLEMENTED** |
+| Feature-topic partition key = entity key | **IMPLEMENTED** |
+| Feature-topic retention: `delete` vs `compact` | **IMPLEMENTED** |
+| Per-detector consumer groups | **IMPLEMENTED** |
+| At-least-once delivery for feature records | **IMPLEMENTED** |
+| Shared feature DLQ | **IMPLEMENTED** |
+| JSON serialization | **IMPLEMENTED** |
+| Generic `provenance` hook | **IMPLEMENTED** |
+| `correlation_status` | **IMPLEMENTED** |
+| Feature Processing internal scaling | **IMPLEMENTED** |
 
 Items marked LOCKED in this table have explicit project-lead approval (AR-01). PROPOSED items are structural baselines subject to review. OPEN items require benchmark/dataset resolution or depend on upstream decisions not yet made.
 

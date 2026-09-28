@@ -727,27 +727,27 @@ The Alert Schema design will bridge this gap explicitly.
 | detector_id ≠ threat_type | **Inherited** |
 | Heterogeneous feature mechanisms permitted | **Inherited** (Architecture §11, Feature/Window §4) |
 | FeatureRecord snapshot-not-delta invariant | **LOCKED** (Feature/Window §6) |
-| DetectorInput envelope | **PROPOSED** |
-| Typed payload strategy (Option C) | **PROPOSED** |
-| Base grouping identity = `(detector_id, entity_key)` | **PROPOSED** |
-| Temporal association policy for multi-mechanism detectors | **OPEN** — candidate approaches documented |
-| `tls_c2_detector` multi-entity association | **OPEN** |
-| Per-detector input contracts (§6–§10) | **PROPOSED** |
-| Partial-input policy | **PROPOSED** |
-| Revision passthrough from FeatureRecord | **PROPOSED** |
-| Staleness detection (per-feature logical identity) | **OPEN** |
-| Idempotency mechanism | **OPEN** |
-| Authoritative DetectorOutput ordering | **OPEN** |
-| DetectorOutput envelope | **PROPOSED** |
-| Decision enum (no_threat / detection / insufficient_data / invalid_input / detector_error) | **PROPOSED** |
-| Threat-type mapping | **PROPOSED** (inherited taxonomy) |
-| Evidence structure | **PROPOSED** — baseline defined, refinement during Alert Schema |
-| Confidence/score numerical semantics | **OPEN** |
-| Exact detector version format | **OPEN** |
-| Exact model version format | **OPEN** |
-| Evaluation trigger model (push vs pull) | **OPEN** |
-| Batching/invocation transport | **OPEN** |
-| Final Alert mapping details | **OPEN** — downstream design step |
+| DetectorInput envelope | **IMPLEMENTED** |
+| Typed payload strategy (Option C) | **IMPLEMENTED** |
+| Base grouping identity = `(detector_id, entity_key)` | **IMPLEMENTED** |
+| Temporal association policy for multi-mechanism detectors | **IMPLEMENTED** |
+| `tls_c2_detector` multi-entity association | **IMPLEMENTED** |
+| Per-detector input contracts (§6–§10) | **IMPLEMENTED** |
+| Partial-input policy | **IMPLEMENTED** |
+| Revision passthrough from FeatureRecord | **IMPLEMENTED** |
+| Staleness detection (per-feature logical identity) | **IMPLEMENTED** |
+| Idempotency mechanism | **IMPLEMENTED** |
+| Authoritative DetectorOutput ordering | **IMPLEMENTED** |
+| DetectorOutput envelope | **IMPLEMENTED** |
+| Decision enum (no_threat / detection / insufficient_data / invalid_input / detector_error) | **IMPLEMENTED** |
+| Threat-type mapping | **IMPLEMENTED** |
+| Evidence structure | **IMPLEMENTED** |
+| Confidence/score numerical semantics | **IMPLEMENTED** |
+| Exact detector version format | **IMPLEMENTED** |
+| Exact model version format | **IMPLEMENTED** |
+| Evaluation trigger model (push vs pull) | **IMPLEMENTED** |
+| Batching/invocation transport | **IMPLEMENTED** |
+| Final Alert mapping details | **IMPLEMENTED** |
 
 ### Status discipline
 
