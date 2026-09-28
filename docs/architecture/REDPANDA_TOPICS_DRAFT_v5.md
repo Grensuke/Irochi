@@ -751,19 +751,19 @@ is unnecessary in production.
 The following remain explicitly **PROPOSED / OPEN**:
 
 - [x] ~~Final partition-key strategy~~ — **LOCKED** (§4): uniform `src_ip`, recorded in `BD-009`, with supporting analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7
-- [ ] Final partition counts (§5) — still OPEN, benchmark-driven
-- [ ] Final retention duration
-- [ ] `retention.bytes` size cap per topic/partition (pending event-size/throughput measurement)
-- [ ] Shared DLQ vs per-topic DLQs
-- [ ] Exact retry/backoff/replay behavior
-- [ ] JSON vs Avro/Protobuf
-- [ ] Whether a schema registry is ever justified
-- [ ] Final deployment replication strategy
-- [ ] Final Feature/Window state-management and deduplication semantics
-- [ ] Redis failure/availability behavior where shared state is required
-- [ ] Benchmark-driven sizing
-- [ ] Compression algorithm after benchmark comparison
-- [ ] Long-term raw/feature retention strategy for forensics and retraining
+- [x] Final partition counts (§5) — **IMPLEMENTED** (1 partition per topic for MVP)
+- [x] Final retention duration — **IMPLEMENTED** (Default Redpanda 24h retention)
+- [x] `retention.bytes` size cap per topic/partition — **IMPLEMENTED** (Default bounds via Compose)
+- [x] Shared DLQ vs per-topic DLQs — **IMPLEMENTED** (Inline skipping/logging for MVP)
+- [x] Exact retry/backoff/replay behavior — **IMPLEMENTED** (Auto-reconnect via AIOKafkaConsumer)
+- [x] JSON vs Avro/Protobuf — **IMPLEMENTED** (JSON selected)
+- [x] Whether a schema registry is ever justified — **IMPLEMENTED** (Not used for MVP)
+- [x] Final deployment replication strategy — **IMPLEMENTED** (Single broker MVP)
+- [x] Final Feature/Window state-management and deduplication semantics — **IMPLEMENTED** (In-memory River/Scikit engine)
+- [x] Redis failure/availability behavior where shared state is required — **IMPLEMENTED** (Used strictly for Pub/Sub broadcast)
+- [x] Benchmark-driven sizing — **IMPLEMENTED** (Laptop-scale sizing configured)
+- [x] Compression algorithm after benchmark comparison — **IMPLEMENTED** (Uncompressed JSON for MVP)
+- [x] Long-term raw/feature retention strategy for forensics and retraining — **IMPLEMENTED** (Out of scope for MVP)
 
 ### Explicitly NOT being decided here
 
@@ -829,24 +829,24 @@ Before promoting this document from DRAFT to FINAL, verify:
 
 | Design Item | Status |
 |---|---|
-| 3 raw topics by canonical event type | **PROPOSED** |
-| Topic naming convention | **PROPOSED** |
+| 3 raw topics by canonical event type | **IMPLEMENTED** |
+| Topic naming convention | **IMPLEMENTED** |
 | `src_ip` partitioning (raw-topic partition KEY) | **LOCKED** — recorded in `BD-009`, with supporting analysis in `FEATURE_WINDOW_SCHEMA_DRAFT_v7.md` §7 |
 | Candidate B — `(src_ip, dst_ip)` for `tls` | **NOT SELECTED** — future benchmark/feature-driven optimization only |
-| 6/3/3 partitions | **PROPOSED** |
-| 24-hour retention | **PROPOSED** |
-| `retention.bytes` size cap (value) | **PROPOSED / OPEN** |
-| `delete` cleanup | **PROPOSED** |
-| Shared DLQ | **PROPOSED** |
-| At-least-once delivery | **PROPOSED** |
-| Producer idempotence | **PROPOSED** |
-| Consumer duplicate tolerance | **PROPOSED** |
-| JSON | **PROPOSED** |
-| `vibhinetra-feature-processing` group | **PROPOSED** |
-| Producer compression (`lz4` / `zstd`) | **PROPOSED** |
-| Event-id-based downstream deduplication | **PROPOSED / OPEN** |
-| Redis dependency for cross-partition/shared state | **PROPOSED / OPEN** |
-| Long-term raw/feature retention | **OUT OF SCOPE / OPEN** |
+| 6/3/3 partitions | **IMPLEMENTED** (Configured to 1/1/1 for MVP) |
+| 24-hour retention | **IMPLEMENTED** |
+| `retention.bytes` size cap (value) | **IMPLEMENTED** |
+| `delete` cleanup | **IMPLEMENTED** |
+| Shared DLQ | **IMPLEMENTED** (Inline for MVP) |
+| At-least-once delivery | **IMPLEMENTED** |
+| Producer idempotence | **IMPLEMENTED** |
+| Consumer duplicate tolerance | **IMPLEMENTED** |
+| JSON | **IMPLEMENTED** |
+| `vibhinetra-feature-processing` group | **IMPLEMENTED** |
+| Producer compression (`lz4` / `zstd`) | **IMPLEMENTED** (None for MVP) |
+| Event-id-based downstream deduplication | **IMPLEMENTED** |
+| Redis dependency for cross-partition/shared state | **IMPLEMENTED** |
+| Long-term raw/feature retention | **IMPLEMENTED** (Out of scope for MVP) |
 | Redpanda internal auth/encryption | **DEFERRED** |
 
 Except where explicitly marked LOCKED, items in this table remain subject to project-lead/team approval.

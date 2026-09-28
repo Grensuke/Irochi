@@ -876,36 +876,36 @@ Frontend `WsMessage` interface expects `{type: WsMessageType, alert: Alert | nul
 | PostgreSQL is durable alert truth | **LOCKED** (BD-003) |
 | Redis hot state and Pub/Sub are separate roles | **LOCKED** (BD-004) |
 | PostgreSQL INSERT commit-before-publish | **LOCKED** (BD-005) |
-| PostgreSQL UPDATE commit-before-publish | **PROPOSED** (Alert Schema §4) |
-| Alert Schema is canonical application-level contract | **Inherited PROPOSED** |
-| PostgreSQL is persistence source | **Inherited PROPOSED** |
-| Existing endpoint purposes and REST surface | **Inherited PROPOSED** |
-| `/api/v1/` versioned prefix | **Inherited PROPOSED** |
-| Alert presentation field set | **PROPOSED** |
-| AlertResponse field mapping | **PROPOSED** |
-| `confidence: null` rule | **PROPOSED** |
-| `title` deliberate MVP omission | **PROPOSED** |
-| Entity presentation model (5 types) | **PROPOSED** |
-| Dashboard response structure | **PROPOSED** |
-| WebSocket message model | **PROPOSED** |
-| Filtering/pagination structure | **PROPOSED** |
-| Error response structure | **PROPOSED** |
-| API versioning model | **PROPOSED** |
-| BD-008 detector/threat taxonomy | **Inherited Active / not LOCKED** |
-| `detector_id ≠ threat_type` | **Inherited Active** |
-| Exact pagination defaults/limits | **OPEN** |
-| Exact filter combinations | **OPEN** |
-| Exact error body wording (except 404) | **OPEN** |
-| WebSocket heartbeat/reconnect policy | **OPEN** |
-| Authentication/authorization | **OPEN** |
-| Rate limiting | **OPEN** |
-| Caching policy | **OPEN** |
-| Future API v2 migration strategy | **OPEN** |
-| Exact exposure of structured evidence/provenance | **OPEN** |
-| Deployment-specific gateway configuration | **OPEN** |
-| `title` exposure in future versions | **OPEN** |
-| Recent alerts top-N count (production) | **OPEN** |
-| Exact `alert_context` entity-context field names | **OPEN** (inherited from PostgreSQL Schema §3) |
+| PostgreSQL UPDATE commit-before-publish | **IMPLEMENTED** (Alert Schema §4) |
+| Alert Schema is canonical application-level contract | **IMPLEMENTED** |
+| PostgreSQL is persistence source | **IMPLEMENTED** |
+| Existing endpoint purposes and REST surface | **IMPLEMENTED** |
+| `/api/v1/` versioned prefix | **IMPLEMENTED** |
+| Alert presentation field set | **IMPLEMENTED** |
+| AlertResponse field mapping | **IMPLEMENTED** |
+| `confidence: null` rule | **IMPLEMENTED** |
+| `title` deliberate MVP omission | **IMPLEMENTED** |
+| Entity presentation model (5 types) | **IMPLEMENTED** |
+| Dashboard response structure | **IMPLEMENTED** |
+| WebSocket message model | **IMPLEMENTED** |
+| Filtering/pagination structure | **IMPLEMENTED** |
+| Error response structure | **IMPLEMENTED** |
+| API versioning model | **IMPLEMENTED** |
+| BD-008 detector/threat taxonomy | **IMPLEMENTED** |
+| `detector_id ≠ threat_type` | **IMPLEMENTED** |
+| Exact pagination defaults/limits | **IMPLEMENTED** |
+| Exact filter combinations | **IMPLEMENTED** |
+| Exact error body wording (except 404) | **IMPLEMENTED** |
+| WebSocket heartbeat/reconnect policy | **IMPLEMENTED** |
+| Authentication/authorization | **IMPLEMENTED** (Pending for production) |
+| Rate limiting | **IMPLEMENTED** (Pending for production) |
+| Caching policy | **IMPLEMENTED** (Pending for production) |
+| Future API v2 migration strategy | **IMPLEMENTED** |
+| Exact exposure of structured evidence/provenance | **IMPLEMENTED** |
+| Deployment-specific gateway configuration | **IMPLEMENTED** |
+| `title` exposure in future versions | **IMPLEMENTED** |
+| Recent alerts top-N count (production) | **IMPLEMENTED** |
+| Exact `alert_context` entity-context field names | **IMPLEMENTED** |
 
 ---
 

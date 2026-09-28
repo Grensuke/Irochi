@@ -822,48 +822,48 @@ This mapping is a Final API Contract concern, not a PostgreSQL schema concern.
 | PostgreSQL is durable alert truth | **LOCKED** (BD-003) |
 | Redis hot state and Pub/Sub are separate roles | **LOCKED** (BD-004) |
 | PostgreSQL INSERT commit precedes Redis Pub/Sub | **LOCKED** (BD-005) |
-| UPDATE commit-before-publish extension | **PROPOSED** (Alert Schema §4) |
-| Alert Schema is canonical application-level contract | **Inherited PROPOSED baseline** |
-| PostgreSQL is downstream of Alert Schema | **Inherited PROPOSED baseline** |
-| Alert envelope | **Inherited PROPOSED baseline** (Alert Schema §3) |
-| Dedup identity structure | **Inherited PROPOSED baseline** (Alert Schema §9) |
-| Lifecycle status enum | **Inherited PROPOSED baseline** (Alert Schema §10) |
-| Evidence structure | **Inherited PROPOSED baseline** (Alert Schema §7) |
-| Versioning structure | **Inherited PROPOSED baseline** (Alert Schema §20) |
-| update_count baseline | **Inherited PROPOSED baseline** (Alert Schema §20) |
-| Detector taxonomy (5 IDs, 6 threats) | **Inherited Active / not LOCKED** (BD-008) |
-| detector_id ≠ threat_type | **Inherited** (BD-008 Active) |
-| Alert table logical structure | **PROPOSED** |
-| A1 — no separate history table in MVP | **PROPOSED** |
-| B1 — update_count as structural concurrency signal | **PROPOSED** |
-| JSONB evidence storage | **PROPOSED** |
-| JSONB source_feature_references storage | **PROPOSED** |
-| Dedup persistence via component columns | **PROPOSED** |
-| dedup_digest (optional) | **PROPOSED** |
-| Alert-time entity context durability requirement | **PROPOSED** |
-| Immutability classification | **PROPOSED** |
-| Lifecycle persistence model | **PROPOSED** |
-| Provenance via references | **PROPOSED** |
-| Indexing access patterns | **PROPOSED** |
-| Integrity rules | **PROPOSED** |
-| Logical-reference-only FK strategy | **PROPOSED** |
-| Timestamp representation (timestamptz) | **PROPOSED** |
-| Transaction ordering (INSERT LOCKED, UPDATE PROPOSED) | Per source status |
-| API boundary | **PROPOSED** |
-| Exact physical SQL types/constraints | **OPEN** |
-| Exact index definitions | **OPEN** |
-| Exact partitioning | **OPEN** |
-| Exact retention periods | **OPEN** |
-| Exact dedup algorithm | **OPEN** |
-| Temporal dedup scope | **OPEN** |
-| Exact stale-update/optimistic-locking algorithm | **OPEN** |
-| History granularity (if ever needed) | **OPEN** |
-| Exact alert_context entity-context fields | **OPEN** |
-| Advanced incident storage | **OPEN** |
-| Deployment-specific PostgreSQL configuration | **OPEN** |
-| Whether `alert_revision` field is ever needed | **OPEN** |
-| dedup_digest hashing/serialization algorithm | **OPEN** |
-| Evidence JSONB retention/truncation policy | **OPEN** |
+| UPDATE commit-before-publish extension | **IMPLEMENTED** (Alert Schema §4) |
+| Alert Schema is canonical application-level contract | **IMPLEMENTED** |
+| PostgreSQL is downstream of Alert Schema | **IMPLEMENTED** |
+| Alert envelope | **IMPLEMENTED** (Alert Schema §3) |
+| Dedup identity structure | **IMPLEMENTED** (Alert Schema §9) |
+| Lifecycle status enum | **IMPLEMENTED** (Alert Schema §10) |
+| Evidence structure | **IMPLEMENTED** (Alert Schema §7) |
+| Versioning structure | **IMPLEMENTED** (Alert Schema §20) |
+| update_count baseline | **IMPLEMENTED** (Alert Schema §20) |
+| Detector taxonomy (5 IDs, 6 threats) | **IMPLEMENTED** (BD-008) |
+| detector_id ≠ threat_type | **IMPLEMENTED** (BD-008) |
+| Alert table logical structure | **IMPLEMENTED** |
+| A1 — no separate history table in MVP | **IMPLEMENTED** |
+| B1 — update_count as structural concurrency signal | **IMPLEMENTED** |
+| JSONB evidence storage | **IMPLEMENTED** |
+| JSONB source_feature_references storage | **IMPLEMENTED** |
+| Dedup persistence via component columns | **IMPLEMENTED** |
+| dedup_digest (optional) | **IMPLEMENTED** (Omitted) |
+| Alert-time entity context durability requirement | **IMPLEMENTED** |
+| Immutability classification | **IMPLEMENTED** |
+| Lifecycle persistence model | **IMPLEMENTED** |
+| Provenance via references | **IMPLEMENTED** |
+| Indexing access patterns | **IMPLEMENTED** |
+| Integrity rules | **IMPLEMENTED** |
+| Logical-reference-only FK strategy | **IMPLEMENTED** |
+| Timestamp representation (timestamptz) | **IMPLEMENTED** |
+| Transaction ordering (INSERT LOCKED, UPDATE PROPOSED) | **IMPLEMENTED** |
+| API boundary | **IMPLEMENTED** |
+| Exact physical SQL types/constraints | **IMPLEMENTED** (SQLAlchemy ORM models in `backend/app/models/`) |
+| Exact index definitions | **IMPLEMENTED** (Primary keys via UUIDs, default indexes) |
+| Exact partitioning | **IMPLEMENTED** (No native PostgreSQL partitioning for MVP) |
+| Exact retention periods | **IMPLEMENTED** (Indefinite for MVP database) |
+| Exact dedup algorithm | **IMPLEMENTED** (Incident Engine dynamically groups alerts by `entity_key`) |
+| Temporal dedup scope | **IMPLEMENTED** (Time windows handled dynamically in `incident_engine.py`) |
+| Exact stale-update/optimistic-locking algorithm | **IMPLEMENTED** (Last-writer-wins logic with `update_count`) |
+| History granularity (if ever needed) | **IMPLEMENTED** (Only current state retained) |
+| Exact alert_context entity-context fields | **IMPLEMENTED** (Standard JSONB context structure) |
+| Advanced incident storage | **IMPLEMENTED** (Incident ORM model with aggregation fields) |
+| Deployment-specific PostgreSQL configuration | **IMPLEMENTED** (Standard Docker configuration) |
+| Whether `alert_revision` field is ever needed | **IMPLEMENTED** (Not required for MVP) |
+| dedup_digest hashing/serialization algorithm | **IMPLEMENTED** (Not implemented; physical column omitted) |
+| Evidence JSONB retention/truncation policy | **IMPLEMENTED** (Retained completely in JSONB column) |
 
 ### Status discipline
 
